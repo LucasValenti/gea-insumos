@@ -1,0 +1,54 @@
+---
+const PASOS = [
+  { titulo: "Elegí el producto", texto: "Buscalo por nombre o entrá por categoría." },
+  { titulo: "Tocá consultar", texto: "Se abre WhatsApp con el producto ya escrito en el mensaje." },
+  { titulo: "Coordinamos", texto: "Cantidad, forma de pago y envío por chat." },
+  { titulo: "Recibilo", texto: "Te lo despachamos apenas se confirma el pago." },
+];
+---
+
+<section class="como">
+  <div class="wrap">
+    <h2 class="titulo-seccion">Cómo comprar</h2>
+    <ol class="pasos">
+      {PASOS.map((p) => (
+        <li>
+          <b>{p.titulo}</b>
+          <p>{p.texto}</p>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .como {
+    background: var(--sunk);
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    margin-top: 4rem;
+    padding: 2.5rem 0;
+  }
+  .titulo-seccion { margin-bottom: 1.5rem; }
+  .pasos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 1.5rem;
+    counter-reset: paso;
+  }
+  .pasos li { counter-increment: paso; }
+  .pasos li::before {
+    content: counter(paso);
+    font-family: var(--serif);
+    font-size: 1.6rem;
+    color: var(--nude-300);
+    display: block;
+    line-height: 1;
+    margin-bottom: .5rem;
+  }
+  .pasos b { display: block; font-size: .95rem; margin-bottom: .25rem; }
+  .pasos p { margin: 0; font-size: .88rem; color: var(--ink-soft); }
+</style>

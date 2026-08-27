@@ -1,0 +1,70 @@
+---
+import { CATEGORIAS } from "../data/categorias.js";
+import { PRODUCTOS } from "../data/productos.js";
+
+interface Props {
+  activa?: string; // id de categoría o "todos"
+}
+const { activa = "todos" } = Astro.props;
+
+const conteo = (id: string) => PRODUCTOS.filter((p) => p.cat === id).length;
+---
+
+<nav class="barra" aria-label="Categorías">
+  <div class="interior">
+    <a class="cat" href="/catalogo" aria-current={activa === "todos" ? "page" : undefined}>
+      Todos <span class="cuenta">{PRODUCTOS.length}</span>
+    </a>
+    {CATEGORIAS.map((c) => (
+      <a class="cat" href={`/catalogo/${c.id}`} aria-current={activa === c.id ? "page" : undefined}>
+        {c.nombre} <span class="cuenta">{conteo(c.id)}</span>
+      </a>
+    ))}
+  </div>
+</nav>
+
+<style>
+  .barra {
+    position: sticky;
+    top: 4.05rem;
+    z-index: 35;
+    background: var(--paper);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .interior {
+    display: flex;
+    gap: .5rem;
+    overflow-x: auto;
+    padding: .7rem 1.25rem;
+    max-width: var(--maxw);
+    margin: 0 auto;
+    scrollbar-width: thin;
+  }
+  .cat {
+    font-size: .76rem;
+    letter-spacing: .05em;
+    padding: .5rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink-soft);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: baseline;
+    gap: .45rem;
+  }
+  .cat:hover { border-color: var(--ink); color: var(--ink); }
+  .cat[aria-current="page"] {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .cuenta {
+    font-size: .68rem;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+  .cat[aria-current="page"] .cuenta { color: var(--nude-300); }
+
+  @media (max-width: 600px) { .barra { top: 7.4rem; } }
+</style>

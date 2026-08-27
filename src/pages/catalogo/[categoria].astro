@@ -1,0 +1,64 @@
+---
+import Base from "../../layouts/Base.astro";
+import Encabezado from "../../components/Encabezado.astro";
+import BarraCategorias from "../../components/BarraCategorias.astro";
+import TarjetaProducto from "../../components/TarjetaProducto.astro";
+import ComoComprar from "../../components/ComoComprar.astro";
+import Pie from "../../components/Pie.astro";
+import BotonFlotante from "../../components/BotonFlotante.astro";
+import { CATEGORIAS } from "../../data/categorias.js";
+import { porCategoria } from "../../data/productos.js";
+
+// Genera una página por categoría: /catalogo/esmaltes, /catalogo/geles...
+// Cada una tiene su propia dirección para que Google la encuentre.
+export function getStaticPaths() {
+  return CATEGORIAS.map((c) => ({
+    params: { categoria: c.id },
+    props: { categoria: c },
+  }));
+}
+
+const { categoria } = Astro.props;
+const productos = porCategoria(categoria.id);
+---
+
+<Base
+  titulo={categoria.nombre}
+  descripcion={`${categoria.descripcion} ${productos.length} productos disponibles en GEA Insumos.`}
+>
+  <Encabezado conBuscador={false} />
+  <BarraCategorias activa={categoria.id} />
+
+  <main class="wrap">
+    <div class="encabezado-cat">
+      <h1>{categoria.nombre}</h1>
+      <p>{categoria.descripcion}</p>
+    </div>
+
+    <div class="listhead">
+      <span class="count">{productos.length} {productos.length === 1 ? "producto" : "productos"}</span>
+    </div>
+
+    <div class="grid">
+      {productos.map((p) => <TarjetaProducto producto={p} />)}
+    </div>
+  </main>
+
+  <ComoComprar />
+  <Pie />
+  <BotonFlotante />
+</Base>
+
+<style>
+  main { padding-bottom: 4rem; }
+  .encabezado-cat { padding: 2.5rem 0 0; }
+  .encabezado-cat h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    margin: 0;
+    line-height: 1.15;
+  }
+  .encabezado-cat p { margin: .5rem 0 0; color: var(--ink-soft); max-width: 34rem; }
+  .listhead { padding-top: 1rem; }
+</style>

@@ -1,0 +1,68 @@
+---
+import { NEGOCIO } from "../data/config.js";
+
+interface Props {
+  titulo?: string;
+  texto?: string;
+}
+const {
+  titulo = "Insumos de manicuría",
+  texto = "Esmaltes, geles, herramientas y equipos. Consultá por WhatsApp y te respondemos en el día.",
+} = Astro.props;
+---
+
+<section class="franja">
+  <div class="interior">
+    <div>
+      <h1>{titulo}</h1>
+      <p>{texto}</p>
+    </div>
+    <a class="instagram" href={NEGOCIO.instagram} target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="5" />
+        <circle cx="12" cy="12" r="3.8" />
+        <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none" />
+      </svg>
+      Instagram
+    </a>
+  </div>
+</section>
+
+<style>
+  /* El nude va de fondo con texto negro: 11,4 a 1 de contraste.
+     Nunca al revés. */
+  .franja {
+    background: var(--nude-200);
+    color: #111111;
+    padding: 1.35rem 1.25rem;
+  }
+  .interior {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem 2rem;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(1.15rem, 2.6vw, 1.6rem);
+    margin: 0;
+    line-height: 1.25;
+  }
+  p { margin: .2rem 0 0; font-size: .89rem; opacity: .78; max-width: 34rem; }
+
+  .instagram {
+    font-size: .72rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(17, 17, 17, .35);
+    padding-bottom: 2px;
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+  }
+  .instagram svg { width: 1em; height: 1em; }
+</style>

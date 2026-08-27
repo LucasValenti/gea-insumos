@@ -1,0 +1,93 @@
+---
+import Base from "../../layouts/Base.astro";
+import Encabezado from "../../components/Encabezado.astro";
+import BarraCategorias from "../../components/BarraCategorias.astro";
+import FranjaMarca from "../../components/FranjaMarca.astro";
+import TarjetaProducto from "../../components/TarjetaProducto.astro";
+import ComoComprar from "../../components/ComoComprar.astro";
+import Pie from "../../components/Pie.astro";
+import BotonFlotante from "../../components/BotonFlotante.astro";
+import { PRODUCTOS } from "../../data/productos.js";
+---
+
+<Base
+  titulo="Catálogo"
+  descripcion="Todos los insumos de manicuría de GEA: esmaltes, geles, herramientas, equipos, preparación y decoración."
+>
+  <Encabezado conBuscador={true} />
+  <BarraCategorias activa="todos" />
+  <FranjaMarca />
+
+  <main class="wrap">
+    <div class="listhead">
+      <h2 class="titulo-seccion">Catálogo completo</h2>
+      <span class="count" id="contador">{PRODUCTOS.length} productos</span>
+    </div>
+
+    <div class="grid" id="grilla">
+      {PRODUCTOS.map((p) => <TarjetaProducto producto={p} />)}
+    </div>
+
+    <p class="sin-resultados" id="sinResultados" hidden>
+      No encontramos productos con ese nombre.
+      <button class="btn btn-ghost" id="limpiar" type="button">Ver todo el catálogo</button>
+    </p>
+  </main>
+
+  <ComoComprar />
+  <Pie />
+  <BotonFlotante />
+</Base>
+
+<style>
+  main { padding-bottom: 4rem; }
+  .sin-resultados {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--ink-soft);
+    display: grid;
+    gap: 1rem;
+    justify-items: center;
+  }
+</style>
+
+<script>
+  // Buscador. Los 30 productos ya están en el HTML, así que Google
+  // los ve todos; esto solo esconde y muestra tarjetas.
+  const input = document.getElementById("buscador") as HTMLInputElement | null;
+  const grilla = document.getElementById("grilla");
+  const contador = document.getElementById("contador");
+  const vacio = document.getElementById("sinResultados");
+  const limpiar = document.getElementById("limpiar");
+
+  if (input && grilla && contador && vacio) {
+    const tarjetas = Array.from(grilla.querySelectorAll<HTMLElement>(".tarjeta"));
+
+    const filtrar = () => {
+      const q = input.value.trim().toLowerCase();
+      let visibles = 0;
+
+      tarjetas.forEach((t) => {
+        const coincide = !q || (t.dataset.nombre ?? "").includes(q);
+        t.hidden = !coincide;
+        if (coincide) visibles++;
+      });
+
+      contador.textContent = visibles === 1 ? "1 producto" : `${visibles} productos`;
+      vacio.hidden = visibles > 0;
+      grilla.hidden = visibles === 0;
+    };
+
+    let t: number;
+    input.addEventListener("input", () => {
+      clearTimeout(t);
+      t = window.setTimeout(filtrar, 140);
+    });
+
+    limpiar?.addEventListener("click", () => {
+      input.value = "";
+      filtrar();
+      input.focus();
+    });
+  }
+</script>

@@ -1,0 +1,50 @@
+---
+// El logo, hecho con tipografía en vez de imagen: se ve nítido en
+// cualquier tamaño, pesa nada y Google lo lee.
+interface Props {
+  tamano?: "chico" | "medio" | "grande";
+  colorInsumos?: string;
+}
+const { tamano = "medio", colorInsumos } = Astro.props;
+---
+
+<span class:list={["marca", tamano]} style={colorInsumos ? `--c-insumos:${colorInsumos}` : undefined}>
+  <span class="g">GEA</span>
+  <span class="filete"></span>
+  <span class="i">INSUMOS</span>
+</span>
+
+<style>
+  .marca {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+  }
+  .g {
+    font-family: var(--serif);
+    font-weight: 500;
+    letter-spacing: .18em;
+    text-indent: .18em;
+  }
+  .filete {
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+    margin: .4em 0 .36em;
+  }
+  .i {
+    font-family: var(--sans);
+    font-weight: 400;
+    letter-spacing: .42em;
+    text-indent: .42em;
+    color: var(--c-insumos, inherit);
+  }
+
+  .chico .g  { font-size: 1.15rem; }
+  .chico .i  { font-size: .36rem; }
+  .medio .g  { font-size: 1.35rem; }
+  .medio .i  { font-size: .4rem; }
+  .grande .g { font-size: 2.4rem; }
+  .grande .i { font-size: .68rem; }
+</style>

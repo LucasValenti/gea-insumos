@@ -1,0 +1,95 @@
+---
+import Marca from "./Marca.astro";
+import { CATEGORIAS } from "../data/categorias.js";
+import { NEGOCIO, enlaceWhatsapp } from "../data/config.js";
+
+const anio = new Date().getFullYear();
+---
+
+<footer class="pie">
+  <div class="wrap">
+    <div class="columnas">
+      <div>
+        <Marca colorInsumos="var(--nude-200)" />
+      </div>
+
+      <div>
+        <h2>Catálogo</h2>
+        <ul>
+          {CATEGORIAS.map((c) => (
+            <li><a href={`/catalogo/${c.id}`}>{c.nombre}</a></li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <h2>Contacto</h2>
+        <ul>
+          <li><a href={enlaceWhatsapp(null)} target="_blank" rel="noopener">WhatsApp</a></li>
+          <li><a href={NEGOCIO.instagram} target="_blank" rel="noopener">Instagram</a></li>
+          <li>{NEGOCIO.ciudad ?? <span class="pendiente">Ciudad a confirmar</span>}</li>
+          {NEGOCIO.horarios && <li>{NEGOCIO.horarios}</li>}
+        </ul>
+      </div>
+
+      <div>
+        <h2>Compras</h2>
+        <ul>
+          <li><a href="/como-comprar">Cómo comprar</a></li>
+          <li>
+            {NEGOCIO.formasDePago.length
+              ? NEGOCIO.formasDePago.join(" · ")
+              : <span class="pendiente">Formas de pago a confirmar</span>}
+          </li>
+          <li>{NEGOCIO.envios ?? <span class="pendiente">Envíos a confirmar</span>}</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="legal">
+      <span>GEA Insumos · {anio}</span>
+      <a href="/contacto">Contacto</a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .pie {
+    background: var(--ink);
+    color: #FFFFFF;
+    padding: 3rem 0 2rem;
+    margin-top: 0;
+  }
+  .columnas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 2rem;
+  }
+  .pie :global(.marca) { align-items: flex-start; }
+
+  h2 {
+    font-size: .66rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--nude-200);
+    margin: 0 0 .8rem;
+    font-weight: 600;
+  }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .4rem; }
+  li, li a { color: rgba(255, 255, 255, .72); font-size: .88rem; }
+  li a:hover { color: #FFFFFF; }
+  .pendiente { color: var(--nude-200); }
+
+  .legal {
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, .16);
+    font-size: .76rem;
+    color: rgba(255, 255, 255, .5);
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.5rem;
+    justify-content: space-between;
+  }
+  .legal a:hover { color: #FFFFFF; }
+</style>

@@ -1,0 +1,71 @@
+---
+import "../styles/global.css";
+import { NEGOCIO } from "../data/config.js";
+import { EJEMPLO } from "../data/productos.js";
+
+interface Props {
+  titulo: string;
+  descripcion?: string;
+  imagen?: string;
+}
+const { titulo, descripcion = NEGOCIO.descripcion, imagen } = Astro.props;
+
+const tituloCompleto = titulo === NEGOCIO.nombre ? titulo : `${titulo} · ${NEGOCIO.nombre}`;
+const url = new URL(Astro.url.pathname, Astro.site);
+const imagenSocial = new URL(imagen ?? "/og.png", Astro.site);
+---
+
+<!doctype html>
+<html lang="es-AR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{tituloCompleto}</title>
+    <meta name="description" content={descripcion} />
+    <link rel="canonical" href={url} />
+
+    <!-- Lo que se ve al compartir el enlace por WhatsApp o Instagram -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={NEGOCIO.nombre} />
+    <meta property="og:title" content={tituloCompleto} />
+    <meta property="og:description" content={descripcion} />
+    <meta property="og:url" content={url} />
+    <meta property="og:image" content={imagenSocial} />
+    <meta property="og:locale" content="es_AR" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#E2C2B9" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap"
+    />
+  </head>
+
+  <body>
+    {EJEMPLO && (
+      <div class="aviso-ejemplo">
+        <b>Vista de trabajo.</b> Los productos y precios son de ejemplo, no el catálogo real.
+      </div>
+    )}
+
+    <slot />
+  </body>
+</html>
+
+<style>
+  .aviso-ejemplo {
+    background: var(--demo-bg);
+    border-bottom: 1px solid var(--demo-rule);
+    color: var(--demo-ink);
+    font-size: .78rem;
+    text-align: center;
+    padding: .55rem 1.25rem;
+    line-height: 1.4;
+  }
+  .aviso-ejemplo b { font-weight: 600; }
+</style>
