@@ -1,0 +1,19 @@
+{
+  // Configuración para publicar en Cloudflare.
+  // El sitio es estático: Cloudflare solo sirve los archivos que
+  // deja `npm run build` en la carpeta dist.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gea-insumos",
+  "compatibility_date": "2026-08-01",
+
+  // Sin telemetría de Cloudflare.
+  "send_metrics": false,
+
+  "assets": {
+    "directory": "./dist",
+
+    // Si alguien entra a una dirección que no existe, se le muestra
+    // nuestra página 404 en vez de un error pelado de Cloudflare.
+    "not_found_handling": "404-page"
+  }
+}
