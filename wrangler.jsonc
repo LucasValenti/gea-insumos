@@ -1,7 +1,6 @@
 {
-  // Configuración para publicar en Cloudflare.
-  // El sitio es estático: Cloudflare solo sirve los archivos que
-  // deja `npm run build` en la carpeta dist.
+  // Publicación en Cloudflare. El sitio no tiene build: son archivos
+  // estáticos y el JSX lo traduce Babel en el navegador del visitante.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "gea-insumos",
   "compatibility_date": "2026-08-01",
@@ -10,10 +9,11 @@
   "send_metrics": false,
 
   "assets": {
-    "directory": "./dist",
+    "directory": "./public",
 
-    // Si alguien entra a una dirección que no existe, se le muestra
-    // nuestra página 404 en vez de un error pelado de Cloudflare.
-    "not_found_handling": "404-page"
+    // La tienda es una sola página: la navegación pasa por estado de
+    // React, no por direcciones. Cualquier ruta devuelve la app en vez
+    // de un 404, así un link mal copiado igual abre.
+    "not_found_handling": "single-page-application"
   }
 }

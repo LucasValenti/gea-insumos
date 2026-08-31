@@ -1,0 +1,9 @@
+/* GEA Insumos — entrada única de estilos. Solo @imports. */
+@import url("./tokens/fonts.css");
+@import url("./tokens/colors.css");
+@import url("./tokens/typography.css");
+@import url("./tokens/layout.css");
+@import url("./tokens/effects.css");
+@import url("./tokens/theme-dark.css");
+@import url("./base/reset.css");
+@import url("./base/utilities.css");

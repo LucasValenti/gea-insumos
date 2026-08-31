@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="es-AR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tienda GEA Insumos — prototipo</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#E2C2B9">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="tienda/tienda.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<style>
+/* Animate.css afinado al sistema: duraciones cortas y curva de la marca. */
+:root{--animate-duration:.5s;--animate-delay:.1s}
+.animate__animated{animation-timing-function:cubic-bezier(.22,.72,.24,1)}
+.animate__bounceIn,.animate__headShake{animation-timing-function:initial}
+body{background:var(--sunk);margin:0}
+#root{min-height:100vh}
+.escenario{min-height:100vh;display:grid;place-items:center;padding:2rem 1rem;background:var(--sunk)}
+.enmarcado .ap{--h-tabs:80px}
+.enmarcado .barra-bot{padding-bottom:24px}
+.toast{position:fixed;left:0;right:0;width:max-content;margin-inline:auto;bottom:5.5rem;z-index:70;background:var(--ink);color:var(--paper);border-radius:var(--radio);padding:.7rem .9rem;font-size:.8rem;display:flex;gap:.9rem;align-items:center;box-shadow:var(--shadow-flotante);max-width:calc(100% - 2rem);--animate-duration:.34s}
+.toast button{border:0;background:transparent;color:var(--nude-200);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.enmarcado .toast{position:absolute}
+a{color:var(--ink)}a:hover{color:var(--nude-600)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+</style>
+</head><body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="tienda/datos.js"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="tienda/ui.jsx"></script>
+<script type="text/babel" src="tienda/pantallas-tienda.jsx"></script>
+<script type="text/babel" src="tienda/pantallas-pedido.jsx"></script>
+<script type="text/babel" data-presets="react">
+(() => {
+const { I, Marca, Boton, SelectorTono } = window;
+const { NEGOCIO, PRODUCTOS, prod, precio, stockDe, costoEnvio } = window.T;
+const { useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakSelect } = window;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "direccion": "editorial",
+  "vista": "escritorio",
+  "tema": "claro",
+  "boton": "cápsula",
+  "movimiento": "expresivo",
+  "barras": "vidrio"
+}/*EDITMODE-END*/;
+
+const LS = "gea_tienda_v1";
+const cargar = () => { try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch (e) { return {}; } };
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const guardado = React.useRef(cargar());
+  const [ruta, setRuta] = React.useState({ v: "inicio" });
+  const [carrito, setCarrito] = React.useState(guardado.current.carrito || []);
+  const [q, setQ] = React.useState("");
+  const [hoja, setHoja] = React.useState(null);
+  const [toast, setToast] = React.useState(null);
+  const [pedido, setPedido] = React.useState(null);
+  const [capa, setCapa] = React.useState(null);
+  const [datos, setDatos] = React.useState(guardado.current.datos || { nombre: "", tel: "", gabinete: "", envio: "domicilio", zona: "", direccion: "", cp: "", pago: "mp", nota: "" });
+  const cont = React.useRef(null);
+  const sent = React.useRef(null);
+  const [pegado, setPegado] = React.useState(false);
+  const [busca, setBusca] = React.useState(false);
+  const vuelta = React.useRef({ v: "inicio" });
+
+  window.usarRevelado([ruta, t.direccion, t.vista]);
+  /* Barra de vidrio: se activa recién cuando el contenido pasó por debajo. */
+  React.useEffect(() => {
+    const n = sent.current;
+    if (!n || !window.IntersectionObserver) return;
+    const io = new IntersectionObserver(([e]) => setPegado(!e.isIntersecting), { threshold: 1 });
+    io.observe(n);
+    return () => io.disconnect();
+  }, [t.vista]);
+  React.useEffect(() => { document.documentElement.setAttribute("data-theme", t.tema === "oscuro" ? "dark" : "light"); }, [t.tema]);
+  React.useEffect(() => { try { localStorage.setItem(LS, JSON.stringify({ carrito, datos })); } catch (e) {} }, [carrito, datos]);
+  React.useEffect(() => {
+    let n = cont.current;
+    while (n) { if (n.scrollHeight > n.clientHeight + 4 && /auto|scroll/.test(getComputedStyle(n).overflowY)) { n.scrollTop = 0; return; } n = n.parentElement; }
+    window.scrollTo(0, 0);
+  }, [ruta]);
+
+  const ir = (r) => setRuta(r);
+  const cerrarBusca = () => { setBusca(false); setQ(""); setRuta((r) => (r.v === "buscar" ? vuelta.current : r)); };
+  const abrirBusca = () => {
+    if (busca) { cerrarBusca(); return; }
+    vuelta.current = ruta.v === "buscar" ? { v: "inicio" } : ruta;
+    setBusca(true);
+  };
+  const tipear = (val) => {
+    setQ(val);
+    if (val.trim()) setRuta((r) => (r.v === "buscar" ? r : { v: "buscar" }));
+    else setRuta((r) => (r.v === "buscar" ? vuelta.current : r));
+  };
+  React.useEffect(() => { if (ruta.v === "buscar") setBusca(true); }, [ruta.v]);
+  const unidades = carrito.reduce((a, i) => a + i.n, 0);
+
+  const agregar = (p, tono = null, n = 1) => {
+    if (p.tonos && tono === null) { setHoja(p); return; }
+    setCarrito((c) => {
+      const i = c.findIndex((x) => x.id === p.id && x.tono === tono);
+      const max = stockDe(p, tono);
+      if (i >= 0) { const cp = [...c]; cp[i] = { ...cp[i], n: Math.min(max, cp[i].n + n) }; return cp; }
+      return [...c, { id: p.id, tono, n: Math.min(max, n) }];
+    });
+    setToast(`${p.nombre}${tono ? ` · ${tono}` : ""}`);
+  };
+  React.useEffect(() => { if (!toast) return; const x = setTimeout(() => setToast(null), 2400); return () => clearTimeout(x); }, [toast]);
+
+  const setCant = (it, n) => setCarrito((c) => c.map((x) => (x === it || (x.id === it.id && x.tono === it.tono) ? { ...x, n } : x)).filter((x) => x.n > 0));
+  const quitar = (it) => setCarrito((c) => c.filter((x) => !(x.id === it.id && x.tono === it.tono)));
+  const enPedido = (id) => carrito.some((x) => x.id === id);
+  const confirmar = () => {
+    const sub = carrito.reduce((a, it) => a + prod(it.id).precio * it.n, 0);
+    const env = costoEnvio(datos, sub) || 0;
+    setPedido({ nro: "#" + String(1200 + Math.floor(Math.random() * 800)), items: carrito, sub, envio: env, total: sub + env, datos });
+    setCarrito([]); ir({ v: "ok" });
+  };
+
+  const P = {
+    inicio: <window.Inicio ir={ir} agregar={agregar} enPedido={enPedido} direccion={t.direccion} />,
+    catalogo: <window.Catalogo ir={ir} ruta={ruta} agregar={agregar} destino={capa} />,
+    buscar: <window.Busqueda ir={ir} agregar={agregar} q={q} setQ={setQ} />,
+    ficha: <window.Ficha ir={ir} ruta={ruta} agregar={agregar} direccion={t.direccion} />,
+    carrito: <window.Carrito ir={ir} carrito={carrito} setCant={setCant} quitar={quitar} agregar={agregar} enPedido={enPedido} />,
+    checkout: <window.Checkout ir={ir} carrito={carrito} datos={datos} setDatos={setDatos} confirmar={confirmar} />,
+    ok: <window.Confirmacion ir={ir} pedido={pedido} guardarHabituales={() => setToast("Guardado como pedido habitual")} />,
+    ayuda: <window.Ayuda ir={ir} />,
+    contacto: <window.Contacto ir={ir} />,
+  }[ruta.v];
+
+  const tabs = [["inicio", "inicio", "Inicio"], ["catalogo", "grilla", "Catálogo"], ["buscar", "buscar", "Buscar"], ["carrito", "carrito", "Pedido"], ["ayuda", "ayuda", "Ayuda"]];
+  const nav = [["inicio", "Inicio"], ["catalogo", "Catálogo"], ["ayuda", "Cómo comprar"], ["contacto", "Contacto"]];
+  const conAtras = ["ficha", "checkout", "ok"].includes(ruta.v);
+  const esc = t.vista === "escritorio";
+  const expr = t.movimiento === "expresivo";
+  const entra = expr ? "animate__animated animate__fadeInUp" : "animate__animated animate__fadeIn";
+
+  const campoBusca = (
+    <div className={"busca" + (esc ? " busca-inline" : "")}>
+      <I n="buscar" />
+      <input autoFocus value={q} onChange={(e) => tipear(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") cerrarBusca(); }} placeholder="Buscar producto, marca o tono…" aria-label="Buscar" />
+      <button className="busca-x" onClick={cerrarBusca} aria-label="Cerrar búsqueda"><I n="cerrar" size="15px" /></button>
+    </div>
+  );
+
+  const app = (
+    <div className={"ap" + (esc ? " esc" : " movil")} ref={cont} data-btn={t.boton === "cápsula" ? "capsula" : "recto"}
+      data-mov={expr ? "expresivo" : "sobrio"} data-barras={t.barras === "vidrio" ? "vidrio" : "opaco"} data-pegado={pegado}>
+      {!esc && <div className="tapa"></div>}
+      <div className="aviso">Prototipo con catálogo de ejemplo · el pedido se cierra por WhatsApp</div>
+      <div ref={sent} className="sentinela" aria-hidden="true"></div>
+      <header className="barra-top">
+        <div className="barra-top-in">
+          {conAtras && !esc ? (
+            <button className="ico-btn" onClick={() => ir({ v: ruta.v === "checkout" ? "carrito" : "catalogo" })} aria-label="Volver"><I n="atras" /></button>
+          ) : (
+            <a href="#" onClick={(e) => { e.preventDefault(); ir({ v: "inicio" }); }} aria-label="GEA Insumos, ir al inicio"><Marca tamano={esc ? "medio" : "chico"} colorInsumos="var(--nude-600)" /></a>
+          )}
+          {esc ? (busca ? campoBusca : (
+            <nav className="nav-esc">{nav.map(([v, l]) => <button key={v} aria-current={ruta.v === v} onClick={() => ir({ v })}>{l}</button>)}</nav>
+          )) : <span></span>}
+          <button className="ico-btn" onClick={abrirBusca} aria-label="Buscar" aria-expanded={busca}><I n="buscar" /></button>
+          <button className="ico-btn" onClick={() => ir({ v: "carrito" })} aria-label={`Pedido, ${unidades} unidades`}>
+            <I n="carrito" />{unidades > 0 && <span key={unidades} className={"globo num" + (expr ? " animate__animated animate__bounceIn" : "")}>{unidades}</span>}
+          </button>
+        </div>
+        {!esc && busca && campoBusca}
+      </header>
+
+      <div className={"vista " + entra} key={ruta.v} style={{ "--animate-duration": expr ? ".52s" : ".38s" }}>{P}</div>
+
+      {!esc && (
+        <nav className="barra-bot" aria-label="Secciones">
+          {tabs.map(([v, ic, l]) => (
+            <button key={v} className="tab" aria-current={ruta.v === v || (v === "catalogo" && ruta.v === "ficha") || (v === "carrito" && ["checkout", "ok"].includes(ruta.v))} onClick={() => ir({ v })}>
+              <span style={{ position: "relative", display: "grid", placeItems: "center" }}>
+                <I n={ic} />{v === "carrito" && unidades > 0 && <span key={unidades} className={"globo num" + (expr ? " animate__animated animate__bounceIn" : "")} style={{ top: -5, right: -9 }}>{unidades}</span>}
+              </span>
+              <span>{l}</span>
+            </button>
+          ))}
+        </nav>
+      )}
+
+      {hoja && <SelectorTono p={hoja} onAgregar={agregar} onCerrar={() => setHoja(null)} destino={capa} />}
+      {toast && ReactDOM.createPortal(
+        <div className={"toast animate__animated " + (expr ? "animate__fadeInUp" : "animate__fadeIn")} role="status">
+          <span>Agregado: {toast}</span>
+          <button onClick={() => { setToast(null); ir({ v: "carrito" }); }}>Ver pedido</button>
+        </div>, capa || document.body)}
+    </div>
+  );
+
+  return (
+    <>
+      {esc ? app : (
+        <div className="escenario">
+          <div className="enmarcado" style={{ position: "relative" }}>
+            <window.IOSDevice width={402} height={860}>{app}</window.IOSDevice>
+            <div className="capa" ref={(n) => { if (n && n !== capa) setCapa(n); }}></div>
+          </div>
+        </div>
+      )}
+      <TweaksPanel>
+        <TweakSection label="Dirección de diseño" />
+        <TweakRadio label="Inicio y ficha" value={t.direccion} options={["editorial", "reposición"]}
+          onChange={(v) => setTweak("direccion", v)} />
+        <TweakSection label="Vista" />
+        <TweakRadio label="Dispositivo" value={t.vista} options={["movil", "escritorio"]} onChange={(v) => setTweak("vista", v)} />
+        <TweakRadio label="Tema" value={t.tema} options={["claro", "oscuro"]} onChange={(v) => setTweak("tema", v)} />
+        <TweakRadio label="Botones" value={t.boton} options={["cápsula", "recto"]} onChange={(v) => setTweak("boton", v)} />
+        <TweakSection label="Movimiento y materia" />
+        <TweakRadio label="Transiciones" value={t.movimiento} options={["sobrio", "expresivo"]} onChange={(v) => setTweak("movimiento", v)} />
+        <TweakRadio label="Barras" value={t.barras} options={["opaco", "vidrio"]} onChange={(v) => setTweak("barras", v)} />
+      </TweaksPanel>
+    </>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+})();
+</script>
+</body></html>

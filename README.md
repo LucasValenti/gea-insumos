@@ -1,109 +1,95 @@
-# GEA Insumos
+# Tienda GEA Insumos
 
-Catálogo de insumos de manicuría con consulta por WhatsApp. Sitio estático hecho con
-[Astro](https://astro.build): se generan archivos HTML sueltos que andan en cualquier
-alojamiento.
+Tienda de insumos de manicuría. HTML + CSS + JavaScript, sin build: se abre
+y se edita en VS Code.
 
-## Cómo trabajar en el proyecto
+Publicada en https://gea-insumos.lucas-valenti00.workers.dev
 
-```bash
-npm install     # una sola vez
-npm run dev     # abre http://localhost:4321 y se actualiza solo al guardar
-npm run build   # genera el sitio final en dist/
-npm run preview # mira dist/ como se va a ver publicado
-```
+## Cómo levantarlo
 
-## Los tres archivos que vas a tocar
-
-Todo lo que cambia seguido está separado del código:
-
-| Archivo | Qué tiene |
-|---|---|
-| `src/data/config.js` | WhatsApp, Instagram, ciudad, formas de pago, envíos, dominio |
-| `src/data/productos.js` | Los productos con su precio y descripción |
-| `src/data/categorias.js` | Las categorías del catálogo |
-
-### Cambiar un precio
-
-Abrí `src/data/productos.js`, buscá el producto y cambiá el número de `precio`.
-Sin puntos ni símbolo: `precio: 12400`.
-
-### Agregar un producto
-
-Copiá un bloque existente y cambiale los datos. El `id` es lo que aparece en la
-dirección web, así que va sin acentos, sin eñes y sin espacios:
-`torno-portatil-35000`.
-
-### Poner el número de WhatsApp real
-
-En `src/data/config.js`, campo `whatsapp`. Con código de país, sin `+`, sin espacios
-ni guiones. Para Argentina: `54` + `9` + característica sin el 0 + número sin el 15.
-Ejemplo para un celular de Rosario: `5493411234567`.
-
-Después poné `whatsappPendiente: false`.
-
-### Sacar el aviso naranja de "datos de ejemplo"
-
-En `src/data/productos.js`, cambiá `export const EJEMPLO = true;` por `false`.
-
-### Agregar las fotos
-
-1. Guardá las imágenes en `public/productos/`, en cuadrado y con el mismo fondo.
-2. En cada producto agregá el nombre del archivo: `foto: "torno.jpg"`.
-
-Mientras no haya foto, el sitio muestra el color del producto o la marca, y una
-etiqueta de "Foto pendiente". No se ve roto.
-
-## Cómo está armado
+No alcanza con hacer doble clic en el HTML: los archivos `.jsx` se cargan por
+red y el navegador los bloquea en `file://`. Hace falta un servidor:
 
 ```
-src/
-├── data/          los datos que cambian: productos, categorías, contacto
-├── styles/        global.css tiene todos los colores y tamaños del sistema visual
-├── components/    las piezas que se repiten (tarjeta, encabezado, pie)
-├── layouts/       Base.astro: el <head>, el SEO y lo que se ve al compartir
-└── pages/         una carpeta = una dirección del sitio
-    ├── index.astro              /
-    ├── catalogo/index.astro     /catalogo
-    ├── catalogo/[categoria]     /catalogo/esmaltes, /catalogo/geles...
-    ├── producto/[id]            una página por cada producto
-    ├── como-comprar.astro       /como-comprar
-    ├── contacto.astro           /contacto
-    └── 404.astro                página de error
+npm install     # la primera vez
+npm run dev     # levanta el sitio igual que en producción
 ```
 
-Los archivos entre corchetes generan varias páginas de una: `[id].astro` produce las
-30 fichas de producto, una por cada entrada de `productos.js`.
+Si preferís la extensión *Live Server* de VS Code, andá a `public/index.html`
+y abrila con clic derecho → "Open with Live Server".
 
-## Reglas del sistema visual
+## Cómo publicar
 
-Están todas en `src/styles/global.css`, pero hay una que no se puede romper:
+```
+npm run deploy
+```
 
-**El rosa nude (`#E2C2B9`) es un fondo, nunca una tinta.** Sobre blanco tiene 1,7 a 1
-de contraste y no se lee. Todo lo que se apoye sobre nude va en negro (11,4 a 1). Para
-texto rosado legible existe `--nude-600` (`#8A5C4E`, 5,6 a 1).
+Sube el contenido de `public/` a Cloudflare. La primera vez pide autorizar la
+cuenta con `npx wrangler login`.
 
-Playfair Display va solo en títulos, nombres de producto y precios. Inter va en todo
-lo demás.
+## Archivos
 
-## Publicar
+Todo lo que se publica vive en `public/`. Lo de afuera es configuración.
 
-`npm run build` deja el sitio listo en `dist/`. Esa carpeta es el sitio completo.
+### HTML
+- `public/index.html` — armazón: carga estilos y scripts, monta la app, y
+  guarda el estado general (ruta actual, carrito, búsqueda, datos del
+  checkout). Acá están el header, la barra de tabs móvil y el panel de Tweaks.
 
-- **Hostinger u otro hosting común:** subir el contenido de `dist/` por FTP.
-- **Cloudflare Pages o Netlify:** conectar el repositorio. Comando de compilación
-  `npm run build`, carpeta de salida `dist`.
+### CSS
+- `public/tienda/tienda.css` — todos los estilos de la tienda: header, hero,
+  tarjetas de producto, carrito, checkout y los breakpoints responsive.
+- `public/tokens/colors.css`, `typography.css`, `layout.css`, `effects.css`,
+  `theme-dark.css` — variables del sistema de diseño GEA (paleta nude,
+  tipografías, espaciados, sombras, tema oscuro).
+- `public/base/reset.css`, `public/base/utilities.css` — normalización y utilidades.
+- `public/styles.css` — importa lo anterior.
 
-Antes de publicar, cambiá `sitio` en `src/data/config.js` por el dominio real: de ahí
-salen el mapa del sitio y los enlaces que se ven al compartir.
+### JavaScript
+- `public/tienda/datos.js` — **JS puro**: productos, categorías, familias de
+  tonos, precios, zonas y costos de envío, y la función de búsqueda. Es el
+  archivo que más vas a tocar.
+- `public/tienda/ui.jsx` — componentes reusables: íconos, marca, botones,
+  fotos, tarjeta de producto, indicador de stock, acordeón, pie.
+- `public/tienda/pantallas-tienda.jsx` — pantallas de inicio, catálogo,
+  búsqueda y ficha de producto.
+- `public/tienda/pantallas-pedido.jsx` — carrito, checkout, confirmación,
+  ayuda y contacto.
+- `public/tweaks-panel.jsx`, `public/ios-frame.jsx` — panel de opciones de
+  diseño y marco de celular. Son de prototipado: se sacan en producción.
 
-## Pendientes
+Los `.jsx` son JavaScript con sintaxis JSX (marcado dentro del JS), traducido
+en el navegador por Babel. Podés escribir JS normal adentro: funciones,
+`fetch`, `localStorage`, etc.
 
-- [ ] Número de WhatsApp real
-- [ ] Usuario de Instagram
-- [ ] Ciudad, y dirección si hay local
-- [ ] Formas de pago
-- [ ] Condiciones de envío
-- [ ] Los 30 productos reales
-- [ ] Fotos de producto
-- [ ] Imagen `public/og.png` (1200×630) para cuando se comparte el enlace
+### Imágenes
+- `public/tienda/img/` — fotos de producto y de las secciones.
+
+## Dónde agregar cosas
+
+| Querés… | Archivo |
+| --- | --- |
+| Sumar o editar un producto | `public/tienda/datos.js` (array `PRODUCTOS`) |
+| Cambiar precios o envíos | `public/tienda/datos.js` (`ENVIO`, `costoEnvio`) |
+| Nueva sección en el inicio | `public/tienda/pantallas-tienda.jsx` + estilos en `public/tienda/tienda.css` |
+| Cambiar el carrito o el checkout | `public/tienda/pantallas-pedido.jsx` |
+| Colores o tipografías | `public/tokens/colors.css`, `public/tokens/typography.css` |
+| Lógica nueva (cupones, descuentos) | función en `public/tienda/datos.js`, llamada desde la pantalla |
+
+## Estado actual
+
+Prototipo funcional: catálogo, búsqueda, ficha, carrito con tonos y
+cantidades, checkout y confirmación. El pedido se cierra por WhatsApp. **No**
+hay pagos online, stock real ni backend — el carrito se guarda en
+`localStorage` del navegador.
+
+Datos pendientes de confirmar con el cliente, en `public/tienda/datos.js`
+(constante `NEGOCIO`): número de WhatsApp, usuario de Instagram, ciudad y
+horarios. Hoy tienen valores de relleno.
+
+## Para pasar a producción
+
+Dos caminos: migrar el diseño a una plataforma (Tiendanube, Shopify,
+WooCommerce), o pasar estos archivos a un proyecto Vite + React con pasarela
+de pago y base de datos. El CSS y los componentes se reutilizan casi tal cual
+en el segundo caso.

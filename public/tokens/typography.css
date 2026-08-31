@@ -1,0 +1,35 @@
+/* Dos familias, sin excepciones: Playfair en títulos, nombres de producto y
+   precios; Inter en todo lo demás. */
+:root{
+  --serif:"Playfair Display", Georgia, "Times New Roman", serif; /* @kind font */
+  --sans:Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; /* @kind font */
+  --font-display:var(--serif);
+  --font-body:var(--sans);
+
+  --text-base:16px;
+  --leading-body:1.6;
+  --leading-title:1.2;
+
+  /* escala en rem, tal como aparece en el código fuente */
+  --fs-eyebrow-xs:.55rem;   /* etiqueta "Foto pendiente" */
+  --fs-eyebrow:.6rem;       /* categoría en tarjeta */
+  --fs-label:.66rem;        /* dt, h2 de pie, cuenta */
+  --fs-btn:.74rem;
+  --fs-btn-sm:.67rem;       /* botón dentro de tarjeta */
+  --fs-nav:.76rem;
+  --fs-meta:.78rem;
+  --fs-count:.82rem;
+  --fs-small:.88rem;
+  --fs-body:1rem;
+  --fs-card-title:1rem;
+  --fs-price-card:1.2rem;
+  --fs-section:1.5rem;
+  --fs-price-ficha:2rem;
+
+  /* letter-spacing: la marca respira, las etiquetas gritan bajito */
+  --track-btn:.13em;
+  --track-eyebrow:.16em;
+  --track-label:.18em;
+  --track-marca-g:.18em;
+  --track-marca-i:.42em;
+}

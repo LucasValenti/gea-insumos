@@ -1,0 +1,4 @@
+/* Las dos familias del sistema. El sitio original las carga desde Google Fonts
+   (link en src/layouts/Base.astro) — no hay binarios de fuente en el repo,
+   así que acá se mantiene la misma fuente de origen. */
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap");

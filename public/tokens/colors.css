@@ -1,0 +1,41 @@
+/* Colores del sistema. Valores exactos de src/styles/global.css. */
+:root{
+  /* neutros, con una pizca del nude de marca */
+  --paper:#FAF8F7;
+  --surface:#FFFFFF;
+  --sunk:#F3EEEC;
+  --hairline:#E4DBD7;
+  --border:#D6CBC6;
+  --ink:#111111;
+  --ink-soft:#6E6663;
+  --ink-faint:#948B87;
+
+  /* escala derivada del nude de marca */
+  --nude-50:#FAF3F1;
+  --nude-100:#F4E7E3;
+  --nude-200:#E2C2B9;  /* color de marca — SOLO fondo */
+  --nude-300:#CFA79C;
+  --nude-400:#B8887B;
+  --nude-600:#8A5C4E;  /* único nude legible como texto */
+
+  /* aviso de datos de ejemplo / estado provisorio */
+  --demo-bg:#FBF2E7;
+  --demo-rule:#D9AE79;
+  --demo-ink:#7A5622;
+
+  /* alias semánticos */
+  --text-body:var(--ink);
+  --text-muted:var(--ink-soft);
+  --text-faint:var(--ink-faint);
+  --text-nude:var(--nude-600);
+  --surface-page:var(--paper);
+  --surface-card:var(--surface);
+  --surface-sunk:var(--sunk);
+  --surface-brand:var(--nude-200);
+  --surface-brand-soft:var(--nude-50);
+  --on-brand:#111111;
+  --rule-soft:var(--hairline);
+  --rule-strong:var(--border);
+  --accent-line:var(--nude-200);
+  --focus-ring:var(--nude-400);
+}

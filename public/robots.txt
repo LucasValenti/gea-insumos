@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://geainsumos.com.ar/sitemap-index.xml

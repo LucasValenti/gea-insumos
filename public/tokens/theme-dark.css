@@ -1,0 +1,32 @@
+/* Modo oscuro. El nude de marca (--nude-200) NO cambia: es la constante de la
+   marca. Lo que cambia es todo lo que lo rodea.
+   Los valores viven en [data-theme="dark"]; la media query solo delega. */
+:root[data-theme="dark"]{
+  --paper:#121110;
+  --surface:#1A1817;
+  --sunk:#221F1E;
+  --hairline:#2E2A28;
+  --border:#3A3533;
+  --ink:#F5F1EF;
+  --ink-soft:#A79E9A;
+  --ink-faint:#7C7470;
+  --nude-50:#241D1B;
+  --nude-100:#2E2523;
+  --nude-200:#E2C2B9;
+  --nude-300:#CFA79C;
+  --nude-400:#C89A8C;
+  --nude-600:#E0B6A8;
+  --demo-bg:#2A2318;
+  --demo-rule:#8A6836;
+  --demo-ink:#D9B87E;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 34px -18px rgba(0,0,0,.8);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#121110;--surface:#1A1817;--sunk:#221F1E;--hairline:#2E2A28;--border:#3A3533;
+    --ink:#F5F1EF;--ink-soft:#A79E9A;--ink-faint:#7C7470;
+    --nude-50:#241D1B;--nude-100:#2E2523;--nude-200:#E2C2B9;--nude-300:#CFA79C;--nude-400:#C89A8C;--nude-600:#E0B6A8;
+    --demo-bg:#2A2318;--demo-rule:#8A6836;--demo-ink:#D9B87E;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 34px -18px rgba(0,0,0,.8);
+  }
+}
