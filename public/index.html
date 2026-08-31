@@ -51,9 +51,29 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 const LS = "gea_tienda_v1";
 const cargar = () => { try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch (e) { return {}; } };
 
+/* Lo guardado puede venir de una versión anterior del catálogo. Si un producto
+   o un tono ya no existe, prod(it.id).precio tiraba TypeError y la tienda
+   quedaba en blanco, sin forma de salir salvo borrar el localStorage a mano. */
+const sanear = (g) => ({
+  carrito: (Array.isArray(g.carrito) ? g.carrito : []).filter((it) => {
+    const p = it && prod(it.id);
+    if (!p || !(it.n > 0)) return false;
+    return !it.tono || (p.tonos || []).some((x) => x.nombre === it.tono);
+  }),
+  datos: g.datos && typeof g.datos === "object" ? g.datos : null,
+});
+
+/* Número legible y ordenable por fecha. El azar solo desempata dentro del
+   mismo día: 1200 + random(800) se repetía entre clientas distintas. */
+const nroPedido = () => {
+  const d = new Date();
+  const ymd = String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0");
+  return "#" + ymd + "-" + String(100 + Math.floor(Math.random() * 900));
+};
+
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
-  const guardado = React.useRef(cargar());
+  const guardado = React.useRef(sanear(cargar()));
   const [ruta, setRuta] = React.useState({ v: "inicio" });
   const [carrito, setCarrito] = React.useState(guardado.current.carrito || []);
   const [q, setQ] = React.useState("");
@@ -61,7 +81,11 @@ function App() {
   const [toast, setToast] = React.useState(null);
   const [pedido, setPedido] = React.useState(null);
   const [capa, setCapa] = React.useState(null);
-  const [datos, setDatos] = React.useState(guardado.current.datos || { nombre: "", tel: "", gabinete: "", envio: "domicilio", zona: "", direccion: "", cp: "", pago: "mp", nota: "" });
+  /* Identidad estable: con la flecha inline, el guard "n &&" se comía la llamada
+     de desmontaje y capa quedaba apuntando a un nodo muerto al volver de la
+     vista móvil a escritorio; las hojas y el toast dejaban de verse. */
+  const capaRef = React.useCallback((n) => setCapa(n), []);
+  const [datos, setDatos] = React.useState(guardado.current.datos || { nombre: "", tel: "", gabinete: "", envio: "domicilio", zona: "", direccion: "", cp: "", transporte: "", pago: "mp", nota: "" });
   const cont = React.useRef(null);
   const sent = React.useRef(null);
   const [pegado, setPegado] = React.useState(false);
@@ -100,15 +124,28 @@ function App() {
   React.useEffect(() => { if (ruta.v === "buscar") setBusca(true); }, [ruta.v]);
   const unidades = carrito.reduce((a, i) => a + i.n, 0);
 
+  /* Lo que realmente entra: el stock del tono, descontando lo que ya cargó de
+     los otros tonos del mismo producto. Antes cada tono se acotaba por su
+     cuenta, así que tres tonos de 3 dejaban armar 9 de un producto con 3. */
+  const cupo = (c, p, tono) => {
+    const otros = c.reduce((a, x) => a + (x.id === p.id && x.tono !== tono ? x.n : 0), 0);
+    return Math.max(0, Math.min(stockDe(p, tono), p.stock - otros));
+  };
+
   const agregar = (p, tono = null, n = 1) => {
-    if (p.tonos && tono === null) { setHoja(p); return; }
+    if (p.tonos && tono == null) { setHoja(p); return; }
+    const i = carrito.findIndex((x) => x.id === p.id && x.tono === tono);
+    const previo = i >= 0 ? carrito[i].n : 0;
+    const nuevo = Math.min(cupo(carrito, p, tono), previo + n);
+    const etiqueta = `${p.nombre}${tono ? ` · ${tono}` : ""}`;
+    /* Antes el toast decía "Agregado" aun cuando el tope de stock impedía sumar. */
+    if (nuevo <= previo) { setToast({ txt: `Ya cargaste todo el stock disponible de ${etiqueta}` }); return; }
     setCarrito((c) => {
-      const i = c.findIndex((x) => x.id === p.id && x.tono === tono);
-      const max = stockDe(p, tono);
-      if (i >= 0) { const cp = [...c]; cp[i] = { ...cp[i], n: Math.min(max, cp[i].n + n) }; return cp; }
-      return [...c, { id: p.id, tono, n: Math.min(max, n) }];
+      const j = c.findIndex((x) => x.id === p.id && x.tono === tono);
+      if (j >= 0) { const cp = [...c]; cp[j] = { ...cp[j], n: nuevo }; return cp; }
+      return [...c, { id: p.id, tono, n: nuevo }];
     });
-    setToast(`${p.nombre}${tono ? ` · ${tono}` : ""}`);
+    setToast({ txt: `Agregado: ${etiqueta}`, pedido: true });
   };
   React.useEffect(() => { if (!toast) return; const x = setTimeout(() => setToast(null), 2400); return () => clearTimeout(x); }, [toast]);
 
@@ -117,9 +154,13 @@ function App() {
   const enPedido = (id) => carrito.some((x) => x.id === id);
   const confirmar = () => {
     const sub = carrito.reduce((a, it) => a + prod(it.id).precio * it.n, 0);
-    const env = costoEnvio(datos, sub) || 0;
-    setPedido({ nro: "#" + String(1200 + Math.floor(Math.random() * 800)), items: carrito, sub, envio: env, total: sub + env, datos });
-    setCarrito([]); ir({ v: "ok" });
+    /* null = no se puede calcular todavía (zona sin tarifa). No lo aplastamos a 0:
+       el mensaje de WhatsApp anunciaba "sin cargo" un envío que falta cotizar. */
+    const env = costoEnvio(datos, sub);
+    setPedido({ nro: nroPedido(), items: carrito, sub, envio: env, total: sub + (env || 0), datos });
+    /* El carrito NO se vacía acá: el pedido todavía no salió. Se vacía recién
+       cuando tocan "Enviar por WhatsApp" en la confirmación. */
+    ir({ v: "ok" });
   };
 
   const P = {
@@ -129,7 +170,7 @@ function App() {
     ficha: <window.Ficha ir={ir} ruta={ruta} agregar={agregar} direccion={t.direccion} />,
     carrito: <window.Carrito ir={ir} carrito={carrito} setCant={setCant} quitar={quitar} agregar={agregar} enPedido={enPedido} />,
     checkout: <window.Checkout ir={ir} carrito={carrito} datos={datos} setDatos={setDatos} confirmar={confirmar} />,
-    ok: <window.Confirmacion ir={ir} pedido={pedido} guardarHabituales={() => setToast("Guardado como pedido habitual")} />,
+    ok: <window.Confirmacion ir={ir} pedido={pedido} vaciar={() => setCarrito([])} guardarHabituales={() => setToast({ txt: "Guardado como pedido habitual" })} />,
     ayuda: <window.Ayuda ir={ir} />,
     contacto: <window.Contacto ir={ir} />,
   }[ruta.v];
@@ -153,7 +194,7 @@ function App() {
     <div className={"ap" + (esc ? " esc" : " movil")} ref={cont} data-btn={t.boton === "cápsula" ? "capsula" : "recto"}
       data-mov={expr ? "expresivo" : "sobrio"} data-barras={t.barras === "vidrio" ? "vidrio" : "opaco"} data-pegado={pegado}>
       {!esc && <div className="tapa"></div>}
-      <div className="aviso">Prototipo con catálogo de ejemplo · el pedido se cierra por WhatsApp</div>
+      <aside className="aviso" aria-label="Aviso del prototipo">Prototipo con catálogo de ejemplo · el pedido se cierra por WhatsApp</aside>
       <div ref={sent} className="sentinela" aria-hidden="true"></div>
       <header className="barra-top">
         <div className="barra-top-in">
@@ -173,7 +214,7 @@ function App() {
         {!esc && busca && campoBusca}
       </header>
 
-      <div className={"vista " + entra} key={ruta.v} style={{ "--animate-duration": expr ? ".52s" : ".38s" }}>{P}</div>
+      <main className={"vista " + entra} key={ruta.v} style={{ "--animate-duration": expr ? ".52s" : ".38s" }}>{P}</main>
 
       {!esc && (
         <nav className="barra-bot" aria-label="Secciones">
@@ -191,8 +232,8 @@ function App() {
       {hoja && <SelectorTono p={hoja} onAgregar={agregar} onCerrar={() => setHoja(null)} destino={capa} />}
       {toast && ReactDOM.createPortal(
         <div className={"toast animate__animated " + (expr ? "animate__fadeInUp" : "animate__fadeIn")} role="status">
-          <span>Agregado: {toast}</span>
-          <button onClick={() => { setToast(null); ir({ v: "carrito" }); }}>Ver pedido</button>
+          <span>{toast.txt}</span>
+          {toast.pedido && <button onClick={() => { setToast(null); ir({ v: "carrito" }); }}>Ver pedido</button>}
         </div>, capa || document.body)}
     </div>
   );
@@ -203,7 +244,7 @@ function App() {
         <div className="escenario">
           <div className="enmarcado" style={{ position: "relative" }}>
             <window.IOSDevice width={402} height={860}>{app}</window.IOSDevice>
-            <div className="capa" ref={(n) => { if (n && n !== capa) setCapa(n); }}></div>
+            <div className="capa" ref={capaRef}></div>
           </div>
         </div>
       )}

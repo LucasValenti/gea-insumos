@@ -93,3 +93,23 @@ Dos caminos: migrar el diseño a una plataforma (Tiendanube, Shopify,
 WooCommerce), o pasar estos archivos a un proyecto Vite + React con pasarela
 de pago y base de datos. El CSS y los componentes se reutilizan casi tal cual
 en el segundo caso.
+
+## Herramientas de auditoría
+
+`herramientas/` no se publica: son scripts para revisar el sitio con un
+navegador de verdad (Playwright + axe-core). Necesitan el servidor de pruebas
+levantado en otra terminal:
+
+```
+node herramientas/servidor.mjs        # sirve public/ en el puerto 8788
+node herramientas/auditoria.mjs       # 7 variantes: anchos, temas y direcciones
+node herramientas/flujo.mjs           # recorre la compra entera y audita cada pantalla
+node herramientas/medidas.mjs         # texto chico y áreas táctiles menores a 44px
+```
+
+`auditoria.mjs` reescribe el bloque EDITMODE al vuelo para fijar cada variante,
+así que no hace falta tocar `index.html` para probar tema oscuro o vista móvil.
+Las capturas quedan en la carpeta temporal que imprime al terminar.
+
+`parche.mjs` aplica reemplazos literales sobre un archivo y aborta si el texto
+no aparece exactamente una vez, para no editar a ciegas.

@@ -56,7 +56,7 @@ function Foto({ p, tono, className = "foto", conPendiente = true }) {
   return (
     <div className={className}>
       {c ? <span className="tono-punto" style={{ background: c }}></span>
-        : <span style={{ color: "var(--nude-300)" }}><Marca tamano="chico" /></span>}
+        : <span aria-hidden="true" style={{ color: "var(--nude-300)" }}><Marca tamano="chico" /></span>}
       {conPendiente && <span className="pend">Foto pendiente</span>}
     </div>
   );
@@ -187,13 +187,13 @@ function Pie({ ir }) {
   return (
     <footer className="pie">
       <div><Marca colorInsumos="var(--nude-600)" /><p style={{ margin: ".9rem 0 0", fontSize: ".84rem", color: "var(--ink-soft)", maxWidth: "22rem" }}>Insumos de manicuría para profesionales. Armás el pedido acá y lo cerramos por WhatsApp.</p></div>
-      <div><h3>Catálogo</h3><div style={{ display: "grid", gap: ".35rem" }}>{CATEGORIAS.slice(0, 5).map((c) => <a key={c.id} href="#" onClick={(e) => { e.preventDefault(); ir({ v: "catalogo", cat: c.id }); }}>{c.nombre}</a>)}</div></div>
-      <div><h3>Ayuda</h3><div style={{ display: "grid", gap: ".35rem" }}>
+      <div><h2>Catálogo</h2><div style={{ display: "grid", gap: ".35rem" }}>{CATEGORIAS.slice(0, 5).map((c) => <a key={c.id} href="#" onClick={(e) => { e.preventDefault(); ir({ v: "catalogo", cat: c.id }); }}>{c.nombre}</a>)}</div></div>
+      <div><h2>Ayuda</h2><div style={{ display: "grid", gap: ".35rem" }}>
         <a href="#" onClick={(e) => { e.preventDefault(); ir({ v: "ayuda" }); }}>Cómo comprar</a>
         <a href="#" onClick={(e) => { e.preventDefault(); ir({ v: "ayuda" }); }}>Envíos y pagos</a>
         <a href="#" onClick={(e) => { e.preventDefault(); ir({ v: "contacto" }); }}>Contacto</a>
       </div></div>
-      <div><h3>Escribinos</h3><div style={{ display: "grid", gap: ".35rem" }}>
+      <div><h2>Escribinos</h2><div style={{ display: "grid", gap: ".35rem" }}>
         <a href={`https://wa.me/${NEGOCIO.whatsapp}`} target="_blank" rel="noopener" style={{ display: "flex", gap: ".4rem", alignItems: "center" }}><I n="wa" size="15px" /> WhatsApp</a>
         <a href={NEGOCIO.instagram} target="_blank" rel="noopener" style={{ display: "flex", gap: ".4rem", alignItems: "center" }}><I n="ig" size="15px" /> {NEGOCIO.instagramUsuario}</a>
       </div></div>

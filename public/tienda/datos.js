@@ -169,6 +169,12 @@ const costoEnvio = (datos, sub) => {
   return sub >= ENVIO.gratisDesde ? 0 : z.costo;
 };
 
+/* El stock del producto no cerraba con la suma de sus tonos en 4 de los 6
+   productos con tonos (semi-15-basicos decía 24 con 57 repartidos en tonos).
+   Se deriva de los tonos para que haya una sola fuente de verdad y no se
+   vuelva a desincronizar cuando se edite un tono a mano. */
+PRODUCTOS.forEach((p) => { if (p.tonos) p.stock = p.tonos.reduce((a, t) => a + t.stock, 0); });
+
 const DESTACADOS = ["kit-esculpidas","semi-15-basicos","coleccion-starlight","torno-35000","polygel-nude","soft-gel-tips","cabina-48w","removedor-500"];
 const HABITUALES = ["removedor-500","aluminio-x100","lima-100-180","top-coat-espejo","guantes-nitrilo","primer-acido"];
 
@@ -179,10 +185,20 @@ const nombreSub = (c, s) => ((cat(c).subs || []).find((x) => x.id === s) || {}).
 const stockDe = (p, tono) => (tono ? (p.tonos.find((x) => x.nombre === tono) || {}).stock ?? 0 : p.stock);
 const familiasDe = (p) => [...new Set((p.tonos || []).map((x) => x.fam))];
 const porFamilia = (fam) => PRODUCTOS.filter((p) => familiasDe(p).includes(fam));
+/* En el celular casi nadie escribe "acrílico" ni "uñas" con tilde, y el includes
+   crudo devolvía cero resultados: "acrilico" 0, "unas" 0, "construccion" 0.
+   NFD separa la tilde de la letra y el filtro por código saca las marcas
+   combinantes (768-879), que también convierte la ñ en n. */
+const sinTildes = (s) => String(s).normalize("NFD").split("")
+  .filter((c) => c.charCodeAt(0) < 768 || c.charCodeAt(0) > 879).join("").toLowerCase();
+/* Por palabras y no por frase entera, para que "gel nude" encuentre el polygel. */
 const buscar = (q) => {
-  const s = q.trim().toLowerCase();
-  if (!s) return [];
-  return PRODUCTOS.filter((p) => (p.nombre + " " + p.marca + " " + cat(p.cat).nombre + " " + (p.tonos || []).map((x) => x.nombre).join(" ")).toLowerCase().includes(s));
+  const palabras = sinTildes(q).trim().split(" ").filter(Boolean);
+  if (!palabras.length) return [];
+  return PRODUCTOS.filter((p) => {
+    const heno = sinTildes(p.nombre + " " + p.marca + " " + cat(p.cat).nombre + " " + (p.tonos || []).map((x) => x.nombre).join(" "));
+    return palabras.every((w) => heno.includes(w));
+  });
 };
 return { NEGOCIO, CATEGORIAS, FAMILIAS, PRODUCTOS, DESTACADOS, HABITUALES, ENVIO, zonaDe, costoEnvio, precio, cat, prod, nombreSub, stockDe, familiasDe, porFamilia, buscar };
 })();

@@ -8,7 +8,7 @@
   --border:#D6CBC6;
   --ink:#111111;
   --ink-soft:#6E6663;
-  --ink-faint:#948B87;
+  --ink-faint:#766D69;  /* 4.77:1 sobre --paper. Antes #948B87 daba 3.15 y axe lo marcaba */
 
   /* escala derivada del nude de marca */
   --nude-50:#FAF3F1;

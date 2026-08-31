@@ -176,7 +176,7 @@ button{color:inherit}
 .nota{background:var(--nude-50);border:1px solid var(--nude-100);border-radius:var(--radio);padding:.8rem .9rem;font-size:.82rem;color:var(--ink-soft)}
 .pie{background:var(--surface);border-top:1px solid var(--hairline);padding:2rem 1rem 2.5rem;display:grid;gap:1.25rem;margin-top:2.5rem}
 .pie a{color:var(--ink-soft);font-size:.86rem}
-.pie h3{margin:0 0 .5rem;font-size:var(--fs-label);letter-spacing:var(--track-label);text-transform:uppercase;color:var(--ink-faint);font-weight:400}
+.pie h2{margin:0 0 .5rem;font-size:var(--fs-label);letter-spacing:var(--track-label);text-transform:uppercase;color:var(--ink-faint);font-weight:400}
 
 /* ---- tonos: grilla visual ---- */
 .tonos-gr{display:grid;grid-template-columns:repeat(auto-fill,minmax(4.4rem,1fr));gap:.55rem}

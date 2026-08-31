@@ -39,7 +39,7 @@
     const etiqueta = !datos ? "Se calcula en el checkout" :
     datos.envio === "retiro" ? "Retiro en local · sin cargo" :
     datos.envio === "transporte" ? "Lo abonás al transporte" :
-    env === null ? "Elegí la zona para calcular" :
+    env === null ? (z ? "Se cotiza por chat" : "Elegí la zona para calcular") :
     env === 0 ? "Sin cargo" : null;
     const falta = env === null || env === 0 ? null : ENV.gratisDesde - sub;
     const t = sub + (env || 0);
@@ -114,7 +114,7 @@
           </div>
         </div>
 
-        <aside className="carro-lado">
+        <aside className="carro-lado" aria-label="Resumen del pedido">
           <div className="carro-tarjeta">
             <span className="lbl">Resumen</span>
             <Resumen carrito={carrito} />
@@ -144,8 +144,23 @@
   function Checkout({ ir, carrito, datos, setDatos, confirmar }) {
     const sub = carrito.reduce((a, it) => a + prodP(it.id).precio * it.n, 0);
     const set = (k) => (e) => setDatos({ ...datos, [k]: e.target.value });
-    const env = costoEnvio(datos, sub) || 0;
-    const falta = !datos.nombre.trim() || !datos.tel.trim() || datos.envio === "domicilio" && (!datos.direccion.trim() || !datos.zona);
+    /* Sin aplastar el null: la zona "No sé en qué zona entro" no tiene tarifa y
+       antes se cobraba como envío gratis. */
+    const env = costoEnvio(datos, sub);
+    const digitos = (s) => (String(s || "").match(/[0-9]/g) || []).length;
+    /* Una lista en vez de un booleano: el aviso nombra lo que falta de verdad,
+       en vez de repetir siempre los cuatro campos. Y el mínimo mayorista, que
+       se anunciaba en tres pantallas, por fin frena el pedido. */
+    const faltan = [
+      !datos.nombre.trim() && "tu nombre",
+      digitos(datos.tel) < 8 && "un WhatsApp válido",
+      datos.envio === "domicilio" && !datos.zona && "la zona de envío",
+      datos.envio === "domicilio" && !datos.direccion.trim() && "la dirección",
+      datos.envio === "transporte" && !(datos.transporte || "").trim() && "el transporte",
+      sub < NEG.minimo && `llegar al mínimo mayorista de ${$$(NEG.minimo)} (faltan ${$$(NEG.minimo - sub)})`,
+    ].filter(Boolean);
+    const falta = faltan.length > 0;
+    const aviso = "Falta " + (faltan.length > 1 ? faltan.slice(0, -1).join(", ") + " y " + faltan[faltan.length - 1] : faltan[0]) + ".";
     return (
       <>
       <div className="pasos"><b>1 · Datos</b><i></i>2 · Envío<i></i>3 · Pago</div>
@@ -178,7 +193,7 @@
             </div>
             }
           {datos.envio === "transporte" &&
-            <div style={{ marginTop: "1rem" }}><Campo label="Transporte" ayuda="Nombre de la empresa y sucursal."><input value={datos.direccion} onChange={set("direccion")} placeholder="Vía Cargo · Sucursal Centro" /></Campo></div>
+            <div style={{ marginTop: "1rem" }}><Campo label="Transporte" ayuda="Nombre de la empresa y sucursal."><input value={datos.transporte || ""} onChange={set("transporte")} placeholder="Vía Cargo · Sucursal Centro" /></Campo></div>
             }
 
           <h2 className="serif" style={{ margin: "1.8rem 0 .9rem", fontSize: "1.25rem" }}>Pago</h2>
@@ -191,7 +206,7 @@
           <div style={{ marginTop: "1.6rem" }}><Campo label="Nota para el pedido" ayuda="Opcional: cambios de tono, urgencias, aclaraciones."><textarea rows="3" value={datos.nota} onChange={set("nota")} placeholder="Si no hay Rojo Clásico, mandá Rojo Cereza."></textarea></Campo></div>
         </div>
 
-        <aside className="carro-lado">
+        <aside className="carro-lado" aria-label="Resumen del pedido">
           <div className="carro-tarjeta">
             <span className="lbl">Resumen</span>
             <Resumen carrito={carrito} datos={datos} />
@@ -200,7 +215,7 @@
               {carrito.map((it) => <li key={it.id + (it.tono || "")}><span>{it.n} × {prodP(it.id).nombre}{it.tono ? ` · ${it.tono}` : ""}</span><span className="num">{$$(prodP(it.id).precio * it.n)}</span></li>)}
             </ul>
             <div className="carro-cta">
-              {falta && <span className="carro-aviso">Completá nombre, WhatsApp{datos.envio === "domicilio" ? ", zona y dirección" : ""} para continuar.</span>}
+              {falta && <span className="carro-aviso">{aviso}</span>}
               <Boton variante="primary" tamano="lg" style={{ width: "100%", opacity: falta ? .45 : 1 }} disabled={falta} onClick={() => !falta && confirmar()}>
                 <I n="wa" size="16px" /> Enviar el pedido
               </Boton>
@@ -209,9 +224,9 @@
         </aside>
       </div>
       <div className="accion accion-checkout">
-        {falta && <span style={{ fontSize: ".76rem", color: "var(--ink-faint)" }}>Completá nombre, WhatsApp{datos.envio === "domicilio" ? ", zona y dirección" : ""} para continuar.</span>}
+        {falta && <span style={{ fontSize: ".76rem", color: "var(--ink-faint)" }}>{aviso}</span>}
         <Boton variante="primary" tamano="lg" disabled={falta} style={{ opacity: falta ? .45 : 1 }} onClick={() => !falta && confirmar()}>
-          <I n="wa" size="16px" /> Enviar el pedido · {$$(sub + env)}
+          <I n="wa" size="16px" /> Enviar el pedido · {$$(sub + (env || 0))}{env == null && datos.zona ? " + envío" : ""}
         </Boton>
       </div>
       <Pie ir={ir} />
@@ -220,13 +235,23 @@
   }
 
   /* ===================== CONFIRMACIÓN ===================== */
-  function Confirmacion({ ir, pedido, guardarHabituales }) {
+  function Confirmacion({ ir, pedido, vaciar, guardarHabituales }) {
     if (!pedido) return <div className="vacio">No hay un pedido reciente.<Boton variante="primary" onClick={() => ir({ v: "inicio" })}>Ir al inicio</Boton></div>;
     const d = pedido.datos;
     const zEnv = zonaDe(d.zona);
     const entrega = d.envio === "domicilio" ? `envío a domicilio${zEnv ? ` (${zEnv.nombre})` : ""}` : d.envio === "retiro" ? "retiro en local" : "encomienda o transporte";
-    const lineaEnvio = d.envio !== "domicilio" ? "Envío: sin cargo" : pedido.envio ? `Envío: ${$$(pedido.envio)}` : "Envío: sin cargo (superó el mínimo)";
-    const texto = `${NEG.saludo}\n\n${pedido.items.map((it) => `• ${it.n} × ${prodP(it.id).nombre}${it.tono ? ` (${it.tono})` : ""} — ${$$(prodP(it.id).precio * it.n)}`).join("\n")}\n\nSubtotal: ${$$(pedido.sub != null ? pedido.sub : pedido.total)}\n${lineaEnvio}\nTotal: ${$$(pedido.total)}\nEntrega: ${entrega}\nPago: ${d.pago === "mp" ? "Mercado Pago" : "efectivo"}\nNombre: ${d.nombre}\nPedido ${pedido.nro}`;
+    /* Los tres casos que antes se fundían en "sin cargo": retiro, transporte y
+       zona sin tarifa (costoEnvio devuelve null, y el || 0 lo volvía gratis). */
+    const lineaEnvio = d.envio === "retiro" ? "Envío: retiro en el local, sin cargo"
+      : d.envio === "transporte" ? "Envío: por transporte, lo abona quien recibe"
+      : pedido.envio == null ? "Envío: A COTIZAR (esa zona no tiene tarifa cargada)"
+      : pedido.envio === 0 ? `Envío: sin cargo (el pedido superó ${$$(ENV.gratisDesde)})`
+      : `Envío: ${$$(pedido.envio)}`;
+    /* El mensaje se lleva todo lo que el checkout pidió. Antes viajaban solo el
+       nombre y el total: GEA no recibía ni dirección ni teléfono para despachar. */
+    const entregaDetalle = d.envio === "domicilio" ? `\nDirección: ${d.direccion}${d.cp ? ` · ${d.cp}` : ""}`
+      : d.envio === "transporte" && d.transporte ? `\nTransporte: ${d.transporte}` : "";
+    const texto = `${NEG.saludo}\n\n${pedido.items.map((it) => `• ${it.n} × ${prodP(it.id).nombre}${it.tono ? ` (${it.tono})` : ""} — ${$$(prodP(it.id).precio * it.n)}`).join("\n")}\n\nSubtotal: ${$$(pedido.sub != null ? pedido.sub : pedido.total)}\n${lineaEnvio}\nTotal: ${$$(pedido.total)}${pedido.envio == null ? " + envío a cotizar" : ""}\nEntrega: ${entrega}${entregaDetalle}\nPago: ${d.pago === "mp" ? "Mercado Pago" : "efectivo"}\n\nNombre: ${d.nombre}${d.gabinete ? ` · ${d.gabinete}` : ""}\nWhatsApp: ${d.tel}${d.nota ? `\nNota: ${d.nota}` : ""}\nPedido ${pedido.nro}`;
     return (
       <>
       <div className="pad" style={{ paddingTop: "2rem", maxWidth: "34rem", marginInline: "auto" }}>
@@ -236,7 +261,7 @@
         <p className="num" style={{ margin: ".9rem 0 0", fontSize: ".8rem", color: "var(--ink-faint)" }}>Pedido {pedido.nro} · {pedido.items.reduce((a, i) => a + i.n, 0)} unidades · {$$(pedido.total)}</p>
 
         <div style={{ marginTop: "1.4rem" }}>
-          <Boton variante="primary" tamano="lg" ancho href={`https://wa.me/${NEG.whatsapp}?text=${encodeURIComponent(texto)}`} target="_blank" rel="noopener">
+          <Boton variante="primary" tamano="lg" ancho onClick={vaciar} href={`https://wa.me/${NEG.whatsapp}?text=${encodeURIComponent(texto)}`} target="_blank" rel="noopener">
             <I n="wa" size="17px" /> Enviar por WhatsApp
           </Boton>
         </div>

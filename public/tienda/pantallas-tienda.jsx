@@ -15,7 +15,7 @@
       {items.slice(0, compacto ? 4 : 6).map((p, i) =>
         <div className="repo-fila rev" key={p.id} style={{ "--i": i }}>
           <a href="#" className="mini" onClick={(e) => {e.preventDefault();ir({ v: "ficha", id: p.id });}} aria-label={p.nombre}>
-            {p.color || p.tonos ? <s style={{ background: p.color || p.tonos[0].hex }}></s> : <span style={{ color: "var(--nude-300)", fontSize: ".5rem" }}>GEA</span>}
+            {p.color || p.tonos ? <s style={{ background: p.color || p.tonos[0].hex }}></s> : <span aria-hidden="true" style={{ color: "var(--nude-300)", fontSize: ".5rem" }}>GEA</span>}
           </a>
           <span>
             <a href="#" className="repo-nom" style={{ display: "block" }} onClick={(e) => {e.preventDefault();ir({ v: "ficha", id: p.id });}}>{p.nombre}</a>
@@ -202,7 +202,7 @@
 
         <section style={{ background: "var(--surface)", borderBottom: "1px solid var(--hairline)", paddingBottom: ".4rem" }}>
           <div className="pad" style={{ paddingBlock: "1.1rem .3rem", display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "1rem" }}>
-            <span className="serif" style={{ fontSize: "1.25rem" }}>Reponé lo de siempre</span>
+            <h1 className="serif" style={{ fontSize: "1.25rem", margin: 0 }}>Reponé lo de siempre</h1>
             <button className="ver-mas" onClick={() => ir({ v: "catalogo" })}>Todo el catálogo</button>
           </div>
           <p className="pad" style={{ margin: "0 0 .8rem", fontSize: ".82rem", color: "var(--ink-soft)" }}>Lo que más pediste, listo para sumar de un toque.</p>
@@ -412,6 +412,9 @@
     const [tono, setTono] = React.useState(p.tonos ? (p.tonos.find((x) => x.stock > 0) || {}).nombre : null);
     const [n, setN] = React.useState(1);
     React.useEffect(() => {setTono(p.tonos ? (p.tonos.find((x) => x.stock > 0) || {}).nombre : null);setN(1);}, [p.id]);
+    /* Al cambiar de tono la cantidad quedaba en el valor viejo: el botón ofrecía
+       9 unidades y $ 111.600 de un tono que tenía 3 disponibles. */
+    React.useEffect(() => {setN((v) => Math.max(1, Math.min(v, stockDe(p, tono) || 1)));}, [tono]);
     const editorial = direccion === "editorial";
     const disp = stockDe(p, tono);
     const t = p.tonos && p.tonos.find((x) => x.nombre === tono);
