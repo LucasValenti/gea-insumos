@@ -338,7 +338,6 @@ button{color:inherit}
 .meta-envio.ok span{color:var(--ok)}
 .meta-envio.ok .meta-barra i{background:var(--ok)}
 /* la CTA existe una sola vez en cada régimen: tarjeta cuando hay columna lateral, barra fija cuando no */
-@media (min-width:981px){.ap.esc .accion-checkout{display:none}}
 @media (max-width:980px){
   .ap.esc .carro{grid-template-columns:minmax(0,1fr);gap:1.5rem}
   .ap.esc .checkout .carro-cta,.ap.esc .checkout .carro-tarjeta>.btn{display:none}
@@ -352,6 +351,10 @@ button{color:inherit}
 .ap.esc .accion-carro{display:none}
 .ap.esc .accion-total{justify-content:flex-start}
 .ap.esc .accion-carro .btn,.ap.esc .accion-checkout .btn{min-width:16rem;margin-left:auto}
+/* Va acá y no más arriba: la media query no suma especificidad, así que
+   puesta antes del display:flex de escritorio quedaba anulada y la barra
+   fija se veía duplicando la CTA de la tarjeta lateral. */
+@media (min-width:981px){.ap.esc .accion-checkout{display:none}}
 /* en móvil manda la barra fija: la tarjeta queda como resumen sin botón */
 .ap.movil .carro-cta,.ap.movil .carro-tarjeta>.btn{display:none}
 
