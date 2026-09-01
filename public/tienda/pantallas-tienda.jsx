@@ -1,7 +1,7 @@
 (() => {
   /* Pantallas de tienda: inicio (dos direcciones), catálogo, búsqueda y ficha. */
   const { PRODUCTOS: PR, CATEGORIAS: CATS, FAMILIAS, DESTACADOS, HABITUALES, NEGOCIO,
-    precio: $, cat: catDe, prod, nombreSub, stockDe, porFamilia, buscar } = window.T;
+    precio: $, cat: catDe, prod, nombreSub, stockDe, familiasDe, buscar } = window.T;
   const { I, Marca, Boton, Foto, Stock, Tarjeta, Paso, Acordeon, GrillaTonos, Pie } = window;
 
   const conteo = Object.fromEntries(CATS.map((c) => [c.id, PR.filter((p) => p.cat === c.id).length]));
@@ -317,18 +317,24 @@
     const [filtros, setFiltros] = React.useState(false);
     React.useEffect(() => {setC(ruta.cat || "todos");setSub(null);setFam(ruta.fam || null);}, [ruta.cat, ruta.fam, ruta.k]);
 
-    let lista = fam ? porFamilia(fam) : c === "todos" ? PR : PR.filter((p) => p.cat === c);
+    /* Antes elegir una familia descartaba la categoría por completo: la hoja
+       las presenta como dos filtros al lado, así que se esperan combinables. */
+    let lista = c === "todos" ? PR : PR.filter((p) => p.cat === c);
+    if (fam) lista = lista.filter((p) => familiasDe(p).includes(fam));
     if (sub) lista = lista.filter((p) => p.sub === sub);
     if (soloStock) lista = lista.filter((p) => p.stock > 0);
     lista = [...lista].sort((a, b) => orden === "menor" ? a.precio - b.precio : orden === "mayor" ? b.precio - a.precio : 0);
-    const subs = c !== "todos" && !fam ? catDe(c).subs || [] : [];
+    const subs = c !== "todos" ? catDe(c).subs || [] : [];
     const titulo = fam ? `Tonos ${FAMILIAS.find((f) => f.id === fam).nombre.toLowerCase()}` : c === "todos" ? "Catálogo completo" : catDe(c).nombre;
 
     return (
       <>
       <Rail>
-        <button className="chip" aria-pressed={c === "todos" && !fam} onClick={() => {setC("todos");setSub(null);setFam(null);}}>Todo<b>{PR.length}</b></button>
-        {CATS.map((x) => <button key={x.id} className="chip" aria-pressed={c === x.id && !fam} onClick={() => {setC(x.id);setSub(null);setFam(null);}}>{x.nombre}<b>{conteo[x.id]}</b></button>)}
+        {/* La categoría va en la ruta y no en estado local: así el botón atrás
+            de la ficha devuelve al catálogo filtrado, y no al catálogo entero.
+            El efecto de arriba sincroniza c, sub y fam desde la ruta. */}
+        <button className="chip" aria-pressed={c === "todos"} onClick={() => ir({ v: "catalogo" })}>Todo<b>{PR.length}</b></button>
+        {CATS.map((x) => <button key={x.id} className="chip" aria-pressed={c === x.id} onClick={() => ir({ v: "catalogo", cat: x.id })}>{x.nombre}<b>{conteo[x.id]}</b></button>)}
       </Rail>
       {subs.length > 0 &&
         <Rail>
@@ -511,9 +517,14 @@
         <div className="accion">
           <div className="fila">
             <Paso n={n} max={disp || 1} onCambiar={setN} />
-            <Boton variante="primary" tamano="lg" onClick={() => agregar(p, tono, n)} disabled={disp === 0}>
-              {disp === 0 ? "Sin stock · avisarme" : `Agregar al pedido · ${$(p.precio * n)}`}
-            </Boton>
+            {disp === 0
+              ? <Boton variante="ghost" tamano="lg" target="_blank" rel="noopener"
+                  href={`https://wa.me/${NEGOCIO.whatsapp}?text=${encodeURIComponent(`Hola GEA, me avisan cuando entre ${p.nombre}${tono ? ` en ${tono}` : ""}?`)}`}>
+                  Avisame cuando entre
+                </Boton>
+              : <Boton variante="primary" tamano="lg" onClick={() => agregar(p, tono, n)}>
+                  Agregar al pedido · {$(p.precio * n)}
+                </Boton>}
           </div>
         </div>
         }

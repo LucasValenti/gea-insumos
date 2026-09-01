@@ -128,7 +128,18 @@ function App() {
     window.scrollTo(0, 0);
   }, [ruta]);
 
-  const ir = (r) => setRuta(r);
+  /* Una posición de historial alcanza: volver desde la ficha te devuelve al
+     catálogo en la categoría donde estabas, en vez de tirarte siempre al
+     catálogo completo y perder el filtro. */
+  const anterior = React.useRef({ v: "inicio" });
+  const ir = (r) => { anterior.current = ruta; setRuta(r); };
+  const volver = () => {
+    const prev = anterior.current;
+    /* No registra: volver no debe generar historial nuevo, o el botón
+       rebotaría entre las dos últimas pantallas. */
+    setRuta(ruta.v === "checkout" ? { v: "carrito" }
+      : prev && prev.v !== ruta.v ? prev : { v: "catalogo" });
+  };
   const cerrarBusca = () => { setBusca(false); setQ(""); setRuta((r) => (r.v === "buscar" ? vuelta.current : r)); };
   const abrirBusca = () => {
     if (busca) { cerrarBusca(); return; }
@@ -221,7 +232,7 @@ function App() {
       <header className="barra-top">
         <div className="barra-top-in">
           {conAtras && !esc ? (
-            <button className="ico-btn" onClick={() => ir({ v: ruta.v === "checkout" ? "carrito" : "catalogo" })} aria-label="Volver"><I n="atras" /></button>
+            <button className="ico-btn" onClick={volver} aria-label="Volver"><I n="atras" /></button>
           ) : (
             <a href="#" onClick={(e) => { e.preventDefault(); ir({ v: "inicio" }); }} aria-label="GEA Insumos, ir al inicio"><Marca tamano={esc ? "medio" : "chico"} colorInsumos="var(--nude-600)" /></a>
           )}

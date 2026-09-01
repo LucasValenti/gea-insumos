@@ -1,6 +1,10 @@
 (() => {
 /* Primitivos compartidos de la tienda. Todo apoyado en tokens del sistema. */
-const { PRODUCTOS, CATEGORIAS, precio, cat, stockDe } = window.T;
+const { PRODUCTOS, CATEGORIAS, NEGOCIO, precio, cat, stockDe } = window.T;
+
+/* Pedido de aviso de reposición, con el producto ya escrito en el mensaje. */
+const avisoWhatsapp = (p) => "https://wa.me/" + NEGOCIO.whatsapp + "?text="
+  + encodeURIComponent("Hola GEA, me avisan cuando entre " + p.nombre + "?");
 
 const Ico = {
   buscar: <><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></>,
@@ -101,9 +105,12 @@ function Tarjeta({ p, ir, onAgregar }) {
         )}
         <span className="card-precio num">{precio(p.precio)}{p.precioAntes && <span className="antes">{precio(p.precioAntes)}</span>}</span>
         <Stock p={p} envio={false} />
+        {/* "Avisarme" llevaba a la ficha, donde el botón estaba deshabilitado:
+            un callejón sin salida. Ahora abre WhatsApp con el pedido escrito. */}
         <Boton variante={agot ? "ghost" : "primary"} style={{ marginTop: ".55rem", width: "100%", padding: ".62rem", fontSize: "var(--fs-btn-sm)", minHeight: 44 }}
-          onClick={() => (agot ? ir({ v: "ficha", id: p.id }) : onAgregar(p))}>
-          {agot ? "Avisarme" : p.tonos ? "Elegir tono" : "Agregar"}
+          href={agot ? avisoWhatsapp(p) : undefined} target={agot ? "_blank" : undefined} rel={agot ? "noopener" : undefined}
+          onClick={agot ? undefined : () => onAgregar(p)}>
+          {agot ? "Avisame cuando entre" : p.tonos ? "Elegir tono" : "Agregar"}
         </Boton>
       </div>
     </div>

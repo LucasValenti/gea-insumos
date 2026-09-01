@@ -46,7 +46,7 @@ const PRODUCTOS = [
     tonos:[t("Nude Leche","#EFE0D8","nudes",8),t("Coral Suave","#E68A72","rosas",5),t("Rojo Cereza","#A31128","rojos",6),t("Azul Noche","#1B2440","oscuros",4),t("Menta","#BFDCD0","pasteles",3),t("Champagne","#D6C39A","metalizados",2)] },
   { id:"coleccion-starlight", cat:"semis", sub:"colec", marca:"Bompassy", nombre:"Colección Starlight x 11 tonos", precio:96500, precioAntes:112000, stock:4, envio:"2 a 4 días",
     contenido:"11 frascos de 15 ml", rinde:"Uso profesional", uso:"Curado 90 s por capa.",
-    desc:"Los once tonos de la temporada en una sola compra. Sale 18% más barato que comprarlos suelto.",
+    desc:"Los once tonos de la temporada en una sola compra, más barato que llevarlos de a uno.",
     color:"#8A5C4E" },
   { id:"base-rubber", img:"tienda/img/base-rubber.jpg", cat:"semis", sub:"s15", marca:"Pink Mask", nombre:"Base Rubber Nivelante", precio:13200, stock:18, envio:"2 a 4 días",
     contenido:"15 ml", rinde:"20 a 25 aplicaciones", uso:"Capa fina de anclaje más una de nivelación.",
@@ -136,15 +136,18 @@ const PRODUCTOS = [
   { id:"guantes-nitrilo", cat:"preparacion", sub:"desc", marca:"Wypall", nombre:"Guantes de Nitrilo x 100", precio:12900, stock:5, envio:"2 a 4 días",
     contenido:"100 unidades", rinde:"Descartable", uso:"Talles S, M y L.",
     desc:"Sin polvo, tacto fino para no perder sensibilidad al limar." },
-  { id:"kit-esculpidas", imgKit:"tienda/img/kit-esculpidas.jpg", cat:"kits", marca:"GEA", nombre:"Kit Esculpidas en Gel", precio:74900, precioAntes:86300, stock:6, envio:"3 a 6 días",
+  { id:"kit-esculpidas", imgKit:"tienda/img/kit-esculpidas.jpg", cat:"kits", marca:"GEA", nombre:"Kit Esculpidas en Gel", precio:74900, stock:6, envio:"3 a 6 días",
+    componentes:["gel-constructor","primer-acido","deshidratador","lima-100-180","top-coat-espejo"],
     contenido:"6 productos", rinde:"Aprox. 18 servicios", uso:"Incluye guía de pasos impresa.",
     desc:"Todo lo que entra en un servicio de esculpidas, sin que te falte nada a mitad de la jornada.",
     incluye:["Gel Constructor Transparente 30 g","Primer Ácido 15 ml","Deshidratador 15 ml","Set 5 Pinceles para Gel","Lima Recta 100/180 x 10","Top Coat Brillo Espejo"], color:"#E2C2B9" },
-  { id:"kit-semi-basico", imgKit:"tienda/img/kit-semi-basico.jpg", cat:"kits", marca:"GEA", nombre:"Kit Semipermanente Inicial", precio:52400, precioAntes:59800, stock:8, envio:"2 a 4 días",
+  { id:"kit-semi-basico", imgKit:"tienda/img/kit-semi-basico.jpg", cat:"kits", marca:"GEA", nombre:"Kit Semipermanente Inicial", precio:52400, stock:8, envio:"2 a 4 días",
+    componentes:["base-rubber","top-coat-espejo","semi-15-basicos","semi-15-basicos","semi-15-basicos","deshidratador","removedor-500"],
     contenido:"5 productos + 3 tonos", rinde:"Aprox. 25 servicios", uso:"Requiere cabina LED (no incluida).",
     desc:"Arranque completo de semi: preparación, base, tres tonos y sellado.",
     incluye:["Base Rubber Nivelante","Top Coat Brillo Espejo","3 semis x 15 ml a elección","Deshidratador 15 ml","Removedor 500 ml"], color:"#D98BA3" },
   { id:"kit-retiro", img:"tienda/img/kit-retiro.jpg", imgKit:"tienda/img/kit-retiro-w.jpg", cat:"kits", marca:"GEA", nombre:"Kit Retiro y Reposición", precio:28900, stock:11, envio:"2 a 4 días",
+    componentes:["removedor-500","aluminio-x100","lima-100-180","aceite-cuticula"],
     contenido:"4 productos", rinde:"Aprox. 30 retiros", uso:"Reposición mensual del gabinete.",
     desc:"Lo que se termina primero: removedor, aluminio, limas y aceite de cutícula.",
     incluye:["Removedor 500 ml","Papel Aluminio x 100","Lima Recta 100/180 x 10","Aceite de Cutícula 15 ml"], color:"#C9A48F" },
@@ -174,6 +177,20 @@ const costoEnvio = (datos, sub) => {
    Se deriva de los tonos para que haya una sola fuente de verdad y no se
    vuelva a desincronizar cuando se edite un tono a mano. */
 PRODUCTOS.forEach((p) => { if (p.tonos) p.stock = p.tonos.reduce((a, t) => a + t.stock, 0); });
+
+/* El "antes" de los kits sale de la suma real de sus componentes, no de un
+   número escrito a mano que no cerraba con el catálogo. Y solo se fija cuando
+   comprarlo suelto sale MÁS caro: si el kit no ahorra nada no corresponde
+   mostrar cinta de descuento. sueltoSuma queda para poder auditarlo. */
+PRODUCTOS.forEach((k) => {
+  if (!k.componentes) return;
+  k.sueltoSuma = k.componentes.reduce((a, id) => {
+    const p = PRODUCTOS.find((x) => x.id === id);
+    return a + (p ? p.precio : 0);
+  }, 0);
+  if (k.sueltoSuma > k.precio) k.precioAntes = k.sueltoSuma;
+  else delete k.precioAntes;
+});
 
 const DESTACADOS = ["kit-esculpidas","semi-15-basicos","coleccion-starlight","torno-35000","polygel-nude","soft-gel-tips","cabina-48w","removedor-500"];
 const HABITUALES = ["removedor-500","aluminio-x100","lima-100-180","top-coat-espejo","guantes-nitrilo","primer-acido"];
