@@ -253,7 +253,11 @@ button{color:inherit}
 /* ================= responsive ================= */
 /* escritorio angosto: la nav pasa a una fila propia y desplazable */
 @media (max-width:820px){
-  .ap.esc .barra-top-in{grid-template-columns:auto auto auto;grid-template-areas:"marca buscar pedido" "nav nav nav";row-gap:.4rem;justify-content:space-between}
+  /* 1fr en la marca, no tres columnas auto: la fila del menú abarca las tres y,
+     al ser más ancha que la pantalla, las inflaba a un tercio cada una. Los
+     íconos quedaban al borde izquierdo de su columna y el carrito no llegaba
+     al margen derecho. Con 1fr auto auto, la lupa y el carrito van juntos. */
+  .ap.esc .barra-top-in{grid-template-columns:1fr auto auto;grid-template-areas:"marca buscar pedido" "nav nav nav";row-gap:.4rem}
   .ap.esc .barra-top-in>:first-child{grid-area:marca}
   .ap.esc .nav-esc{grid-area:nav;justify-self:stretch;overflow-x:auto;gap:1.1rem;scrollbar-width:none;padding-bottom:.15rem}
   .ap.esc .nav-esc::-webkit-scrollbar{display:none}
