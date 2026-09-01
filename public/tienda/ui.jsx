@@ -21,6 +21,11 @@ const Ico = {
   filtro: <path d="M3 5h18v2.2l-7 6.4V21l-4-2.2v-5.2L3 7.2V5z"/>,
   camion: <path d="M3 5h11v9H3V5zm12 3h3.5L21 11.2V14h-6V8zM7 15.5a2 2 0 110 4 2 2 0 010-4zm11 0a2 2 0 110 4 2 2 0 010-4z"/>,
   reloj: <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 5v5.6l4 2.4-1 1.7-5-3V7h2z"/>,
+  /* contraste: el ícono estándar de accesibilidad visual — anillo con la
+     mitad llena. Se lee igual en cualquier tema, que es justo el punto. */
+  contraste: <><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="M12 3.9a8.1 8.1 0 010 16.2V3.9z" /></>,
+  sol: <><circle cx="12" cy="12" r="4.1" /><path d="M12 1.9v2.6M12 19.5v2.6M4.8 4.8l1.9 1.9M17.3 17.3l1.9 1.9M1.9 12h2.6M19.5 12h2.6M4.8 19.2l1.9-1.9M17.3 6.7l1.9-1.9" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" /></>,
+  luna: <path d="M20.6 14.7A8.9 8.9 0 019.3 3.4a8.9 8.9 0 1011.3 11.3z" />,
 };
 /* wa, ig y buscar salen del sistema (components/core/IconoWhatsapp.jsx): los dos
    últimos son de trazo, así que cada icono declara sus atributos de svg. */
@@ -30,6 +35,20 @@ const IcoProps = {
 };
 function I({ n, size }) {
   return <svg viewBox="0 0 24 24" fill="currentColor" {...(IcoProps[n] || {})} aria-hidden="true" style={size ? { width: size, height: size, flex: "none" } : { flex: "none" }}>{Ico[n]}</svg>;
+}
+
+/* Interruptor de tema. Es binario y los temas son cuatro: acá solo viven
+   claro y oscuro, que es lo que se toca todos los días. Papel y Automático
+   quedan en la hoja "Cómo se ve", y el interruptor no los pisa —al volver de
+   oscuro devuelve el tema claro que había antes, no "Claro" a la fuerza. */
+function InterruptorTema({ oscuro, onClick }) {
+  return (
+    <button className="sw-tema" role="switch" aria-checked={oscuro} onClick={onClick}
+      aria-label={oscuro ? "Tema oscuro. Tocá para pasar a claro" : "Tema claro. Tocá para pasar a oscuro"}>
+      <span className="sw-pista" aria-hidden="true"><I n="sol" size="12px" /><I n="luna" size="12px" /></span>
+      <span className="sw-bolita" aria-hidden="true"><I n={oscuro ? "luna" : "sol"} size="13px" /></span>
+    </button>
+  );
 }
 
 function Marca({ tamano = "medio", colorInsumos }) {
@@ -103,7 +122,7 @@ function Tarjeta({ p, ir, onAgregar }) {
             {p.tonos.length > 6 && <u>+{p.tonos.length - 6}</u>}
           </span>
         )}
-        <span className="card-precio num">{precio(p.precio)}{p.precioAntes && <span className="antes">{precio(p.precioAntes)}</span>}</span>
+        <span className={"card-precio num" + (p.precioAntes ? " precio-oferta" : "")}>{precio(p.precio)}{p.precioAntes && <span className="antes">{precio(p.precioAntes)}</span>}</span>
         <Stock p={p} envio={false} />
         {/* "Avisarme" llevaba a la ficha, donde el botón estaba deshabilitado:
             un callejón sin salida. Ahora abre WhatsApp con el pedido escrito. */}
@@ -254,5 +273,5 @@ function usarRevelado(deps) {
   }, deps);
 }
 
-Object.assign(window, { usarRevelado, I, Ico, Marca, Boton, Foto, Stock, Tarjeta, Hoja, Paso, Campo, Opcion, Acordeon, GrillaTonos, SelectorTono, Pie });
+Object.assign(window, { usarRevelado, I, Ico, InterruptorTema, Marca, Boton, Foto, Stock, Tarjeta, Hoja, Paso, Campo, Opcion, Acordeon, GrillaTonos, SelectorTono, Pie });
 })();

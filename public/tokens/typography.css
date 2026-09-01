@@ -7,6 +7,8 @@
   --font-body:var(--sans);
 
   --text-base:16px;
+  /* Pasos del control "Tamaño de texto". Toda la escala --fs-* está en rem,
+     así que mover la raíz mueve títulos, precios, botones y áreas táctiles. */
   --leading-body:1.6;
   --leading-title:1.2;
 
@@ -33,3 +35,8 @@
   --track-marca-g:.18em;
   --track-marca-i:.42em;
 }
+
+/* Los tres pasos del control de tamaño. Se aplican sobre :root, que es el
+   mismo elemento que consume --text-base en reset.css. */
+:root[data-texto="grande"]{--text-base:18px}
+:root[data-texto="mayor"]{--text-base:20px}

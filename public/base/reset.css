@@ -1,7 +1,10 @@
 *, *::before, *::after{box-sizing:border-box}
-html{scroll-behavior:smooth}
-@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+/* La raíz consume el token: --text-base es lo que mueve el control de tamaño. */
+html{font-size:var(--text-base);scroll-behavior:smooth}
+/* data-quieto lo estampa el script de arranque, mirando la preferencia
+   guardada y, si no hay, prefers-reduced-motion. Un solo interruptor. */
+:root[data-quieto="si"]{scroll-behavior:auto}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:1rem;line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 a:hover{color:var(--nude-600)}
 button{font:inherit}

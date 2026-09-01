@@ -25,7 +25,27 @@ body{background:var(--sunk);margin:0}
 a{color:var(--ink)}a:hover{color:var(--nude-600)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 </style>
-</head><body>
+<script>
+/* Preferencias de visualización, estampadas antes de pintar. Si esto viviera
+   dentro de React, quien eligió Papel u Oscuro se comería tres segundos de
+   blanco mientras Babel compila: justo el destello que la preferencia existe
+   para evitar. Duplica un puñado de líneas del hook a cambio de eso. */
+(function () {
+  var v = {};
+  try { v = JSON.parse(localStorage.getItem("gea_ver_v1")) || {}; } catch (e) {}
+  var r = document.documentElement;
+  var attr = { claro: "light", papel: "papel", oscuro: "dark" }[v.tema];
+  /* "automático" no estampa nada: sin atributo manda prefers-color-scheme. */
+  if (attr) r.setAttribute("data-theme", attr);
+  if (v.texto && v.texto !== "normal") r.setAttribute("data-texto", v.texto);
+  var quieto = v.quieto == null
+    ? !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)
+    : v.quieto;
+  if (quieto) r.setAttribute("data-quieto", "si");
+})();
+</script>
+</head>
+<body>
 <div id="root"></div>
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
@@ -38,14 +58,14 @@ a{color:var(--ink)}a:hover{color:var(--nude-600)}
 <script type="text/babel" src="tienda/pantallas-pedido.jsx"></script>
 <script type="text/babel" data-presets="react">
 (() => {
-const { I, Marca, Boton, SelectorTono } = window;
+const { I, Marca, Boton, SelectorTono, Hoja, Opcion, InterruptorTema } = window;
 const { NEGOCIO, PRODUCTOS, prod, precio, stockDe, costoEnvio } = window.T;
 const { useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakSelect } = window;
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "direccion": "editorial",
   "vista": "escritorio",
-  "tema": "claro",
+  "tema": "automático",
   "boton": "cápsula",
   "movimiento": "expresivo",
   "barras": "vidrio"
@@ -53,6 +73,61 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 
 const LS = "gea_tienda_v1";
 const cargar = () => { try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch (e) { return {}; } };
+
+/* Preferencias de visualización, en su propia llave: vaciar el carrito no
+   tiene por qué devolverle a nadie el tema que le molestaba. */
+const VER_LS = "gea_ver_v1";
+const TEMA_ATTR = { "claro": "light", "papel": "papel", "oscuro": "dark" };
+const leerVer = () => { try { return JSON.parse(localStorage.getItem(VER_LS)) || {}; } catch (e) { return {}; } };
+
+const TEMAS = [
+  ["automático", "Automático", "Sigue lo que tengas puesto en el teléfono o la computadora"],
+  ["claro", "Claro", "Fondo blanco"],
+  ["papel", "Papel", "Fondo cálido y con menos brillo, sin perder contraste"],
+  ["oscuro", "Oscuro", "Fondo negro con texto claro"],
+];
+const TAMANOS = [["normal", "Normal", 15], ["grande", "Grande", 19], ["mayor", "Más grande", 23]];
+
+/* Un solo lugar para las tres cosas que hacen que la página se pueda leer.
+   Van juntas a propósito: quien viene a agrandar el texto suele necesitar
+   también menos brillo, y encontrar los tres controles de una evita mandarlo
+   a buscar el otro en otro menú. */
+function HojaVer({ ver, setVer, temaBase, osQuieto, onCerrar, destino }) {
+  const tema = ver.tema || temaBase;
+  const texto = ver.texto || "normal";
+  const quieto = ver.quieto == null ? osQuieto : ver.quieto;
+  const poner = (k, v) => setVer((x) => ({ ...x, [k]: v }));
+  return (
+    <Hoja titulo="Cómo se ve" onCerrar={onCerrar} destino={destino}>
+      <div className="ver-sec">
+        <span className="lbl">Tema</span>
+        <div role="radiogroup" aria-label="Tema" style={{ display: "grid", gap: ".5rem" }}>
+          {TEMAS.map(([v, tit, det]) =>
+            <Opcion key={v} activa={tema === v} titulo={tit} detalle={det} onClick={() => poner("tema", v)} />)}
+        </div>
+      </div>
+      <div className="ver-sec">
+        <span className="lbl">Tamaño de texto</span>
+        <div className="ver-txt" role="group" aria-label="Tamaño de texto">
+          {TAMANOS.map(([v, l, px]) =>
+            <button key={v} aria-pressed={texto === v} onClick={() => poner("texto", v)}>
+              <b style={{ fontSize: px }} aria-hidden="true">A</b><span>{l}</span>
+            </button>)}
+        </div>
+      </div>
+      <div className="ver-sec">
+        <span className="lbl">Movimiento</span>
+        <button className="ver-sw" role="switch" aria-checked={quieto} onClick={() => poner("quieto", !quieto)}>
+          <div>
+            <b>Menos animaciones</b>
+            <em>Quita los movimientos de fondo y las entradas al desplazar.</em>
+          </div>
+          <s></s>
+        </button>
+      </div>
+    </Hoja>
+  );
+}
 
 /* Lo guardado puede venir de una versión anterior del catálogo. Si un producto
    o un tono ya no existe, prod(it.id).precio tiraba TypeError y la tienda
@@ -105,6 +180,15 @@ function App() {
      vista móvil a escritorio; las hojas y el toast dejaban de verse. */
   const capaRef = React.useCallback((n) => setCapa(n), []);
   const [datos, setDatos] = React.useState(guardado.current.datos || { nombre: "", tel: "", gabinete: "", envio: "domicilio", zona: "", direccion: "", cp: "", transporte: "", pago: "mp", nota: "" });
+  const [ver, setVer] = React.useState(leerVer);
+  const [verAbierta, setVerAbierta] = React.useState(false);
+  /* Preferencia del sistema, para cuando el visitante no eligió movimiento. */
+  const [osQuieto, setOsQuieto] = React.useState(() => !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches));
+  const [osOscuro, setOsOscuro] = React.useState(() => !!(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches));
+  /* Al volver de oscuro, el interruptor devuelve el tema claro que había y no
+     "Claro" a la fuerza: si alguien eligió Papel para poder leer, hacérselo
+     perder por tocar el sol sería el peor efecto secundario posible. */
+  const claroPrevio = React.useRef(null);
   const cont = React.useRef(null);
   const sent = React.useRef(null);
   const [pegado, setPegado] = React.useState(false);
@@ -120,7 +204,46 @@ function App() {
     io.observe(n);
     return () => io.disconnect();
   }, [t.vista]);
-  React.useEffect(() => { document.documentElement.setAttribute("data-theme", t.tema === "oscuro" ? "dark" : "light"); }, [t.tema]);
+  /* El tema del visitante manda. Si no eligió nada cae al valor de Tweaks, que
+     es lo que fijan las herramientas de prueba; "automático" no estampa
+     atributo y deja decidir a prefers-color-scheme. Antes esto escribía
+     data-theme="light" siempre, así que el sitio pisaba el modo oscuro del
+     sistema y no había forma de cambiarlo fuera del panel de prototipo. */
+  React.useEffect(() => {
+    const r = document.documentElement, a = TEMA_ATTR[ver.tema || t.tema];
+    if (a) r.setAttribute("data-theme", a); else r.removeAttribute("data-theme");
+  }, [ver.tema, t.tema]);
+  React.useEffect(() => {
+    const r = document.documentElement;
+    if (ver.texto && ver.texto !== "normal") r.setAttribute("data-texto", ver.texto);
+    else r.removeAttribute("data-texto");
+  }, [ver.texto]);
+  React.useEffect(() => {
+    if (!window.matchMedia) return;
+    const m = matchMedia("(prefers-reduced-motion: reduce)"), h = () => setOsQuieto(m.matches);
+    m.addEventListener("change", h);
+    return () => m.removeEventListener("change", h);
+  }, []);
+  React.useEffect(() => {
+    const r = document.documentElement;
+    if (ver.quieto == null ? osQuieto : ver.quieto) r.setAttribute("data-quieto", "si");
+    else r.removeAttribute("data-quieto");
+  }, [ver.quieto, osQuieto]);
+  React.useEffect(() => { try { localStorage.setItem(VER_LS, JSON.stringify(ver)); } catch (e) {} }, [ver]);
+  React.useEffect(() => {
+    if (!window.matchMedia) return;
+    const m = matchMedia("(prefers-color-scheme: dark)"), h = () => setOsOscuro(m.matches);
+    m.addEventListener("change", h);
+    return () => m.removeEventListener("change", h);
+  }, []);
+  /* El interruptor del header es binario; los temas son cuatro. Con
+     "automático" hay que mirar el sistema para saber en cuál está parado. */
+  const temaActual = ver.tema || t.tema;
+  const temaOscuro = temaActual === "oscuro" || (temaActual === "automático" && osOscuro);
+  const alternarTema = () => {
+    if (temaOscuro) setVer((x) => ({ ...x, tema: claroPrevio.current || "claro" }));
+    else { claroPrevio.current = temaActual; setVer((x) => ({ ...x, tema: "oscuro" })); }
+  };
   React.useEffect(() => { try { localStorage.setItem(LS, JSON.stringify({ carrito, datos })); } catch (e) {} }, [carrito, datos]);
   React.useEffect(() => {
     let n = cont.current;
@@ -239,6 +362,8 @@ function App() {
           {esc ? (busca ? campoBusca : (
             <nav className="nav-esc">{nav.map(([v, l]) => <button key={v} aria-current={ruta.v === v} onClick={() => ir({ v })}>{l}</button>)}</nav>
           )) : <span></span>}
+          <InterruptorTema oscuro={temaOscuro} onClick={alternarTema} />
+          <button className="ico-btn" onClick={() => setVerAbierta(true)} aria-label="Cómo se ve: tema y tamaño de texto"><I n="contraste" /></button>
           <button className="ico-btn" onClick={abrirBusca} aria-label="Buscar" aria-expanded={busca}><I n="buscar" /></button>
           <button className="ico-btn" onClick={() => ir({ v: "carrito" })} aria-label={`Pedido, ${unidades} unidades`}>
             <I n="carrito" />{unidades > 0 && <span key={unidades} className={"globo num" + (expr ? " animate__animated animate__bounceIn" : "")}>{unidades}</span>}
@@ -263,6 +388,7 @@ function App() {
       )}
 
       {hoja && <SelectorTono p={hoja} onAgregar={agregar} onCerrar={() => setHoja(null)} destino={capa} />}
+      {verAbierta && <HojaVer ver={ver} setVer={setVer} temaBase={t.tema} osQuieto={osQuieto} onCerrar={() => setVerAbierta(false)} destino={capa} />}
       {toast && ReactDOM.createPortal(
         <div className={"toast animate__animated " + (expr ? "animate__fadeInUp" : "animate__fadeIn")} role="status">
           <span>{toast.txt}</span>
@@ -287,7 +413,7 @@ function App() {
           onChange={(v) => setTweak("direccion", v)} />
         <TweakSection label="Vista" />
         <TweakRadio label="Dispositivo" value={t.vista} options={["movil", "escritorio"]} onChange={(v) => setTweak("vista", v)} />
-        <TweakRadio label="Tema" value={t.tema} options={["claro", "oscuro"]} onChange={(v) => setTweak("tema", v)} />
+        <TweakRadio label="Tema" value={t.tema} options={["automático", "claro", "papel", "oscuro"]} onChange={(v) => setTweak("tema", v)} />
         <TweakRadio label="Botones" value={t.boton} options={["cápsula", "recto"]} onChange={(v) => setTweak("boton", v)} />
         <TweakSection label="Movimiento y materia" />
         <TweakRadio label="Transiciones" value={t.movimiento} options={["sobrio", "expresivo"]} onChange={(v) => setTweak("movimiento", v)} />

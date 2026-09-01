@@ -34,14 +34,18 @@ Todo lo que se publica vive en `public/`. Lo de afuera es configuración.
 ### HTML
 - `public/index.html` — armazón: carga estilos y scripts, monta la app, y
   guarda el estado general (ruta actual, carrito, búsqueda, datos del
-  checkout). Acá están el header, la barra de tabs móvil y el panel de Tweaks.
+  checkout) más las preferencias de visualización (tema, tamaño de texto,
+  movimiento), que un script previo a la primera pintura estampa en
+  `<html>` para que no haya destello. Acá están el header, la barra de
+  tabs móvil y el panel de Tweaks.
 
 ### CSS
 - `public/tienda/tienda.css` — todos los estilos de la tienda: header, hero,
   tarjetas de producto, carrito, checkout y los breakpoints responsive.
 - `public/tokens/colors.css`, `typography.css`, `layout.css`, `effects.css`,
-  `theme-dark.css` — variables del sistema de diseño GEA (paleta nude,
-  tipografías, espaciados, sombras, tema oscuro).
+  `theme-dark.css`, `theme-papel.css` — variables del sistema de diseño GEA
+  (paleta nude, el acento vino, tipografías, espaciados, sombras, temas
+  oscuro y papel).
 - `public/base/reset.css`, `public/base/utilities.css` — normalización y utilidades.
 - `public/styles.css` — importa lo anterior.
 
@@ -49,8 +53,9 @@ Todo lo que se publica vive en `public/`. Lo de afuera es configuración.
 - `public/tienda/datos.js` — **JS puro**: productos, categorías, familias de
   tonos, precios, zonas y costos de envío, y la función de búsqueda. Es el
   archivo que más vas a tocar.
-- `public/tienda/ui.jsx` — componentes reusables: íconos, marca, botones,
-  fotos, tarjeta de producto, indicador de stock, acordeón, pie.
+- `public/tienda/ui.jsx` — componentes reusables: íconos, marca, interruptor
+  de tema, botones, fotos, tarjeta de producto, indicador de stock,
+  acordeón, pie.
 - `public/tienda/pantallas-tienda.jsx` — pantallas de inicio, catálogo,
   búsqueda y ficha de producto.
 - `public/tienda/pantallas-pedido.jsx` — carrito, checkout, confirmación,

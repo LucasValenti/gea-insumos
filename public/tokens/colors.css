@@ -21,6 +21,13 @@
   --nude-400:#B8887B;
   --nude-600:#8A5C4E;  /* único nude legible como texto */
 
+  /* el único acento fuera del nude: descuento, oferta y stock al límite.
+     Tres usos y ninguno más — si aparece en un cuarto lugar, deja de gritar. */
+  --vino-50:#FBF1F2;
+  --vino-600:#8A1B2E;   /* 8.7:1 sobre --paper: el único vino legible como texto */
+  --vino-700:#6E1524;   /* hover */
+  --on-vino:#FFFFFF;
+
   /* aviso de datos de ejemplo / estado provisorio */
   --demo-bg:#FBF2E7;
   --demo-rule:#D9AE79;
@@ -41,4 +48,8 @@
   --rule-strong:var(--border);
   --accent-line:var(--nude-200);
   --focus-ring:var(--nude-400);
+  --acento:var(--vino-600);
+  --acento-fuerte:var(--vino-700);
+  --acento-soft:var(--vino-50);
+  --on-acento:var(--on-vino);
 }
