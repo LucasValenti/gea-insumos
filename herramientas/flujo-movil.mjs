@@ -31,7 +31,7 @@ console.log('4. TAB BUSCAR'); await tab('Buscar').click(); await page.waitForTim
 await page.locator('.busca input').first().fill('acrilico'); await page.waitForTimeout(700);
 console.log('   resultados para "acrilico": ' + await page.locator('.card, .cat-fila').count());
 
-console.log('\n5. TAB PEDIDO'); await tab('Pedido').click(); await page.waitForTimeout(900); await axe('carrito');
+console.log('\n5. TAB PEDIDO'); await tab('Pedido').click(); await page.waitForTimeout(2000); await axe('carrito');
 await page.getByRole('button', { name: /Continuar/i }).first().click();
 await page.waitForTimeout(1000);
 console.log('6. CHECKOUT'); await axe('checkout');

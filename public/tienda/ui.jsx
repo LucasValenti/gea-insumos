@@ -56,7 +56,16 @@ function Foto({ p, tono, className = "foto", conPendiente = true }) {
   return (
     <div className={className}>
       {c ? <span className="tono-punto" style={{ background: c }}></span>
-        : <span aria-hidden="true" style={{ color: "var(--nude-300)" }}><Marca tamano="chico" /></span>}
+        /* Antes acá iba el monograma GEA como texto en --nude-300: daba 1.98:1
+           y axe lo marcaba 30 veces en el catálogo. Como gráfico decorativo no
+           corre la regla de contraste de texto, y no se pierde nada: la chapita
+           "Foto pendiente" ya lo dice con contraste correcto. */
+        : <svg aria-hidden="true" viewBox="0 0 32 32" width="38" height="38" fill="none"
+            stroke="var(--nude-300)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="4" y="6.5" width="24" height="19" rx="3" />
+            <circle cx="11.5" cy="13" r="2.2" />
+            <path d="M6 21.5l6-5.5 5 4.5 4-3 5 4.5" />
+          </svg>}
       {conPendiente && <span className="pend">Foto pendiente</span>}
     </div>
   );

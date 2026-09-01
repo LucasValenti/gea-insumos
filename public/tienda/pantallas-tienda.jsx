@@ -15,7 +15,11 @@
       {items.slice(0, compacto ? 4 : 6).map((p, i) =>
         <div className="repo-fila rev" key={p.id} style={{ "--i": i }}>
           <a href="#" className="mini" onClick={(e) => {e.preventDefault();ir({ v: "ficha", id: p.id });}} aria-label={p.nombre}>
-            {p.color || p.tonos ? <s style={{ background: p.color || p.tonos[0].hex }}></s> : <span aria-hidden="true" style={{ color: "var(--nude-300)", fontSize: ".5rem" }}>GEA</span>}
+            {p.color || p.tonos ? <s style={{ background: p.color || p.tonos[0].hex }}></s>
+            : <svg aria-hidden="true" viewBox="0 0 24 24" width="15" height="15" fill="none"
+                stroke="var(--nude-300)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="5" width="18" height="14" rx="2.5" /><path d="M5 16l4-4 3.5 3 3-2.5L19 16" />
+              </svg>}
           </a>
           <span>
             <a href="#" className="repo-nom" style={{ display: "block" }} onClick={(e) => {e.preventDefault();ir({ v: "ficha", id: p.id });}}>{p.nombre}</a>
