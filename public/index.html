@@ -17,9 +17,9 @@
 body{background:var(--sunk);margin:0}
 #root{min-height:100vh}
 .escenario{min-height:100vh;display:grid;place-items:center;padding:2rem 1rem;background:var(--sunk)}
-.enmarcado .ap{--h-tabs:80px}
-.enmarcado .barra-bot{padding-bottom:24px}
-.toast{position:fixed;left:0;right:0;width:max-content;margin-inline:auto;bottom:5.5rem;z-index:70;background:var(--ink);color:var(--paper);border-radius:var(--radio);padding:.7rem .9rem;font-size:.8rem;display:flex;gap:.9rem;align-items:center;box-shadow:var(--shadow-flotante);max-width:calc(100% - 2rem);--animate-duration:.34s}
+/* Sin barra inferior, el toast solo tiene que despegarse del borde y de la
+   franja segura del celular, no de una barra que ya no existe. */
+.toast{position:fixed;left:0;right:0;width:max-content;margin-inline:auto;bottom:calc(1.5rem + env(safe-area-inset-bottom));z-index:70;background:var(--ink);color:var(--paper);border-radius:var(--radio);padding:.7rem .9rem;font-size:.8rem;display:flex;gap:.9rem;align-items:center;box-shadow:var(--shadow-flotante);max-width:calc(100% - 2rem);--animate-duration:.34s}
 .toast button{border:0;background:transparent;color:var(--nude-200);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
 .enmarcado .toast{position:absolute}
 a{color:var(--ink)}a:hover{color:var(--nude-600)}
@@ -252,7 +252,9 @@ function App() {
     contacto: <window.Contacto ir={ir} />,
   }[ruta.v];
 
-  const tabs = [["inicio", "inicio", "Inicio"], ["catalogo", "grilla", "Catálogo"], ["buscar", "buscar", "Buscar"], ["carrito", "carrito", "Pedido"], ["ayuda", "ayuda", "Ayuda"]];
+  /* Sin barra inferior: Catálogo y Ayuda pasan al header. Inicio ya lo cubre
+     el logo; Buscar y Pedido ya viven ahí como íconos. */
+  const navIconos = [["catalogo", "grilla", "Catálogo"], ["ayuda", "ayuda", "Ayuda"]];
   const nav = [["inicio", "Inicio"], ["catalogo", "Catálogo"], ["ayuda", "Cómo comprar"], ["contacto", "Contacto"]];
   const conAtras = ["ficha", "checkout", "ok"].includes(ruta.v);
   /* angosto = celular de verdad: layout móvil y sin marco de teléfono.
@@ -285,7 +287,13 @@ function App() {
           )}
           {esc ? (busca ? campoBusca : (
             <nav className="nav-esc">{nav.map(([v, l]) => <button key={v} aria-current={ruta.v === v} onClick={() => ir({ v })}>{l}</button>)}</nav>
-          )) : <span></span>}
+          )) : (
+            <nav className="nav-movil" aria-label="Secciones">
+              {navIconos.map(([v, ic, l]) => (
+                <button key={v} className="ico-btn" aria-current={ruta.v === v || (v === "catalogo" && ruta.v === "ficha")} onClick={() => ir({ v })} aria-label={l}><I n={ic} /></button>
+              ))}
+            </nav>
+          )}
           <InterruptorTema oscuro={temaOscuro} onClick={alternarTema} />
           <button className="ico-btn" onClick={abrirBusca} aria-label="Buscar" aria-expanded={busca}><I n="buscar" /></button>
           <button className="ico-btn" onClick={() => ir({ v: "carrito" })} aria-label={`Pedido, ${unidades} unidades`}>
@@ -296,19 +304,6 @@ function App() {
       </header>
 
       <main className={"vista " + entra} key={ruta.v} style={{ "--animate-duration": expr ? ".52s" : ".38s" }}>{P}</main>
-
-      {!esc && (
-        <nav className="barra-bot" aria-label="Secciones">
-          {tabs.map(([v, ic, l]) => (
-            <button key={v} className="tab" aria-current={ruta.v === v || (v === "catalogo" && ruta.v === "ficha") || (v === "carrito" && ["checkout", "ok"].includes(ruta.v))} onClick={() => ir({ v })}>
-              <span style={{ position: "relative", display: "grid", placeItems: "center" }}>
-                <I n={ic} />{v === "carrito" && unidades > 0 && <span key={unidades} className={"globo num" + (expr ? " animate__animated animate__bounceIn" : "")} style={{ top: -5, right: -9 }}>{unidades}</span>}
-              </span>
-              <span>{l}</span>
-            </button>
-          ))}
-        </nav>
-      )}
 
       {hoja && <SelectorTono p={hoja} onAgregar={agregar} onCerrar={() => setHoja(null)} destino={capa} />}
       {toast && ReactDOM.createPortal(

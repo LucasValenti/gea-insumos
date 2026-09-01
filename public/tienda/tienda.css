@@ -21,12 +21,14 @@ button{color:inherit}
 .ico-btn:hover{color:var(--nude-600)}
 .ico-btn svg{width:20px;height:20px}
 .globo{position:absolute;top:5px;right:4px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:var(--ink);color:var(--paper);font-size:.6rem;font-weight:600;display:grid;place-items:center;line-height:1}
-.barra-bot{position:sticky;bottom:0;z-index:40;height:var(--h-tabs);background:var(--surface);border-top:1px solid var(--hairline);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom)}
-.tab{border:0;background:transparent;cursor:pointer;padding:.5rem .2rem .6rem;display:grid;justify-items:center;gap:.2rem;color:var(--ink-faint);min-height:56px;position:relative}
-.tab svg{width:21px;height:21px}
-.tab span{font-size:.58rem;letter-spacing:.09em;text-transform:uppercase}
-.tab[aria-current="true"]{color:var(--ink)}
-.tab[aria-current="true"]::before{content:"";position:absolute;top:0;left:22%;right:22%;height:2px;background:var(--nude-300)}
+/* Catálogo y Ayuda, en el header en vez de una barra inferior propia.
+   Más chicos que los ico-btn del resto del header porque acá van cuatro
+   más al lado (interruptor, buscar, pedido): el toque agrandado vive en
+   el bloque de área táctil, no acá. */
+.nav-movil{display:flex;align-items:center;gap:.1rem}
+.nav-movil .ico-btn{width:36px;height:36px;color:var(--ink-faint)}
+.nav-movil .ico-btn[aria-current="true"]{color:var(--ink)}
+.nav-movil .ico-btn[aria-current="true"]::before{content:"";position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--nude-300)}
 .vista{flex:1;min-width:0}
 .tapa{position:sticky;top:0;height:50px;background:var(--surface);z-index:15;flex:none}
 .enmarcado .ap.movil .barra-top{top:50px}
@@ -80,7 +82,7 @@ button{color:inherit}
 .stock{font-size:.68rem;display:flex;align-items:center;gap:.35rem;color:var(--ink-soft)}
 .stock i{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
 .stock.ok{color:var(--ok)}.stock.bajo{color:var(--acento)}.stock.no{color:var(--ink-faint)}
-.ap{--ok:#2F6B4F;--h-tabs:56px}
+.ap{--ok:#2F6B4F}
 :root[data-theme="dark"] .ap{--ok:#86C4A2}
 .tonos-mini{display:flex;gap:3px;flex-wrap:wrap;padding-top:.15rem}
 .tonos-mini i{width:11px;height:11px;border-radius:50%;border:1px solid color-mix(in oklab,var(--ink) 14%,transparent)}
@@ -134,7 +136,9 @@ button{color:inherit}
 @media (prefers-reduced-motion:reduce){.hoja,.velo{animation:none}}
 
 /* ---- barra fija de acción ---- */
-.accion{position:sticky;bottom:var(--h-tabs);z-index:35;background:var(--surface);border-top:1px solid var(--hairline);padding:.7rem 1rem;display:grid;gap:.6rem;box-shadow:0 -8px 20px -18px rgba(17,17,17,.4)}
+/* Sin barra de tabs debajo, la franja segura del celular la absorbe esta
+   barra misma: antes se la comía la barra-bot que ya no existe. */
+.accion{position:sticky;bottom:0;z-index:35;background:var(--surface);border-top:1px solid var(--hairline);padding:.7rem 1rem calc(.7rem + env(safe-area-inset-bottom));display:grid;gap:.6rem;box-shadow:0 -8px 20px -18px rgba(17,17,17,.4)}
 .accion .fila{display:flex;align-items:center;gap:.75rem}
 .accion .fila>.btn{flex:1}
 
@@ -225,7 +229,6 @@ button{color:inherit}
 /* ================= escritorio ================= */
 .ap.esc{--marg:max(1.25rem,calc((100% - var(--maxw))/2 + 2rem))}
 .ap.esc .pad,.ap.esc .rail,.ap.esc .rail-prod{padding-inline:var(--marg)}
-.ap.esc .barra-bot{display:none}
 .ap.esc .barra-top-in{grid-template-columns:auto 1fr auto auto auto;gap:clamp(.75rem,2.5vw,2rem);padding:.85rem var(--marg)}
 .ap.esc .gr{grid-template-columns:repeat(auto-fill,minmax(13.5rem,1fr));gap:clamp(.7rem,1.5vw,1.15rem)}
 .ap.esc .rail-prod>*{width:clamp(10rem,17vw,14rem)}
@@ -574,9 +577,9 @@ button{color:inherit}
 
 /* ---- barras de vidrio (glassmorphism sobre los nudes del sistema) ---- */
 .sentinela{height:1px;flex:none;margin-bottom:-1px}
-.barra-top,.barra-bot,.accion{transition:background .4s var(--ease),box-shadow .4s var(--ease),border-color .4s var(--ease)}
+.barra-top,.accion{transition:background .4s var(--ease),box-shadow .4s var(--ease),border-color .4s var(--ease)}
 @supports (backdrop-filter:blur(6px)) and (background:color-mix(in oklab,red 50%,transparent)){
-  .ap[data-barras="vidrio"] .barra-bot,.ap[data-barras="vidrio"] .accion{background:color-mix(in oklab,var(--surface) 78%,transparent);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35)}
+  .ap[data-barras="vidrio"] .accion{background:color-mix(in oklab,var(--surface) 78%,transparent);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35)}
   .ap[data-barras="vidrio"][data-pegado="true"] .barra-top{background:color-mix(in oklab,var(--surface) 74%,transparent);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border-bottom-color:color-mix(in oklab,var(--nude-300) 60%,transparent);box-shadow:0 12px 34px -28px rgba(17,17,17,.75)}
   .ap[data-barras="vidrio"][data-pegado="true"] .busca input{background:color-mix(in oklab,var(--surface) 62%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 }
@@ -611,6 +614,7 @@ button{color:inherit}
   .sw-tema::after{content:"";position:absolute;inset:-8px -4px}
   .repedido-paso button::after,.step button::after{content:"";position:absolute;inset:-5px}
   .repedido-mini::after{content:"";position:absolute;inset:-3px}
+  .nav-movil .ico-btn::after{content:"";position:absolute;inset:-4px}
   .ver-mas::after{content:"";position:absolute;inset:-13px -6px}
   .card-nom::after{content:"";position:absolute;inset:-2px 0}
   .ap.esc .nav-esc button::after{content:"";position:absolute;inset:-6px 0}
