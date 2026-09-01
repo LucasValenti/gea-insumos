@@ -29,7 +29,7 @@ button{color:inherit}
 .tab[aria-current="true"]::before{content:"";position:absolute;top:0;left:22%;right:22%;height:2px;background:var(--nude-300)}
 .vista{flex:1;min-width:0}
 .tapa{position:sticky;top:0;height:50px;background:var(--surface);z-index:15;flex:none}
-.ap.movil .barra-top{top:50px}
+.enmarcado .ap.movil .barra-top{top:50px}
 .pad{padding-inline:1rem}
 .sec{padding-top:1.75rem}
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding:0 0 .85rem}

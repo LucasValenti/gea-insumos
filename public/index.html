@@ -71,8 +71,24 @@ const nroPedido = () => {
   return "#" + ymd + "-" + String(100 + Math.floor(Math.random() * 900));
 };
 
+/* Un celular real no tiene por qué recibir el layout de escritorio. Abajo de
+   820px mandamos la vista móvil, y el tweak "vista" sigue decidiendo en
+   pantallas grandes, que es donde sirve para previsualizar. */
+const usarAncho = (consulta) => {
+  const [coincide, setCoincide] = React.useState(() => window.matchMedia(consulta).matches);
+  React.useEffect(() => {
+    const mq = window.matchMedia(consulta);
+    const alCambiar = (e) => setCoincide(e.matches);
+    setCoincide(mq.matches);
+    mq.addEventListener("change", alCambiar);
+    return () => mq.removeEventListener("change", alCambiar);
+  }, [consulta]);
+  return coincide;
+};
+
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const angosto = usarAncho("(max-width: 820px)");
   const guardado = React.useRef(sanear(cargar()));
   const [ruta, setRuta] = React.useState({ v: "inicio" });
   const [carrito, setCarrito] = React.useState(guardado.current.carrito || []);
@@ -92,7 +108,7 @@ function App() {
   const [busca, setBusca] = React.useState(false);
   const vuelta = React.useRef({ v: "inicio" });
 
-  window.usarRevelado([ruta, t.direccion, t.vista]);
+  window.usarRevelado([ruta, t.direccion, t.vista, angosto]);
   /* Barra de vidrio: se activa recién cuando el contenido pasó por debajo. */
   React.useEffect(() => {
     const n = sent.current;
@@ -178,7 +194,10 @@ function App() {
   const tabs = [["inicio", "inicio", "Inicio"], ["catalogo", "grilla", "Catálogo"], ["buscar", "buscar", "Buscar"], ["carrito", "carrito", "Pedido"], ["ayuda", "ayuda", "Ayuda"]];
   const nav = [["inicio", "Inicio"], ["catalogo", "Catálogo"], ["ayuda", "Cómo comprar"], ["contacto", "Contacto"]];
   const conAtras = ["ficha", "checkout", "ok"].includes(ruta.v);
-  const esc = t.vista === "escritorio";
+  /* angosto = celular de verdad: layout móvil y sin marco de teléfono.
+     enmarcado = previsualización del prototipo en una pantalla grande. */
+  const esc = !angosto && t.vista === "escritorio";
+  const enmarcado = !angosto && t.vista === "movil";
   const expr = t.movimiento === "expresivo";
   const entra = expr ? "animate__animated animate__fadeInUp" : "animate__animated animate__fadeIn";
 
@@ -193,7 +212,7 @@ function App() {
   const app = (
     <div className={"ap" + (esc ? " esc" : " movil")} ref={cont} data-btn={t.boton === "cápsula" ? "capsula" : "recto"}
       data-mov={expr ? "expresivo" : "sobrio"} data-barras={t.barras === "vidrio" ? "vidrio" : "opaco"} data-pegado={pegado}>
-      {!esc && <div className="tapa"></div>}
+      {enmarcado && <div className="tapa"></div>}
       <aside className="aviso" aria-label="Aviso del prototipo">Prototipo con catálogo de ejemplo · el pedido se cierra por WhatsApp</aside>
       <div ref={sent} className="sentinela" aria-hidden="true"></div>
       <header className="barra-top">
@@ -240,7 +259,7 @@ function App() {
 
   return (
     <>
-      {esc ? app : (
+      {esc || angosto ? app : (
         <div className="escenario">
           <div className="enmarcado" style={{ position: "relative" }}>
             <window.IOSDevice width={402} height={860}>{app}</window.IOSDevice>
