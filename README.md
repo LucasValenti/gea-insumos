@@ -35,9 +35,8 @@ Todo lo que se publica vive en `public/`. Lo de afuera es configuración.
 - `public/index.html` — armazón: carga estilos y scripts, monta la app, y
   guarda el estado general (ruta actual, carrito, búsqueda, datos del
   checkout) y el tema elegido, que un script previo a la primera pintura
-  estampa en `<html>` para que no haya destello. Acá está el header, con
-  todas las secciones a mano (no hay barra de tabs abajo), y el panel de
-  Tweaks.
+  estampa en `<html>` para que no haya destello. Acá están el header, la
+  barra de tabs móvil y el panel de Tweaks.
 
 ### CSS
 - `public/tienda/tienda.css` — todos los estilos de la tienda: header, hero,
