@@ -22,13 +22,13 @@ button{color:inherit}
 .ico-btn svg{width:20px;height:20px}
 .globo{position:absolute;top:5px;right:4px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:var(--ink);color:var(--paper);font-size:.6rem;font-weight:600;display:grid;place-items:center;line-height:1}
 /* Catálogo y Ayuda, en el header en vez de una barra inferior propia.
-   Más chicos que los ico-btn del resto del header porque acá van cuatro
-   más al lado (interruptor, buscar, pedido): el toque agrandado vive en
-   el bloque de área táctil, no acá. */
-.nav-movil{display:flex;align-items:center;gap:.1rem}
-.nav-movil .ico-btn{width:36px;height:36px;color:var(--ink-faint)}
-.nav-movil .ico-btn[aria-current="true"]{color:var(--ink)}
-.nav-movil .ico-btn[aria-current="true"]::before{content:"";position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--nude-300)}
+   Con nombre y no ícono: dos palabras no dejan lugar a dudas y son el
+   mismo lenguaje tipográfico que el menú de escritorio (nav-esc). */
+.nav-movil{display:flex;align-items:center;gap:.9rem}
+.nav-movil button{position:relative;border:0;background:transparent;cursor:pointer;font-family:inherit;font-size:var(--fs-nav);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);padding:.3rem 0;white-space:nowrap}
+.nav-movil button:hover{color:var(--ink)}
+.nav-movil button[aria-current="true"]{color:var(--ink)}
+.nav-movil button[aria-current="true"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--nude-300)}
 .vista{flex:1;min-width:0}
 .tapa{position:sticky;top:0;height:50px;background:var(--surface);z-index:15;flex:none}
 .enmarcado .ap.movil .barra-top{top:50px}
@@ -614,7 +614,7 @@ button{color:inherit}
   .sw-tema::after{content:"";position:absolute;inset:-8px -4px}
   .repedido-paso button::after,.step button::after{content:"";position:absolute;inset:-5px}
   .repedido-mini::after{content:"";position:absolute;inset:-3px}
-  .nav-movil .ico-btn::after{content:"";position:absolute;inset:-4px}
+  .nav-movil button::after{content:"";position:absolute;inset:-14px -3px}
   .ver-mas::after{content:"";position:absolute;inset:-13px -6px}
   .card-nom::after{content:"";position:absolute;inset:-2px 0}
   .ap.esc .nav-esc button::after{content:"";position:absolute;inset:-6px 0}
