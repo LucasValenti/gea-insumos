@@ -46,7 +46,7 @@ button{color:inherit}
 .card-precio{font-family:var(--serif);font-size:1.1rem;margin-top:auto;padding-top:.35rem}
 .antes{font-size:.72rem;color:var(--ink-faint);text-decoration:line-through;margin-left:.35rem;font-family:var(--sans)}
 .foto{aspect-ratio:1;background:var(--nude-50);display:grid;place-items:center;position:relative;overflow:hidden;border-bottom:1px solid var(--hairline)}
-.tono-punto{width:46%;aspect-ratio:1;border-radius:50%;border:1px solid rgba(17,17,17,.12);box-shadow:var(--shadow-tono)}
+.tono-punto{width:46%;aspect-ratio:1;border-radius:50%;border:1px solid color-mix(in oklab,var(--ink) 14%,transparent);box-shadow:var(--shadow-tono)}
 .foto img{width:100%;height:100%;object-fit:cover;display:block}
 .tono-chip{position:absolute;bottom:.45rem;right:.45rem;width:1.15rem;aspect-ratio:1;border-radius:50%;border:2px solid var(--surface);box-shadow:var(--shadow-tono)}
 .hero-foto{position:relative;aspect-ratio:4/3;overflow:hidden;background:var(--nude-50)}
@@ -81,7 +81,7 @@ button{color:inherit}
 .ap{--ok:#2F6B4F;--h-tabs:56px}
 :root[data-theme="dark"] .ap{--ok:#86C4A2}
 .tonos-mini{display:flex;gap:3px;flex-wrap:wrap;padding-top:.15rem}
-.tonos-mini i{width:11px;height:11px;border-radius:50%;border:1px solid rgba(17,17,17,.14)}
+.tonos-mini i{width:11px;height:11px;border-radius:50%;border:1px solid color-mix(in oklab,var(--ink) 14%,transparent)}
 .tonos-mini u{font-size:.6rem;color:var(--ink-faint);text-decoration:none;align-self:center;margin-left:2px}
 .add{margin-top:.55rem;width:100%;padding:.6rem;font-size:var(--fs-btn-sm)}
 
@@ -123,7 +123,7 @@ button{color:inherit}
 .capa .velo,.capa .hoja,.capa .toast{position:absolute}
 
 /* ---- hoja inferior ---- */
-.velo{position:fixed;inset:0;background:rgba(17,17,17,.32);z-index:60;animation:fade .18s ease}
+.velo{position:fixed;inset:0;background:var(--scrim);z-index:60;animation:fade .18s ease}
 .hoja{position:fixed;left:0;right:0;bottom:0;z-index:61;background:var(--surface);border-top:1px solid var(--border);border-radius:12px 12px 0 0;max-height:86%;overflow-y:auto;animation:sube .24s cubic-bezier(.2,.8,.2,1);box-shadow:var(--shadow-flotante);padding-bottom:env(safe-area-inset-bottom)}
 .hoja-h{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1rem .6rem;position:sticky;top:0;background:var(--surface)}
 .hoja-h b{font-family:var(--serif);font-weight:500;font-size:1.1rem}
@@ -183,11 +183,11 @@ button{color:inherit}
 .tono{border:1px solid var(--hairline);border-radius:var(--radio);background:var(--surface);padding:.45rem;cursor:pointer;display:grid;gap:.35rem;justify-items:center;text-align:center;transition:border-color var(--dur) var(--ease)}
 .tono:hover{border-color:var(--nude-300)}
 .tono[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
-.tono s{width:100%;aspect-ratio:1;border-radius:999px;border:1px solid rgba(17,17,17,.12);box-shadow:var(--shadow-tono);text-decoration:none}
+.tono s{width:100%;aspect-ratio:1;border-radius:999px;border:1px solid color-mix(in oklab,var(--ink) 14%,transparent);box-shadow:var(--shadow-tono);text-decoration:none}
 .tono span{font-size:.62rem;line-height:1.25;color:var(--ink-soft)}
 .tono[data-agotado="true"]{opacity:.45}
 .tono[data-agotado="true"] s{position:relative}
-.tono[data-agotado="true"] s::after{content:"";position:absolute;inset:0;background:linear-gradient(to top right,transparent 47%,rgba(17,17,17,.5) 47%,rgba(17,17,17,.5) 53%,transparent 53%)}
+.tono[data-agotado="true"] s::after{content:"";position:absolute;inset:0;background:linear-gradient(to top right,transparent 47%,color-mix(in oklab,var(--ink) 55%,transparent) 47%,color-mix(in oklab,var(--ink) 55%,transparent) 53%,transparent 53%)}
 .fam{border:1px solid var(--hairline);border-radius:var(--radio);background:var(--surface);padding:.55rem;display:grid;gap:.4rem;justify-items:center;cursor:pointer;transition:border-color var(--dur) var(--ease)}
 .fam:hover{border-color:var(--nude-300)}
 .fam s{width:100%;aspect-ratio:1.4;border-radius:2px;text-decoration:none;box-shadow:var(--shadow-tono)}
@@ -203,7 +203,7 @@ button{color:inherit}
 .repo-fila{display:grid;grid-template-columns:40px 1fr auto;gap:.7rem;align-items:center;padding:.7rem .8rem;border-bottom:1px solid var(--hairline);text-align:left}
 .repo-fila:last-child{border-bottom:0}
 .repo-fila .mini{width:40px;height:40px;border-radius:var(--radio);background:var(--nude-50);border:1px solid var(--hairline);display:grid;place-items:center}
-.repo-fila .mini s{width:60%;aspect-ratio:1;border-radius:50%;text-decoration:none;border:1px solid rgba(17,17,17,.12)}
+.repo-fila .mini s{width:60%;aspect-ratio:1;border-radius:50%;text-decoration:none;border:1px solid color-mix(in oklab,var(--ink) 14%,transparent)}
 .repo-nom{font-size:.86rem;line-height:1.3}
 .repo-meta{font-size:.7rem;color:var(--ink-faint)}
 .mas{width:40px;height:40px;border:1px solid var(--border);border-radius:var(--radio);background:var(--surface);cursor:pointer;font-size:1.1rem;color:var(--ink);display:grid;place-items:center}
@@ -262,6 +262,13 @@ button{color:inherit}
   .ap.esc .nav-esc{grid-area:nav;justify-self:stretch;overflow-x:auto;gap:1.1rem;scrollbar-width:none;padding-bottom:.15rem}
   .ap.esc .nav-esc::-webkit-scrollbar{display:none}
   .ap.esc .nav-esc button{white-space:nowrap}
+}
+/* A 390px el menú se pasaba por 5px y "CONTACTO" quedaba cortado, que se lee
+   como error y no como que hay más para deslizar. Apretando el interletrado y
+   la separación entra completo, sin achicar la tipografía. */
+@media (max-width:479px){
+  .ap.esc .nav-esc{gap:.62rem}
+  .ap.esc .nav-esc button{letter-spacing:.035em}
   .ap.esc .busca-inline{grid-area:nav;max-width:none}
 }
 @media (max-width:560px){
@@ -451,7 +458,7 @@ button{color:inherit}
 .repedido-fila[data-activo="true"]{box-shadow:inset 3px 0 0 var(--nude-300)}
 .repedido-fila[data-off="true"]{opacity:.5}
 .repedido-mini{width:38px;height:38px;border-radius:var(--radio);background:var(--nude-50);border:1px solid var(--hairline);display:grid;place-items:center;flex:none}
-.repedido-mini s{width:58%;aspect-ratio:1;border-radius:50%;text-decoration:none;border:1px solid rgba(17,17,17,.12);box-shadow:var(--shadow-tono);transition:transform .35s var(--sal)}
+.repedido-mini s{width:58%;aspect-ratio:1;border-radius:50%;text-decoration:none;border:1px solid color-mix(in oklab,var(--ink) 14%,transparent);box-shadow:var(--shadow-tono);transition:transform .35s var(--sal)}
 .repedido-mini span{font-size:.5rem;color:var(--nude-300)}
 .repedido-fila:hover .repedido-mini s{transform:scale(1.12)}
 .repedido-txt{display:grid;gap:.1rem;min-width:0}
@@ -561,7 +568,7 @@ button{color:inherit}
 .tono-rail{display:flex;gap:.9rem;overflow-x:auto;padding:.2rem 1rem .5rem;scrollbar-width:none;scroll-snap-type:x proximity}
 .tono-rail::-webkit-scrollbar{display:none}
 .tono-rail button{flex:none;border:0;background:transparent;cursor:pointer;display:grid;gap:.4rem;justify-items:center;padding:0;scroll-snap-align:start;font-family:inherit}
-.tono-rail s{width:2.7rem;height:2.7rem;border-radius:999px;text-decoration:none;box-shadow:var(--shadow-tono);border:1px solid rgba(17,17,17,.1);transition:transform .3s var(--sal),box-shadow .3s var(--sal)}
+.tono-rail s{width:2.7rem;height:2.7rem;border-radius:999px;text-decoration:none;box-shadow:var(--shadow-tono);border:1px solid color-mix(in oklab,var(--ink) 12%,transparent);transition:transform .3s var(--sal),box-shadow .3s var(--sal)}
 .tono-rail button:hover s{transform:scale(1.09) translateY(-2px);box-shadow:var(--shadow-tono),var(--shadow)}
 .tono-rail button:active s{transform:scale(.97)}
 .tono-rail span{font-size:.63rem;letter-spacing:.06em;color:var(--ink-soft)}
@@ -604,4 +611,26 @@ button{color:inherit}
   .btn:hover,.card:hover,.kit:hover,.cat-fila:hover,.cat-carta:hover{transform:none}
   .cat-carta-glow{display:none}
   .btn::after,.kit .brillo{display:none}
+}
+
+/* ================= área táctil ================= */
+/* Medido en 390px: los steppers daban 34x34, las miniaturas 38x38 y los
+   enlaces del menú 33px de alto, contra los 44px que se recomiendan para el
+   dedo. En vez de agrandar los controles y estirar el diseño, un ::after
+   invisible agranda solo la zona sensible: no ocupa lugar en el layout. */
+@media (pointer:coarse){
+  .repedido-paso button,.repedido-mini,.ver-mas,.card-nom,.step button,.ap.esc .nav-esc button{position:relative}
+  .repedido-paso button::after,.step button::after{content:"";position:absolute;inset:-5px}
+  .repedido-mini::after{content:"";position:absolute;inset:-3px}
+  .ver-mas::after{content:"";position:absolute;inset:-13px -6px}
+  .card-nom::after{content:"";position:absolute;inset:-2px 0}
+  .ap.esc .nav-esc button::after{content:"";position:absolute;inset:-6px 0}
+}
+
+/* En pantallas de 320px el menú sigue sin entrar y ahí sí hay que deslizar,
+   así que el degradado avisa que sigue. Arriba de ese ancho entra completo y
+   un degradado estaría mintiendo. Va como celda de la grilla, no dentro del
+   contenedor que scrollea, para que no se desplace con el contenido. */
+@media (max-width:339px){
+  .ap.esc .barra-top-in::after{content:"";grid-area:nav;justify-self:end;align-self:stretch;width:2.2rem;pointer-events:none;background:linear-gradient(to right,transparent,var(--surface))}
 }

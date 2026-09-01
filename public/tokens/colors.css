@@ -9,6 +9,9 @@
   --ink:#111111;
   --ink-soft:#6E6663;
   --ink-faint:#766D69;  /* 4.77:1 sobre --paper. Antes #948B87 daba 3.15 y axe lo marcaba */
+  /* Velo de las hojas inferiores. Estaba escrito a mano en tienda.css y en
+     tema oscuro no oscurecía nada: negro sobre un fondo ya negro. */
+  --scrim:rgba(17,17,17,.32);
 
   /* escala derivada del nude de marca */
   --nude-50:#FAF3F1;
