@@ -34,18 +34,16 @@ Todo lo que se publica vive en `public/`. Lo de afuera es configuración.
 ### HTML
 - `public/index.html` — armazón: carga estilos y scripts, monta la app, y
   guarda el estado general (ruta actual, carrito, búsqueda, datos del
-  checkout) más las preferencias de visualización (tema, tamaño de texto,
-  movimiento), que un script previo a la primera pintura estampa en
-  `<html>` para que no haya destello. Acá están el header, la barra de
-  tabs móvil y el panel de Tweaks.
+  checkout) y el tema elegido, que un script previo a la primera pintura
+  estampa en `<html>` para que no haya destello. Acá están el header, la
+  barra de tabs móvil y el panel de Tweaks.
 
 ### CSS
 - `public/tienda/tienda.css` — todos los estilos de la tienda: header, hero,
   tarjetas de producto, carrito, checkout y los breakpoints responsive.
 - `public/tokens/colors.css`, `typography.css`, `layout.css`, `effects.css`,
-  `theme-dark.css`, `theme-papel.css` — variables del sistema de diseño GEA
-  (paleta nude, el acento vino, tipografías, espaciados, sombras, temas
-  oscuro y papel).
+  `theme-dark.css` — variables del sistema de diseño GEA (paleta nude, el
+  acento vino, tipografías, espaciados, sombras, tema oscuro).
 - `public/base/reset.css`, `public/base/utilities.css` — normalización y utilidades.
 - `public/styles.css` — importa lo anterior.
 

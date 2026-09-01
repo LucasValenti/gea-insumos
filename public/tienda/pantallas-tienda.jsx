@@ -99,40 +99,6 @@
 
   }
 
-  /* Tinta legible sobre un hex arbitrario: se calculan los dos contrastes
-     (WCAG) y gana el mejor. Un umbral fijo fallaba con los metalizados, que
-     son claros de luminancia pero se leen como oscuros. */
-  const lum = (hex) => {
-    const c = [1, 3, 5].map((i) => {
-      const v = parseInt(hex.slice(i, i + 2), 16) / 255;
-      return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
-    });
-    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
-  };
-  const tinta = (hex) => {
-    const L = lum(hex);
-    return (L + 0.05) / 0.05 > 1.05 / (L + 0.05) ? "#111111" : "#FFFFFF";
-  };
-
-  /* Familias de tono: el bloque de color de la home. Los swatches son los hex
-     reales del catálogo, así que lo que se ve acá es lo que llega. */
-  function BloqueFamilias({ ir }) {
-    return (
-      <div className="pad familias">
-        {FAMILIAS.map((f, i) => {
-          const tonos = PR.reduce((a, p) => a + (p.tonos || []).filter((t) => t.fam === f.id).length, 0);
-          return (
-            <button key={f.id} className="fam-b rev-esc" style={{ background: f.hex, color: tinta(f.hex), "--i": i }}
-              onClick={() => ir({ v: "catalogo", fam: f.id })} aria-label={`Ver tonos ${f.nombre.toLowerCase()}`}>
-              <span className="fam-b-txt">
-                <span className="fam-b-nom">{f.nombre}</span>
-                <span className="fam-b-n num">{tonos} tonos</span>
-              </span>
-            </button>);
-        })}
-      </div>);
-  }
-
   /* Cartas de categoría: foto con zoom, brillo que sigue al cursor y CTA que aparece. */
   function CartasCategoria({ ir }) {
     const mover = (e) => {
@@ -233,11 +199,6 @@
         <div className="pad"><div className="gr">{destacados.map((p, i) =>
               <div className="rev" key={p.id} style={{ "--i": i % 4, display: "grid" }}><Tarjeta p={p} ir={ir} onAgregar={agregar} /></div>
               )}</div></div>
-      </section>
-
-      <section className="sec">
-        <div className="pad sec-h"><h2 className="rev">Por familia de tono</h2><span className="eyebrow">Filtra el catálogo</span></div>
-        <BloqueFamilias ir={ir} />
       </section>
 
       {editorial &&
@@ -549,5 +510,5 @@
 
   }
 
-  Object.assign(window, { Inicio, Catalogo, Busqueda, Ficha, Reposicion, Repedido, CartasCategoria, BloqueFamilias, Rail });
+  Object.assign(window, { Inicio, Catalogo, Busqueda, Ficha, Reposicion, Repedido, CartasCategoria, Rail });
 })();

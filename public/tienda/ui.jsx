@@ -21,9 +21,6 @@ const Ico = {
   filtro: <path d="M3 5h18v2.2l-7 6.4V21l-4-2.2v-5.2L3 7.2V5z"/>,
   camion: <path d="M3 5h11v9H3V5zm12 3h3.5L21 11.2V14h-6V8zM7 15.5a2 2 0 110 4 2 2 0 010-4zm11 0a2 2 0 110 4 2 2 0 010-4z"/>,
   reloj: <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 5v5.6l4 2.4-1 1.7-5-3V7h2z"/>,
-  /* contraste: el ícono estándar de accesibilidad visual — anillo con la
-     mitad llena. Se lee igual en cualquier tema, que es justo el punto. */
-  contraste: <><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="M12 3.9a8.1 8.1 0 010 16.2V3.9z" /></>,
   sol: <><circle cx="12" cy="12" r="4.1" /><path d="M12 1.9v2.6M12 19.5v2.6M4.8 4.8l1.9 1.9M17.3 17.3l1.9 1.9M1.9 12h2.6M19.5 12h2.6M4.8 19.2l1.9-1.9M17.3 6.7l1.9-1.9" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" /></>,
   luna: <path d="M20.6 14.7A8.9 8.9 0 019.3 3.4a8.9 8.9 0 1011.3 11.3z" />,
 };
