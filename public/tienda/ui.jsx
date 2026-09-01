@@ -219,18 +219,38 @@ function Pie({ ir }) {
 
 function usarRevelado(deps) {
   React.useEffect(() => {
-    const nodos = [...document.querySelectorAll(".rev:not(.vis), .rev-esc:not(.vis)")];
-    if (!nodos.length) return;
-    let sc = nodos[0].closest(".ap");
+    const SEL = ".rev:not(.vis), .rev-esc:not(.vis)";
+    let sc = document.querySelector(".ap");
     while (sc && sc !== document.body && !/auto|scroll/.test(getComputedStyle(sc).overflowY)) sc = sc.parentElement;
+    const raiz = sc && sc !== document.body ? sc : null;
     const io = new IntersectionObserver((es) => es.forEach((e) => {
       if (e.isIntersecting || e.boundingClientRect.bottom < 0) { e.target.classList.add("vis"); io.unobserve(e.target); }
-    }), { root: sc && sc !== document.body ? sc : null, rootMargin: "0px 0px -6% 0px", threshold: 0.04 });
-    const tope = sc && sc !== document.body ? sc.getBoundingClientRect().top : 0;
-    nodos.forEach((n) => {
+    }), { root: raiz, rootMargin: "0px 0px -6% 0px", threshold: 0.04 });
+
+    const observar = (n) => {
+      if (!n || n.classList.contains("vis")) return;
+      /* El tope se recalcula por nodo: el contenedor puede haberse movido
+         entre el montaje inicial y lo que aparece después. */
+      const tope = raiz ? raiz.getBoundingClientRect().top : 0;
       if (n.getBoundingClientRect().bottom < tope) n.classList.add("vis"); else io.observe(n);
+    };
+    document.querySelectorAll(SEL).forEach(observar);
+
+    /* Lo que se monta DESPUÉS de este efecto no pasaba por acá y quedaba en
+       opacity 0 para siempre: las dependencias solo cambian al cambiar de
+       pantalla, no al agregar o quitar del carrito. Por eso el pedido no
+       mostraba lo recién agregado, y al vaciarlo la reposición quedaba en
+       blanco. El MutationObserver engancha esos nodos nuevos. */
+    const mo = new MutationObserver((cambios) => {
+      for (const c of cambios) for (const n of c.addedNodes) {
+        if (n.nodeType !== 1) continue;
+        if (n.matches && n.matches(SEL)) observar(n);
+        if (n.querySelectorAll) n.querySelectorAll(SEL).forEach(observar);
+      }
     });
-    return () => io.disconnect();
+    mo.observe(document.body, { childList: true, subtree: true });
+
+    return () => { io.disconnect(); mo.disconnect(); };
   }, deps);
 }
 
