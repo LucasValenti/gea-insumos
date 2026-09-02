@@ -676,11 +676,15 @@ function Negocio({ config, recargar, avisar }) {
      3416012708" en vez de resolverlo, y ningún pedido llegaba a ningún lado.
      Un número que parece bien es peor que uno vacío, porque nadie lo revisa. */
   const wa = String(v.whatsapp || "").replace(/\D/g, "");
+  /* El orden importa: "3416012708" es un número local completo al que solo le
+     falta el prefijo, y con el largo primero salía "es corto", que no dice qué
+     hacer. Primero se mira si tiene código de país, que es lo accionable. */
   const problemaWa =
     !wa || wa.startsWith("549000") ? "relleno" :
-    wa.length < 11 ? "corto" :
+    wa.length < 8 ? "corto" :
     !wa.startsWith("54") ? "sinPais" :
-    wa.startsWith("54") && !wa.startsWith("549") ? "sinNueve" : null;
+    !wa.startsWith("549") ? "sinNueve" :
+    wa.length < 12 ? "corto" : null;
   /* La sugerencia solo agrega lo que falta adelante; los dígitos son los que
      ya estaban. */
   const sugerencia = problemaWa === "sinPais" ? "549" + wa
