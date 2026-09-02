@@ -34,12 +34,13 @@ body { background: var(--sunk); margin: 0; }
 .pa-tabs button[aria-current="page"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
 /* ---- buscador ---- */
-.pa-buscar { padding: 0 1rem 1rem; }
+.pa-buscar { padding: 0 1rem 1rem; display: flex; gap: .6rem; flex-wrap: wrap; }
 .pa-buscar input {
-  width: 100%; font-family: inherit; font-size: 1rem; padding: .8rem .9rem;
+  flex: 1 1 12rem; font-family: inherit; font-size: 1rem; padding: .8rem .9rem;
   border: 1px solid var(--border); border-radius: var(--radio);
   background: var(--surface); color: var(--ink); min-height: 46px;
 }
+.pa-buscar .btn { flex: none; min-height: 46px; }
 
 /* ---- lista de productos ---- */
 .pa-lista { display: flex; flex-direction: column; gap: .5rem; padding: 0 1rem; }
@@ -79,10 +80,20 @@ body { background: var(--sunk); margin: 0; }
 
 /* ---- tonos ---- */
 .pa-tonos { display: grid; gap: .4rem; border-top: 1px solid var(--hairline); padding-top: .6rem; }
-.pa-tono { display: flex; align-items: center; gap: .6rem; }
+/* El renglón de un tono lleva la muestra, el nombre, el paso de stock y el
+   botón de quitar. En el celular no entra todo junto y el nombre terminaba
+   cortado en "Nude Ros...", que no alcanza para saber cuál estás tocando. Con
+   wrap, cuando aprieta el nombre se queda solo arriba y los controles bajan. */
+.pa-tono { display: flex; align-items: center; gap: .45rem .6rem; flex-wrap: wrap; }
 .pa-tono s { width: 20px; height: 20px; border-radius: 50%; flex: none; text-decoration: none;
   border: 1px solid color-mix(in oklab, var(--ink) 14%, transparent); }
-.pa-tono-nom { font-size: .85rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pa-tono-nom { font-size: .85rem; flex: 1 1 7rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pa-tono .pa-paso { margin-left: 0; }
+/* Cuando el "Quitar" baja de renglón se va contra la derecha, debajo del paso
+   de stock del mismo tono. Y una línea entre tonos, porque con dos renglones
+   por tono hace falta ver dónde termina uno y empieza el otro. */
+.pa-tono .pa-borrar, .pa-tono .pa-confirma { margin-left: auto; }
+.pa-tono + .pa-tono { border-top: 1px solid var(--hairline); padding-top: .45rem; }
 
 /* ---- formulario ---- */
 .pa-form { display: grid; gap: .9rem; padding: 0 1rem; }
@@ -99,6 +110,16 @@ body { background: var(--sunk); margin: 0; }
 .pa-campo .ayuda { font-size: .76rem; color: var(--ink-soft); }
 .pa-dos { display: grid; gap: .9rem; grid-template-columns: 1fr 1fr; }
 
+/* Un <select> mide por su opción más larga. En una grilla eso no lo achica el
+   1fr: el mínimo de una celda es su contenido, así que "Preparación y
+   removedores" agrandaba la columna, y con ella el formulario entero, que se
+   iba 17px por fuera de la pantalla arrastrando a todos los campos.
+
+   Va nivel por nivel: el mínimo de una grilla no se hereda, y con la de adentro
+   sin declarar volvía a agrandar a la de afuera. */
+.pa-form > *, .pa-dos > *, .pa-tonos > *, .pa-nuevo-tono > * { min-width: 0; }
+.pa-campo select { max-width: 100%; }
+
 /* ---- avisos ---- */
 .pa-aviso {
   display: flex; gap: .6rem; align-items: flex-start; margin: 0 1rem 1rem;
@@ -111,6 +132,13 @@ body { background: var(--sunk); margin: 0; }
 .pa-guardar {
   position: sticky; bottom: 0; padding: 1rem; background: var(--paper);
   border-top: 1px solid var(--hairline); display: flex; gap: .7rem; align-items: center;
+}
+/* La barra de Guardar vive pegada abajo. Sin este margen, cuando el navegador
+   lleva el foco a un campo lo deja apoyado contra el borde inferior, que es
+   justo donde está la barra: el campo queda tapado y el toque se lo come el
+   botón de guardar. Pasa con la ficha larga, que es la mayoría. */
+.pa-form .pa-campo, .pa-chk, .pa-tono, .pa-peligro, .pa-nuevo-tono, .pa-stock {
+  scroll-margin-bottom: 6rem;
 }
 .pa-guardar .estado { font-size: .8rem; color: var(--ink-faint); }
 
@@ -126,6 +154,49 @@ body { background: var(--sunk); margin: 0; }
 @media (min-width: 640px) {
   .pa-fila-h { align-items: center; }
 }
+
+/* ---- ficha de edición ---- */
+.pa-ficha-h { display: flex; align-items: center; gap: .8rem; padding: 0 1rem 1rem; flex-wrap: wrap; }
+.pa-ficha-h .pa-marca { margin-left: auto; }
+/* Sin width:100%. Son items de una grilla y ya se estiran solos; el porcentaje
+   se resolvía contra una caja más ancha que la columna y el botón se iba 17px
+   para afuera, llevándose el formulario entero. */
+.pa-editar { min-height: 44px; margin-top: .2rem; }
+.pa-sub { margin: 0; font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+
+/* Destacado y "lo de siempre" son decisiones de portada, no datos del producto:
+   van juntas y separadas del resto del formulario. */
+.pa-marcas { display: grid; gap: .2rem; border-block: 1px solid var(--hairline); padding: .5rem 0; }
+.pa-chk { display: flex; gap: .7rem; align-items: center; min-height: 44px; cursor: pointer; font-size: .9rem; }
+.pa-chk input { width: 20px; height: 20px; flex: none; accent-color: var(--ink); }
+.pa-chk b { font-weight: 600; }
+
+/* Va con .pa-campo adelante a propósito: .pa-campo input lleva width:100% y le
+   gana por especificidad a un .pa-color suelto. La muestra de color ocupaba la
+   fila entera y empujaba al campo de texto fuera de la pantalla, arrastrando a
+   toda la grilla del formulario con él. */
+.pa-campo .pa-color { width: 52px; height: 46px; padding: 2px; flex: none; cursor: pointer;
+  border: 1px solid var(--border); border-radius: var(--radio); background: var(--surface); }
+.pa-color-fila { display: flex; gap: .5rem; align-items: center; }
+.pa-color-fila input { min-width: 0; }
+
+.pa-nuevo-tono { display: grid; gap: .6rem; border: 1px solid var(--border); border-radius: var(--radio);
+  padding: .8rem; background: var(--paper); }
+.pa-sumar { min-height: 44px; }
+
+/* ---- borrar ---- */
+.pa-borrar, .pa-cancela {
+  flex: none; border: 1px solid var(--border); background: transparent; cursor: pointer;
+  font-family: inherit; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
+  padding: .5rem .9rem; min-height: 40px; border-radius: var(--radio-boton);
+  transition: background .18s var(--ease), color .18s var(--ease), border-color .18s var(--ease);
+}
+.pa-borrar { color: var(--acento-fuerte); border-color: var(--acento-soft); }
+.pa-borrar:hover:not(:disabled) { background: var(--acento-fuerte); color: var(--paper); border-color: var(--acento-fuerte); }
+.pa-cancela { color: var(--ink-soft); }
+.pa-cancela:hover { color: var(--ink); border-color: var(--ink); }
+.pa-confirma { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; font-size: .85rem; }
+.pa-peligro { display: grid; gap: .4rem; justify-items: start; border-top: 1px solid var(--hairline); padding-top: 1rem; }
 
 /* ---- pedidos ---- */
 .pa-tel { font-size: .82rem; color: var(--acento-fuerte); }
