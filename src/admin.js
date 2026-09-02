@@ -7,6 +7,7 @@
 import {
   contrasenaCorrecta, firmarSesion, sesionValida, leerCookie,
   cookieSesion, cookieBorrada, frenado, registrarFallo, limpiarIntentos, MINUTOS_BLOQUEO,
+  epocaSesion, cambiarEpoca,
 } from "./auth.js";
 import { listarPedidos, cerrarPedido } from "./pedidos.js";
 
@@ -107,17 +108,22 @@ export async function rutasAdmin(request, env, url) {
       return json({ error: "Contraseña incorrecta" }, { status: 401 });
     }
     await limpiarIntentos(db, quien);
-    const token = await firmarSesion(env.SESION_SECRETO);
+    const token = await firmarSesion(env.SESION_SECRETO, await epocaSesion(db));
     return json({ ok: true }, { headers: { "set-cookie": cookieSesion(token, url) } });
   }
 
   /* --- de acá para abajo hace falta sesión --- */
-  const activa = await sesionValida(leerCookie(request), env.SESION_SECRETO);
+  const activa = await sesionValida(leerCookie(request), env.SESION_SECRETO, await epocaSesion(db));
 
   if (ruta === "/sesion" && request.method === "GET") return json({ activa });
 
-  if (ruta === "/salir" && request.method === "POST")
+  /* Salir borra la cookie y además cambia la época, así que cualquier token
+     que ya se hubiera emitido deja de servir. Con un solo administrador, que
+     salir cierre la sesión en todos lados es justamente lo que se espera. */
+  if (ruta === "/salir" && request.method === "POST") {
+    if (activa) await cambiarEpoca(db);
     return json({ ok: true }, { headers: { "set-cookie": cookieBorrada(url) } });
+  }
 
   if (!activa) return json({ error: "Necesitás entrar al panel" }, { status: 401 });
 

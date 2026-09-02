@@ -41,7 +41,6 @@
     datos.envio === "transporte" ? "Lo abonás al transporte" :
     env === null ? (z ? "Se cotiza por chat" : "Elegí la zona para calcular") :
     env === 0 ? "Sin cargo" : null;
-    const falta = env === null || env === 0 ? null : ENV.gratisDesde - sub;
     const t = sub + (env || 0);
     return (
       <div className="res">
@@ -58,9 +57,11 @@
 
   }
 
-  /* Progreso hacia el envío sin cargo: la misma info, medible de un vistazo. */
+  /* Progreso hacia el envío sin cargo: la misma info, medible de un vistazo.
+     Si no hay umbral cargado no hay meta que mostrar, y la barra diría "faltan
+     $Infinity". */
   function MetaEnvio({ sub, mostrar = true }) {
-    if (!mostrar) return null;
+    if (!mostrar || !Number.isFinite(ENV.gratisDesde)) return null;
     const listo = sub >= ENV.gratisDesde;
     const pct = Math.min(100, Math.round(sub / ENV.gratisDesde * 100));
     return (
@@ -181,7 +182,7 @@
 
           <h2 className="serif" style={{ margin: "1.8rem 0 .9rem", fontSize: "1.25rem" }}>Entrega</h2>
           <div role="radiogroup" style={{ display: "grid", gap: ".55rem" }}>
-            <Opcion activa={datos.envio === "domicilio"} titulo="Envío a domicilio" detalle={`Costo según zona · sin cargo desde ${$$(ENV.gratisDesde)}`} onClick={() => setDatos({ ...datos, envio: "domicilio" })} />
+            <Opcion activa={datos.envio === "domicilio"} titulo="Envío a domicilio" detalle={`Costo según zona${Number.isFinite(ENV.gratisDesde) ? ` · sin cargo desde ${$$(ENV.gratisDesde)}` : ""}`} onClick={() => setDatos({ ...datos, envio: "domicilio" })} />
             <Opcion activa={datos.envio === "retiro"} titulo="Retiro en el local" detalle="Sin costo · dirección y horarios a confirmar" onClick={() => setDatos({ ...datos, envio: "retiro" })} />
             <Opcion activa={datos.envio === "transporte"} titulo="Encomienda o transporte propio" detalle="Despachamos al transporte que uses" onClick={() => setDatos({ ...datos, envio: "transporte" })} />
           </div>
@@ -253,7 +254,7 @@
     const lineaEnvio = d.envio === "retiro" ? "Envío: retiro en el local, sin cargo"
       : d.envio === "transporte" ? "Envío: por transporte, lo abona quien recibe"
       : pedido.envio == null ? "Envío: A COTIZAR (esa zona no tiene tarifa cargada)"
-      : pedido.envio === 0 ? `Envío: sin cargo (el pedido superó ${$$(ENV.gratisDesde)})`
+      : pedido.envio === 0 ? (Number.isFinite(ENV.gratisDesde) ? `Envío: sin cargo (el pedido superó ${$$(ENV.gratisDesde)})` : "Envío: sin cargo")
       : `Envío: ${$$(pedido.envio)}`;
     /* El mensaje se lleva todo lo que el checkout pidió. Antes viajaban solo el
        nombre y el total: GEA no recibía ni dirección ni teléfono para despachar. */
@@ -326,7 +327,7 @@
         <h2 className="serif" style={{ margin: "2.4rem 0 .6rem", fontSize: "1.3rem" }}>Preguntas frecuentes</h2>
         <Acordeon titulo="¿Hay pedido mínimo?" abierto>Sí, {$$(NEG.minimo)} por ser precio mayorista. El carrito te avisa cuánto falta.</Acordeon>
         <Acordeon titulo="¿Cómo pago?">Efectivo al retirar o contra entrega, y Mercado Pago con link que te enviamos por WhatsApp. Vamos a sumar más medios.</Acordeon>
-        <Acordeon titulo="¿Cuánto sale el envío?">Depende de la zona: {ENV.zonas.filter((z) => z.costo != null).map((z) => `${z.nombre} ${$$(z.costo)}`).join(", ")}. Sin cargo desde {$$(ENV.gratisDesde)}. Si no sabés en qué zona entrás, lo cotizamos por chat.</Acordeon>
+        <Acordeon titulo="¿Cuánto sale el envío?">Depende de la zona: {ENV.zonas.filter((z) => z.costo != null).map((z) => `${z.nombre} ${$$(z.costo)}`).join(", ")}. {Number.isFinite(ENV.gratisDesde) ? ` Sin cargo desde ${$$(ENV.gratisDesde)}.` : ""} Si no sabés en qué zona entrás, lo cotizamos por chat.</Acordeon>
         <Acordeon titulo="¿Hacen precio por cantidad?">Sí, desde 6 unidades del mismo producto. Preguntá en el chat antes de cerrar.</Acordeon>
         <Acordeon titulo="¿Qué pasa si un tono está sin stock?">Te aparece tachado y no se puede agregar. Si lo querés igual, te avisamos cuando repone.</Acordeon>
         <Acordeon titulo="¿Puedo cambiar el pedido después de enviarlo?">Sí, mientras no lo hayamos despachado. Se ajusta por el mismo chat.</Acordeon>

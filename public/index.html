@@ -24,7 +24,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="tienda/tienda.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<!-- Con integridad, como los scripts. Una hoja de estilos de un CDN ajeno no
+     ejecuta código, pero sí puede tapar la pantalla, cambiar lo que dice un
+     botón o mandar a un servidor lo que se escribe en un campo, usando
+     selectores de atributo y fondos. El hash se verificó contra jsDelivr: los
+     dos CDN sirven el mismo archivo byte a byte. -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+      integrity="sha384-Gu3KVV2H9d+yA4QDpVB7VcOyhJlAVrcXd0thEjr4KznfaFPLe0xQJyonVxONa4ZC"
+      crossorigin="anonymous">
 <style>
 /* Animate.css afinado al sistema: duraciones cortas y curva de la marca. */
 :root{--animate-duration:.5s;--animate-delay:.1s}
@@ -370,7 +377,19 @@ function App() {
         body: JSON.stringify({ items: carrito, datos }),
       });
       const d = await r.json();
-      if (r.ok && d.numero) { nro = d.numero; registrado = true; }
+      if (r.ok && d.numero) {
+        nro = d.numero; registrado = true;
+        /* Y los importes también son los suyos. El navegador los calcula para
+           mostrarlos mientras tanto, pero si difieren —cambió un precio entre
+           que se cargó la página y se confirmó— el mensaje de WhatsApp tiene
+           que decir lo mismo que quedó anotado, o se discute por la diferencia
+           con la clienta del otro lado. */
+        if (typeof d.subtotal === "number") {
+          base.sub = d.subtotal;
+          base.envio = d.envio;
+          base.total = d.total;
+        }
+      }
     } catch (e) { /* Se sigue igual: ver abajo. */ }
 
     /* Si no se pudo registrar, el pedido sale lo mismo. Perder la venta porque

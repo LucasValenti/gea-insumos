@@ -14,6 +14,28 @@ import { crearPedido } from "./pedidos.js";
 
 const CACHE = "public, max-age=60, stale-while-revalidate=600";
 
+/* Cabeceras de seguridad para todo lo que sale de acá.
+ *
+ * No hay Content-Security-Policy estricta a propósito: el sitio traduce el JSX
+ * en el navegador, así que Babel necesita eval y los scripts van en línea. Una
+ * CSP que permita 'unsafe-eval' y 'unsafe-inline' no protege de nada y da la
+ * impresión contraria. Si algún día hay paso de build, ahí sí corresponde.
+ *
+ * Lo que sí se puede sostener hoy: que el navegador no adivine el tipo de
+ * contenido, que al salir del sitio no se filtre la dirección completa, y que
+ * nada de esto se pueda incrustar en otro sitio.
+ *
+ * Los archivos estáticos no pasan por acá —Cloudflare los sirve directo desde
+ * el borde cuando existen—, así que las mismas cabeceras están declaradas en
+ * public/_headers. Los dos lugares dicen lo mismo a propósito. */
+const cabeceras = (res) => {
+  const h = new Headers(res.headers);
+  h.set("x-content-type-options", "nosniff");
+  h.set("referrer-policy", "strict-origin-when-cross-origin");
+  h.set("x-frame-options", "DENY");
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
+};
+
 const json = (data, { status = 200, headers = {} } = {}) =>
   new Response(JSON.stringify(data), {
     status,
@@ -124,33 +146,40 @@ async function catalogo(db) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-
-    if (url.pathname === "/api/catalogo") {
-      if (request.method !== "GET") return json({ error: "Método no permitido" }, { status: 405 });
-      try {
-        return json(await catalogo(env.DB), { headers: { "cache-control": CACHE } });
-      } catch (e) {
-        /* Si la base falla, el sitio queda sin catálogo: conviene que se vea
-           el error y no una tienda vacía que parece no tener productos. */
-        return json({ error: "No se pudo leer el catálogo", detalle: String(e && e.message || e) }, { status: 500 });
-      }
-    }
-
-    if (url.pathname === "/api/pedidos" && request.method === "POST") {
-      try { return await crearPedido(request, env); }
-      catch (e) {
-        return json({ error: "No se pudo registrar el pedido", detalle: String(e && e.message || e) }, { status: 500 });
-      }
-    }
-
-    if (url.pathname.startsWith("/api/admin")) {
-      if (!env.ADMIN_PASSWORD || !env.SESION_SECRETO)
-        return json({ error: "El panel no está configurado en este entorno" }, { status: 503 });
-      return rutasAdmin(request, env, url);
-    }
-
-    if (url.pathname.startsWith("/api/")) return json({ error: "No existe" }, { status: 404 });
-
-    return env.ASSETS.fetch(request);
+    return cabeceras(await atender(request, env, url));
   },
 };
+
+async function atender(request, env, url) {
+  if (url.pathname === "/api/catalogo") {
+    if (request.method !== "GET") return json({ error: "Método no permitido" }, { status: 405 });
+    try {
+      return json(await catalogo(env.DB), { headers: { "cache-control": CACHE } });
+    } catch (e) {
+      /* Si la base falla, el sitio queda sin catálogo: conviene que se vea el
+         error y no una tienda vacía que parece no tener productos. El detalle
+         va al registro y no a la respuesta: el mensaje de una falla de SQL
+         cuenta nombres de tablas y columnas a cualquiera que pida la ruta. */
+      console.error("catálogo:", e && e.stack || e);
+      return json({ error: "No se pudo leer el catálogo" }, { status: 500 });
+    }
+  }
+
+  if (url.pathname === "/api/pedidos" && request.method === "POST") {
+    try { return await crearPedido(request, env); }
+    catch (e) {
+      console.error("pedido:", e && e.stack || e);
+      return json({ error: "No se pudo registrar el pedido" }, { status: 500 });
+    }
+  }
+
+  if (url.pathname.startsWith("/api/admin")) {
+    if (!env.ADMIN_PASSWORD || !env.SESION_SECRETO)
+      return json({ error: "El panel no está configurado en este entorno" }, { status: 503 });
+    return rutasAdmin(request, env, url);
+  }
+
+  if (url.pathname.startsWith("/api/")) return json({ error: "No existe" }, { status: 404 });
+
+  return env.ASSETS.fetch(request);
+}

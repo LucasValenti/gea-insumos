@@ -91,7 +91,7 @@ function Stock({ valor, onGuardar }) {
         onChange={(e) => setN(Math.max(0, Number(e.target.value) || 0))}
         onBlur={() => n !== valor && mandar(n)}
         aria-label="Stock"
-        style={estado === "mal" ? { borderColor: "var(--acento)" } : estado === "ok" ? { borderColor: "var(--ok, #2F6B4F)" } : undefined} />
+        style={estado === "mal" ? { borderColor: "var(--acento)" } : estado === "ok" ? { borderColor: "var(--ok)" } : undefined} />
       <button type="button" onClick={() => mandar(n + 1)} aria-label="Sumar uno">+</button>
     </span>
   );

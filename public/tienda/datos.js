@@ -17,7 +17,10 @@ const FAMILIAS = [];
 const PRODUCTOS = [];
 const DESTACADOS = [];
 const HABITUALES = [];
-const ENVIO = { gratisDesde: 0, provisorio: false, zonas: [] };
+/* Infinity y no 0: sin umbral cargado, nada llega al envío sin cargo. Con 0
+   pasaba lo contrario —cualquier subtotal lo superaba— y la tienda anunciaba
+   envío gratis en todos los pedidos. */
+const ENVIO = { gratisDesde: Infinity, provisorio: false, zonas: [] };
 
 const rellenar = (destino, origen) => { destino.length = 0; destino.push(...(origen || [])); };
 
@@ -36,7 +39,7 @@ const cargar = async () => {
   rellenar(PRODUCTOS, d.PRODUCTOS);
   rellenar(DESTACADOS, d.DESTACADOS);
   rellenar(HABITUALES, d.HABITUALES);
-  ENVIO.gratisDesde = d.ENVIO.gratisDesde;
+  ENVIO.gratisDesde = d.ENVIO.gratisDesde == null ? Infinity : d.ENVIO.gratisDesde;
   ENVIO.provisorio = d.ENVIO.provisorio;
   rellenar(ENVIO.zonas, d.ENVIO.zonas);
   cargado = true;
@@ -88,7 +91,11 @@ const buscar = (q) => {
   const palabras = sinTildes(q).trim().split(" ").filter(Boolean);
   if (!palabras.length) return [];
   return PRODUCTOS.filter((p) => {
-    const heno = sinTildes(p.nombre + " " + p.marca + " " + cat(p.cat).nombre + " " + (p.tonos || []).map((x) => x.nombre).join(" "));
+    /* Con || "" y no a secas: desde que el panel deja crear productos, la marca
+       puede no estar, y "nombre" + " " + undefined metía la palabra "undefined"
+       en el índice. Buscar "undefined" devolvía medio catálogo. */
+    const heno = sinTildes([p.nombre, p.marca, cat(p.cat).nombre,
+      (p.tonos || []).map((x) => x.nombre).join(" ")].filter(Boolean).join(" "));
     return palabras.every((w) => heno.includes(w));
   });
 };

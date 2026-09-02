@@ -1,0 +1,20 @@
+# Cabeceras de los archivos estáticos.
+#
+# Las páginas y las fotos no pasan por el Worker: cuando el archivo existe,
+# Cloudflare lo sirve directo desde el borde. Por eso las cabeceras que
+# src/index.js le pone a /api/* no llegan acá, y van declaradas de este lado.
+#
+# No hay Content-Security-Policy: el sitio traduce el JSX en el navegador, así
+# que Babel necesita eval y los scripts van en línea. Una CSP que permita
+# 'unsafe-eval' y 'unsafe-inline' no protege de nada y da la impresión
+# contraria. Si algún día hay paso de build, ahí sí corresponde.
+#
+# Una sola regla y no dos: las reglas de _headers se acumulan, así que una
+# general con SAMEORIGIN más una de /admin/* con DENY dejaba las dos cabeceras
+# puestas, en conflicto, y el navegador elige por su cuenta. DENY para todo es
+# lo que se puede sostener: nada de esto necesita verse dentro de otro sitio.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY

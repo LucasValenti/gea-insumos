@@ -28,6 +28,11 @@
   --vino-700:#6E1524;   /* hover */
   --on-vino:#FFFFFF;
 
+  /* verde de "hay stock" y de "confirmado". Vivía escrito en tienda.css, atado
+     al contenedor de la tienda: el panel no lo tenía y arrastraba un valor de
+     repuesto en cada uso. Acá lo ven los dos, y el tema oscuro lo cambia solo. */
+  --ok:#2F6B4F;
+
   /* aviso de datos de ejemplo / estado provisorio */
   --demo-bg:#FBF2E7;
   --demo-rule:#D9AE79;

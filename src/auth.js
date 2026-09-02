@@ -36,21 +36,39 @@ const igual = (a, b) => {
   return d === 0;
 };
 
-export async function firmarSesion(secreto, ms = DURACION_MS) {
-  const cuerpo = b64url(new TextEncoder().encode(JSON.stringify({ exp: Date.now() + ms })));
+/* La época va firmada adentro del token. Salir la cambia, y con eso todo token
+   emitido antes deja de valer.
+   Sin esto, salir solo borraba la cookie del navegador: el token en sí seguía
+   firmado y con fecha válida hasta ocho horas después, así que una copia
+   tomada antes de salir seguía abriendo el panel. */
+export async function epocaSesion(db) {
+  const r = await db.prepare("SELECT valor FROM config WHERE clave = 'sesion_epoca'").first();
+  return String((r && r.valor) || "0");
+}
+
+export async function cambiarEpoca(db) {
+  await db.prepare(
+    `INSERT INTO config (clave, valor) VALUES ('sesion_epoca', ?)
+     ON CONFLICT(clave) DO UPDATE SET valor = excluded.valor`).bind(String(Date.now())).run();
+}
+
+export async function firmarSesion(secreto, epoca = "0", ms = DURACION_MS) {
+  const cuerpo = b64url(new TextEncoder().encode(JSON.stringify({ exp: Date.now() + ms, ep: String(epoca) })));
   const firma = await crypto.subtle.sign("HMAC", await clave(secreto), new TextEncoder().encode(cuerpo));
   return cuerpo + "." + b64url(firma);
 }
 
-export async function sesionValida(token, secreto) {
+export async function sesionValida(token, secreto, epoca = null) {
   if (!token || typeof token !== "string") return false;
   const [cuerpo, firma] = token.split(".");
   if (!cuerpo || !firma) return false;
   try {
     const esperada = await crypto.subtle.sign("HMAC", await clave(secreto), new TextEncoder().encode(cuerpo));
     if (!igual(new Uint8Array(esperada), deB64url(firma))) return false;
-    const { exp } = JSON.parse(new TextDecoder().decode(deB64url(cuerpo)));
-    return typeof exp === "number" && Date.now() < exp;
+    const { exp, ep } = JSON.parse(new TextDecoder().decode(deB64url(cuerpo)));
+    if (typeof exp !== "number" || Date.now() >= exp) return false;
+    /* epoca null = no se pidió comprobarla (no hay base a mano). */
+    return epoca === null || String(ep ?? "0") === String(epoca);
   } catch { return false; }
 }
 

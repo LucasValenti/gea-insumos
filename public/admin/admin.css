@@ -127,7 +127,7 @@ body { background: var(--sunk); margin: 0; }
   border: 1px solid var(--hairline); background: var(--surface); color: var(--ink-soft);
 }
 .pa-aviso.mal { background: var(--vino-50, var(--nude-50)); color: var(--acento-fuerte); border-color: var(--acento-soft); }
-.pa-aviso.bien { color: var(--ok, #2F6B4F); }
+.pa-aviso.bien { color: var(--ok); }
 
 .pa-guardar {
   position: sticky; bottom: 0; padding: 1rem; background: var(--paper);
@@ -207,7 +207,11 @@ body { background: var(--sunk); margin: 0; }
 .pa-items b { font-weight: 600; }
 .pa-envio, .pa-nota { margin: 0; font-size: .84rem; color: var(--ink-soft); }
 .pa-acciones { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
-.pa-acciones .btn { flex: 1 1 auto; min-height: 46px; }
+/* Los .btn no parten el texto, y "Confirmar y descontar stock" mide 294px. En
+   una pantalla de 320 eso agrandaba la tarjeta entera del pedido y el panel se
+   movía para el costado. Acá el botón puede usar dos renglones. */
+.pa-acciones .btn { flex: 1 1 auto; min-height: 46px; white-space: normal; }
+.pa-fila > *, .pa-items li > * { min-width: 0; }
 .pa-estado { margin: 0; font-size: .82rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
-.pa-estado[data-estado="confirmado"] { color: var(--ok, #2F6B4F); }
+.pa-estado[data-estado="confirmado"] { color: var(--ok); }
 .pa-estado[data-estado="cancelado"] { color: var(--acento-fuerte); }

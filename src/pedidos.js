@@ -66,7 +66,12 @@ export async function crearPedido(request, env) {
     if (!tonosDe.has(t.producto_id)) tonosDe.set(t.producto_id, new Set());
     tonosDe.get(t.producto_id).add(t.nombre);
   }
-  const conf = Object.fromEntries(cfgR.results.map((r) => [r.clave, Number(r.valor)]));
+  /* Vacío no es cero. Si el panel deja "envío sin cargo desde" en blanco se
+     guarda NULL, y Number(null) da 0: con eso todo pedido superaba el umbral y
+     el envío salía gratis siempre. Vacío tiene que significar "no hay envío
+     gratis", no "gratis desde cero". */
+  const aNumero = (v) => (v === null || v === undefined || v === "" ? null : Number(v));
+  const conf = Object.fromEntries(cfgR.results.map((r) => [r.clave, aNumero(r.valor)]));
 
   const lineas = [];
   for (const it of cuerpo.items) {
@@ -84,7 +89,7 @@ export async function crearPedido(request, env) {
   const subtotal = lineas.reduce((a, l) => a + l.precio * l.cantidad, 0);
   const d = cuerpo.datos || {};
   const envioCosto = costoEnvio({ modo: d.envio, zona: d.zona }, subtotal,
-    zonasR.results, conf.envioGratisDesde ?? Infinity);
+    zonasR.results, conf.envioGratisDesde == null ? Infinity : conf.envioGratisDesde);
   const total = subtotal + (envioCosto || 0);
 
   if (conf.minimo && subtotal < conf.minimo)
@@ -121,14 +126,20 @@ export async function crearPedido(request, env) {
 
 export async function listarPedidos(db, estado) {
   const filtro = ["nuevo", "confirmado", "cancelado"].includes(estado) ? estado : null;
-  const [ped, items] = await db.batch([
-    filtro
-      ? db.prepare("SELECT * FROM pedidos WHERE estado = ? ORDER BY creado DESC LIMIT 100").bind(filtro)
-      : db.prepare("SELECT * FROM pedidos ORDER BY creado DESC LIMIT 100"),
-    db.prepare(`SELECT i.* FROM pedido_items i
-                JOIN pedidos p ON p.id = i.pedido_id
-                ORDER BY i.pedido_id DESC`),
-  ]);
+  const ped = await (filtro
+    ? db.prepare("SELECT * FROM pedidos WHERE estado = ? ORDER BY creado DESC LIMIT 100").bind(filtro)
+    : db.prepare("SELECT * FROM pedidos ORDER BY creado DESC LIMIT 100")).all();
+
+  /* Solo los ítems de los pedidos que se están mostrando. Antes traía los de
+     todos los pedidos de la historia y después descartaba: con cien pedidos no
+     se nota, con diez mil el panel tarda y la respuesta pesa de más. */
+  const ids = ped.results.map((p) => p.id);
+  const items = ids.length
+    ? await db.prepare(
+        `SELECT * FROM pedido_items WHERE pedido_id IN (${ids.map(() => "?").join(", ")})`)
+        .bind(...ids).all()
+    : { results: [] };
+
   const porPedido = new Map();
   for (const i of items.results) {
     if (!porPedido.has(i.pedido_id)) porPedido.set(i.pedido_id, []);

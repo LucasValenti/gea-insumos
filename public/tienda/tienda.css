@@ -2,8 +2,6 @@
 .ap{background:var(--paper);color:var(--ink);font-family:var(--sans);min-height:100%;display:flex;flex-direction:column;position:relative}
 .ap *{box-sizing:border-box}
 button{color:inherit}
-:root[data-theme="light"]{color-scheme:light}
-:root[data-theme="dark"]{color-scheme:dark}
 .eyebrow{font-size:var(--fs-eyebrow);letter-spacing:var(--track-eyebrow);text-transform:uppercase;color:var(--ink-faint)}
 .lbl{font-size:var(--fs-label);letter-spacing:var(--track-label);text-transform:uppercase;color:var(--ink-faint)}
 .serif{font-family:var(--serif);font-weight:500}
@@ -22,7 +20,10 @@ button{color:inherit}
 .ico-btn svg{width:20px;height:20px}
 .globo{position:absolute;top:5px;right:4px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:var(--ink);color:var(--paper);font-size:.6rem;font-weight:600;display:grid;place-items:center;line-height:1}
 .barra-bot{position:sticky;bottom:0;z-index:40;height:var(--h-tabs);background:var(--surface);border-top:1px solid var(--hairline);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom)}
-.tab{border:0;background:transparent;cursor:pointer;padding:.5rem .2rem .6rem;display:grid;justify-items:center;gap:.2rem;color:var(--ink-faint);min-height:56px;position:relative}
+/* --ink-soft y no --ink-faint: la etiqueta mide 9.3px y la barra es de vidrio,
+   así que el fondo real es una mezcla con lo que pasa por atrás. Con el tono
+   más claro daba 4.28:1 en claro y 3.74 en oscuro, por debajo del mínimo. */
+.tab{border:0;background:transparent;cursor:pointer;padding:.5rem .2rem .6rem;display:grid;justify-items:center;gap:.2rem;color:var(--ink-soft);min-height:56px;position:relative}
 .tab svg{width:21px;height:21px}
 .tab span{font-size:.58rem;letter-spacing:.09em;text-transform:uppercase}
 .tab[aria-current="true"]{color:var(--ink)}
@@ -107,8 +108,7 @@ button{color:inherit}
 .stock{font-size:.68rem;display:flex;align-items:center;gap:.35rem;color:var(--ink-soft)}
 .stock i{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
 .stock.ok{color:var(--ok)}.stock.bajo{color:var(--acento)}.stock.no{color:var(--ink-faint)}
-.ap{--ok:#2F6B4F;--h-tabs:56px}
-:root[data-theme="dark"] .ap{--ok:#86C4A2}
+.ap{--h-tabs:56px}
 .tonos-mini{display:flex;gap:3px;flex-wrap:wrap;padding-top:.15rem;min-height:13px}
 .tonos-mini i{width:11px;height:11px;border-radius:50%;border:1px solid color-mix(in oklab,var(--ink) 14%,transparent)}
 .tonos-mini u{font-size:.6rem;color:var(--ink-faint);text-decoration:none;align-self:center;margin-left:2px}
@@ -120,7 +120,11 @@ button{color:inherit}
 .chip:hover{border-color:var(--ink);color:var(--ink)}
 .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 .chip b{font-weight:400;color:var(--ink-faint);margin-left:.3rem;font-size:.68rem}
-.chip[aria-pressed="true"] b{color:var(--nude-200)}
+/* El chip activo se pinta con --ink de fondo y --paper de texto, así que en
+   oscuro el fondo es claro. El contador iba con --nude-200, que en oscuro es el
+   nude claro de marca: quedaba claro sobre claro, 1.47:1, ilegible. Se saca del
+   propio texto del chip, apenas apagado, y entonces sigue al tema solo. */
+.chip[aria-pressed="true"] b{color:color-mix(in oklab,var(--paper) 74%,var(--ink))}
 
 /* ---- campos ---- */
 .campo{display:grid;gap:.35rem;margin-bottom:.9rem}
@@ -161,7 +165,13 @@ button{color:inherit}
 
 /* ---- barra fija de acción ---- */
 .accion{position:sticky;bottom:var(--h-tabs);z-index:35;background:var(--surface);border-top:1px solid var(--hairline);padding:.7rem 1rem;display:grid;gap:.6rem;box-shadow:0 -8px 20px -18px rgba(17,17,17,.4)}
-.accion .fila{display:flex;align-items:center;gap:.75rem}
+/* El paso de cantidad y el botón, uno al lado del otro mientras entren. En un
+   celular de 390px no entran: el botón dice "Agregar al pedido · $ 12.400" y no
+   parte, así que la barra medía 420px en una pantalla de 390 y la ficha entera
+   se movía para el costado. Con wrap el botón baja de renglón y ocupa el ancho,
+   que además es más fácil de tocar. */
+.accion .fila{display:flex;align-items:center;gap:.6rem .75rem;flex-wrap:wrap}
+.accion .fila>.step{flex:none}
 .accion .fila>.btn{flex:1}
 
 /* ---- stepper ---- */
@@ -600,7 +610,10 @@ button{color:inherit}
 .sentinela{height:1px;flex:none;margin-bottom:-1px}
 .barra-top,.barra-bot,.accion{transition:background .4s var(--ease),box-shadow .4s var(--ease),border-color .4s var(--ease)}
 @supports (backdrop-filter:blur(6px)) and (background:color-mix(in oklab,red 50%,transparent)){
-  .ap[data-barras="vidrio"] .barra-bot,.ap[data-barras="vidrio"] .accion{background:color-mix(in oklab,var(--surface) 78%,transparent);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35)}
+  /* 90% y no 78%: con más transparencia el fondo de la barra cambiaba según lo
+     que pasara por debajo, y el texto encima quedaba con un contraste distinto
+     en cada pantalla. El desenfoque sigue haciendo el efecto. */
+  .ap[data-barras="vidrio"] .barra-bot,.ap[data-barras="vidrio"] .accion{background:color-mix(in oklab,var(--surface) 90%,transparent);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35)}
   .ap[data-barras="vidrio"][data-pegado="true"] .barra-top{background:color-mix(in oklab,var(--surface) 74%,transparent);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);border-bottom-color:color-mix(in oklab,var(--nude-300) 60%,transparent);box-shadow:0 12px 34px -28px rgba(17,17,17,.75)}
   .ap[data-barras="vidrio"][data-pegado="true"] .busca input{background:color-mix(in oklab,var(--surface) 62%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 }
@@ -638,6 +651,12 @@ button{color:inherit}
   .ver-mas::after{content:"";position:absolute;inset:-13px -6px}
   .card-nom::after{content:"";position:absolute;inset:-2px 0}
   .ap.esc .nav-esc button::after{content:"";position:absolute;inset:-6px 0}
+  /* Faltaban en la lista. La X de la búsqueda es la más chica de todas con
+     34px, y el "+" de la tarjeta y el de reposición se quedan a 2 y 4px. */
+  .busca-x,.card-accion,.mas,.chip{position:relative}
+  .busca-x::after{content:"";position:absolute;inset:-5px}
+  .card-accion::after,.mas::after{content:"";position:absolute;inset:-2px}
+  .chip::after{content:"";position:absolute;inset:-4px 0}
 }
 
 /* En pantallas de 320px el menú sigue sin entrar y ahí sí hay que deslizar,

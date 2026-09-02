@@ -309,7 +309,12 @@
     if (soloStock) lista = lista.filter((p) => p.stock > 0);
     lista = [...lista].sort((a, b) => orden === "menor" ? a.precio - b.precio : orden === "mayor" ? b.precio - a.precio : 0);
     const subs = c !== "todos" ? catDe(c).subs || [] : [];
-    const titulo = fam ? `Tonos ${FAMILIAS.find((f) => f.id === fam).nombre.toLowerCase()}` : c === "todos" ? "Catálogo completo" : catDe(c).nombre;
+    /* Con || {}: si la familia de la ruta ya no existe, el .find devolvía
+       undefined y leerle .nombre tiraba la pantalla entera en blanco. Es el
+       mismo modo de falla que ya había dejado la tienda muerta con un precio
+       indefinido. */
+    const famNom = ((FAMILIAS.find((f) => f.id === fam) || {}).nombre || "").toLowerCase();
+    const titulo = fam ? (famNom ? `Tonos ${famNom}` : "Tonos") : c === "todos" ? "Catálogo completo" : catDe(c).nombre;
 
     return (
       <>
@@ -339,8 +344,11 @@
       </div>
 
       <div className="pad">
+        {/* Limpiar filtros limpia también la familia y la categoría: venían de
+            la ruta, así que el botón dejaba filtros puestos y la pantalla
+            seguía igual de vacía. */}
         {lista.length ? <div className="gr">{lista.map((p) => <Tarjeta key={p.id} p={p} ir={ir} onAgregar={agregar} />)}</div> :
-          <div className="vacio">No hay productos con esos filtros.<Boton variante="ghost" onClick={() => {setSoloStock(false);setSub(null);}}>Limpiar filtros</Boton></div>
+          <div className="vacio">No hay productos con esos filtros.<Boton variante="ghost" onClick={() => {setSoloStock(false);setSub(null);ir({ v: "catalogo" });}}>Limpiar filtros</Boton></div>
           }
       </div>
 

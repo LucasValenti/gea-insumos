@@ -1,3 +1,14 @@
+/* color-scheme le dice al navegador con qué tema pintar lo que no controlamos:
+   las barras de scroll, la lista desplegable de un <select>, el selector de
+   color del panel. Van los tres estados igual que los colores. Estaba solo
+   detrás de [data-theme="dark"] y dentro de tienda.css: un celular en oscuro
+   que nunca tocó el interruptor seguía viendo controles claros, y el panel,
+   que no carga ese archivo, no lo tenía nunca. */
+:root{color-scheme:light}
+:root[data-theme="light"]{color-scheme:light}
+:root[data-theme="dark"]{color-scheme:dark}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){color-scheme:dark}}
+
 /* Modo oscuro. El nude de marca (--nude-200) NO cambia: es la constante de la
    marca. Lo que cambia es todo lo que lo rodea.
    Los valores viven en [data-theme="dark"]; la media query solo delega. */
@@ -17,6 +28,7 @@
   --nude-300:#CFA79C;
   --nude-400:#C89A8C;
   --nude-600:#E0B6A8;
+  --ok:#86C4A2;        /* 8.4:1 sobre el fondo oscuro. El #2F6B4F del tema claro daba 2.81 */
   --vino-50:#2A1A1E;
   --vino-600:#EE9AA6;  /* 8.9:1 sobre el fondo oscuro */
   --vino-700:#F5B3BC;
@@ -32,7 +44,7 @@
     --paper:#121110;--surface:#1A1817;--sunk:#221F1E;--hairline:#2E2A28;--border:#3A3533;
     --ink:#F5F1EF;--ink-soft:#A79E9A;--ink-faint:#9A918C;--scrim:rgba(0,0,0,.62);
     --nude-50:#241D1B;--nude-100:#2E2523;--nude-200:#E2C2B9;--nude-300:#CFA79C;--nude-400:#C89A8C;--nude-600:#E0B6A8;
-    --vino-50:#2A1A1E;--vino-600:#EE9AA6;--vino-700:#F5B3BC;--on-vino:#231014;
+    --ok:#86C4A2;--vino-50:#2A1A1E;--vino-600:#EE9AA6;--vino-700:#F5B3BC;--on-vino:#231014;
     --demo-bg:#2A2318;--demo-rule:#8A6836;--demo-ink:#D9B87E;
     --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 34px -18px rgba(0,0,0,.8);
   }
