@@ -23,12 +23,16 @@ const Ico = {
   reloj: <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 5v5.6l4 2.4-1 1.7-5-3V7h2z"/>,
   sol: <><circle cx="12" cy="12" r="4.1" /><path d="M12 1.9v2.6M12 19.5v2.6M4.8 4.8l1.9 1.9M17.3 17.3l1.9 1.9M1.9 12h2.6M19.5 12h2.6M4.8 19.2l1.9-1.9M17.3 6.7l1.9-1.9" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" /></>,
   luna: <path d="M20.6 14.7A8.9 8.9 0 019.3 3.4a8.9 8.9 0 1011.3 11.3z" />,
+  mas: <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z"/>,
+  tonos: <><circle cx="8.4" cy="9.6" r="4.3" /><circle cx="15.6" cy="9.6" r="4.3" /><circle cx="12" cy="15.4" r="4.3" /></>,
+  campana: <path d="M12 2.5a5.5 5.5 0 00-5.5 5.5v3.4L5 14.6v1.6h14v-1.6l-1.5-3.2V8A5.5 5.5 0 0012 2.5zM9.8 18a2.2 2.2 0 004.4 0H9.8z"/>,
 };
 /* wa, ig y buscar salen del sistema (components/core/IconoWhatsapp.jsx): los dos
    últimos son de trazo, así que cada icono declara sus atributos de svg. */
 const IcoProps = {
   ig: { fill: "none", stroke: "currentColor", strokeWidth: 1.7 },
   buscar: { fill: "none", stroke: "currentColor", strokeWidth: 2 },
+  tonos: { fill: "none", stroke: "currentColor", strokeWidth: 1.6 },
 };
 function I({ n, size }) {
   return <svg viewBox="0 0 24 24" fill="currentColor" {...(IcoProps[n] || {})} aria-hidden="true" style={size ? { width: size, height: size, flex: "none" } : { flex: "none" }}>{Ico[n]}</svg>;
@@ -65,7 +69,7 @@ function Boton({ variante = "primary", tamano = "md", ancho, children, style, hr
   return href ? <a href={href} {...p}>{children}</a> : <button type="button" {...p}>{children}</button>;
 }
 
-function Foto({ p, tono, className = "foto", conPendiente = true }) {
+function Foto({ p, tono, className = "foto" }) {
   const c = tono ? tono.hex : p.color || (p.tonos && p.tonos[0] && p.tonos[0].hex);
   if (p.img) return (
     <div className={className}>
@@ -73,20 +77,33 @@ function Foto({ p, tono, className = "foto", conPendiente = true }) {
       {tono && <span className="tono-chip" style={{ background: tono.hex }} title={tono.nombre}></span>}
     </div>
   );
+  /* Sin foto, el color del producto ocupa el cuadro entero. Antes era un punto
+     chico flotando en un fondo vacío con la chapita "Foto pendiente" debajo:
+     la tarjeta anunciaba lo que le faltaba en vez de mostrar lo que tiene. */
+  if (c) return (
+    <div className={`${className} campo-color`} style={{ "--tono": c }}>
+      <span className="campo-velo" aria-hidden="true"></span>
+    </div>
+  );
+  /* Sin color ni foto (tornos, cabinas, líquidos): placa de marca. Va como SVG
+     decorativo, no como texto: el monograma en texto daba 1.98:1 de contraste
+     y axe lo marcaba en todo el catálogo. */
   return (
-    <div className={className}>
-      {c ? <span className="tono-punto" style={{ background: c }}></span>
-        /* Antes acá iba el monograma GEA como texto en --nude-300: daba 1.98:1
-           y axe lo marcaba 30 veces en el catálogo. Como gráfico decorativo no
-           corre la regla de contraste de texto, y no se pierde nada: la chapita
-           "Foto pendiente" ya lo dice con contraste correcto. */
-        : <svg aria-hidden="true" viewBox="0 0 32 32" width="38" height="38" fill="none"
-            stroke="var(--nude-300)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="4" y="6.5" width="24" height="19" rx="3" />
-            <circle cx="11.5" cy="13" r="2.2" />
-            <path d="M6 21.5l6-5.5 5 4.5 4-3 5 4.5" />
-          </svg>}
-      {conPendiente && <span className="pend">Foto pendiente</span>}
+    <div className={`${className} campo-marca`}>
+      <svg className="campo-placa" aria-hidden="true" viewBox="0 0 120 120" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="gea-placa" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="var(--nude-100)" />
+            <stop offset="1" stopColor="var(--nude-200)" />
+          </linearGradient>
+        </defs>
+        <rect width="120" height="120" fill="url(#gea-placa)" />
+        <text x="60" y="58" textAnchor="middle" fill="var(--nude-400)" opacity=".55"
+          style={{ fontFamily: "var(--serif)", fontSize: "23px", letterSpacing: "4px" }}>GEA</text>
+        <rect x="41" y="66" width="38" height="1" fill="var(--nude-400)" opacity=".5" />
+        <text x="60" y="79" textAnchor="middle" fill="var(--nude-400)" opacity=".5"
+          style={{ fontSize: "6.5px", letterSpacing: "4.2px" }}>INSUMOS</text>
+      </svg>
     </div>
   );
 }
@@ -103,31 +120,41 @@ function Stock({ p, tono, envio = true }) {
 function Tarjeta({ p, ir, onAgregar }) {
   const agot = p.stock === 0;
   const t0 = p.tonos && p.tonos.find((x) => x.stock > 0);
+  const abrir = (e) => { e.preventDefault(); ir({ v: "ficha", id: p.id }); };
+  /* La acción pasó de una barra negra al ancho de la tarjeta a un botón redondo
+     sobre la foto: con ocho tarjetas en pantalla, ocho barras negras pesaban
+     más que los productos. Cada caso lleva al mismo lugar que antes, y
+     "avisame" sigue abriendo WhatsApp con el pedido ya escrito. */
+  const accion = agot
+    ? { ico: "campana", etiqueta: `Avisame cuando entre ${p.nombre}`, href: avisoWhatsapp(p) }
+    : p.tonos
+      ? { ico: "tonos", etiqueta: `Elegir tono de ${p.nombre}`, onClick: abrir }
+      : { ico: "mas", etiqueta: `Agregar ${p.nombre} al pedido`, onClick: () => onAgregar(p) };
   return (
     <div className="card">
       {p.precioAntes && <span className="cinta">Ahorrás {Math.round((1 - p.precio / p.precioAntes) * 100)}%</span>}
       {agot && <span className="cinta gris">Sin stock</span>}
-      <a href="#" onClick={(e) => { e.preventDefault(); ir({ v: "ficha", id: p.id }); }} style={{ display: "block" }} aria-label={p.nombre}>
-        <Foto p={p} tono={t0} />
-      </a>
+      <div className="card-media">
+        <a href="#" onClick={abrir} style={{ display: "block" }} aria-label={p.nombre}>
+          <Foto p={p} tono={t0} />
+        </a>
+        {accion.href
+          ? <a className="add" href={accion.href} target="_blank" rel="noopener" aria-label={accion.etiqueta}><I n={accion.ico} size="18px" /></a>
+          : <button type="button" className="add" onClick={accion.onClick} aria-label={accion.etiqueta}><I n={accion.ico} size="18px" /></button>}
+      </div>
       <div className="card-body">
         <span className="eyebrow">{p.marca}</span>
-        <a href="#" className="card-nom" onClick={(e) => { e.preventDefault(); ir({ v: "ficha", id: p.id }); }}>{p.nombre}</a>
-        {p.tonos && (
-          <span className="tonos-mini">
+        <a href="#" className="card-nom" onClick={abrir}>{p.nombre}</a>
+        {/* El renglón de tonos ocupa lugar aunque el producto no tenga tonos,
+            así las tarjetas de una misma fila terminan alineadas abajo. */}
+        <span className="tonos-mini">
+          {p.tonos && <>
             {p.tonos.slice(0, 6).map((t) => <i key={t.nombre} style={{ background: t.hex }}></i>)}
             {p.tonos.length > 6 && <u>+{p.tonos.length - 6}</u>}
-          </span>
-        )}
+          </>}
+        </span>
         <span className={"card-precio num" + (p.precioAntes ? " precio-oferta" : "")}>{precio(p.precio)}{p.precioAntes && <span className="antes">{precio(p.precioAntes)}</span>}</span>
         <Stock p={p} envio={false} />
-        {/* "Avisarme" llevaba a la ficha, donde el botón estaba deshabilitado:
-            un callejón sin salida. Ahora abre WhatsApp con el pedido escrito. */}
-        <Boton variante={agot ? "ghost" : "primary"} style={{ marginTop: ".55rem", width: "100%", padding: ".62rem", fontSize: "var(--fs-btn-sm)", minHeight: 44 }}
-          href={agot ? avisoWhatsapp(p) : undefined} target={agot ? "_blank" : undefined} rel={agot ? "noopener" : undefined}
-          onClick={agot ? undefined : () => onAgregar(p)}>
-          {agot ? "Avisame cuando entre" : p.tonos ? "Elegir tono" : "Agregar"}
-        </Boton>
       </div>
     </div>
   );

@@ -22,7 +22,9 @@ console.log('\n1. HOME');
 await axe('home');
 
 console.log('\n2. AGREGAR AL PEDIDO');
-const agregar = page.getByRole('button', { name: 'Agregar', exact: true });
+/* La tarjeta ya no lleva un botón que diga "Agregar" a secas: es redondo y su
+   nombre accesible incluye el producto ("Agregar Kit Esculpidas al pedido"). */
+const agregar = page.getByRole('button', { name: /^Agregar .+ al pedido$/ });
 const n = await agregar.count();
 for (let i = 0; i < n; i++) { await agregar.nth(i).click(); await page.waitForTimeout(260); }
 const toast = await page.locator('.toast span').first().textContent().catch(() => null);

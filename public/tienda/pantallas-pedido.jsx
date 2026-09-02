@@ -9,7 +9,7 @@
     const max = stockP(p, it.tono);
     return (
       <div className="item">
-      <Foto p={p} tono={t} conPendiente={false} />
+      <Foto p={p} tono={t} />
       <div style={{ display: "grid", gap: ".3rem" }}>
         <div className="item-top">
           <div style={{ display: "grid", gap: ".1rem" }}>

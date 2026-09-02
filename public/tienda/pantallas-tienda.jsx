@@ -113,10 +113,14 @@
           <span className="cat-carta-foto">
             <img src={c.img} alt="" loading="lazy" decoding="async" />
             <span className="cat-carta-glow" aria-hidden="true"></span>
-            <span className="eyebrow cat-carta-conteo">{conteo[c.id]} productos</span>
           </span>
           <span className="cat-carta-txt">
-            <span className="serif cat-carta-nom">{c.nombre}</span>
+            {/* El conteo estaba en blanco sobre la foto: se leía distinto en
+                cada imagen. Abajo mantiene el mismo contraste siempre. */}
+            <span className="cat-carta-nom-fila">
+              <span className="serif cat-carta-nom">{c.nombre}</span>
+              <span className="eyebrow cat-carta-conteo">{conteo[c.id]} productos</span>
+            </span>
             <span className="cat-carta-desc">{c.desc}</span>
             <span className="cat-carta-cta">Ver la categoría <I n="flecha" size="14px" /></span>
           </span>
@@ -452,7 +456,7 @@
 
           <>
             <div style={{ display: "grid", gridTemplateColumns: "8rem 1fr", gap: "1rem", alignItems: "start" }}>
-              <Foto p={p} tono={t} className="foto" conPendiente={false} />
+              <Foto p={p} tono={t} className="foto" />
               <div>
                 <span className="eyebrow">{p.marca}</span>
                 <h1 className="serif" style={{ margin: ".2rem 0 0", fontSize: "1.35rem", lineHeight: 1.2 }}>{p.nombre}</h1>

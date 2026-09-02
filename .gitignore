@@ -4,3 +4,9 @@ node_modules/
 .env.production
 .DS_Store
 Thumbs.db
+
+# Herramientas del editor, no del sitio: skills de Claude Code y config local.
+.agents/
+.claude/settings.local.json
+.claude/skills/
+skills-lock.json

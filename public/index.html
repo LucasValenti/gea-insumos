@@ -274,7 +274,12 @@ function App() {
     <div className={"ap" + (esc ? " esc" : " movil")} ref={cont} data-btn={t.boton === "cápsula" ? "capsula" : "recto"}
       data-mov={expr ? "expresivo" : "sobrio"} data-barras={t.barras === "vidrio" ? "vidrio" : "opaco"} data-pegado={pegado}>
       {enmarcado && <div className="tapa"></div>}
-      <aside className="aviso" aria-label="Aviso del prototipo">Prototipo con catálogo de ejemplo · el pedido se cierra por WhatsApp</aside>
+      {/* La franja anunciaba "Prototipo con catálogo de ejemplo" al cliente. Ese
+          lugar vale para las dos condiciones que el mayorista necesita saber
+          antes de armar el pedido. */}
+      <aside className="aviso" aria-label="Condiciones de compra">
+        Pedido mínimo {precio(NEGOCIO.minimo)} · Envío sin cargo desde {precio(window.T.ENVIO.gratisDesde)}
+      </aside>
       <div ref={sent} className="sentinela" aria-hidden="true"></div>
       <header className="barra-top">
         <div className="barra-top-in">

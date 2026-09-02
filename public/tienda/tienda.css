@@ -41,15 +41,38 @@ button{color:inherit}
 .gr{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem}
 .card{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radio);overflow:hidden;display:flex;flex-direction:column;position:relative;text-align:left;transition:border-color var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
 .card:hover{border-color:var(--nude-300);box-shadow:var(--shadow)}
-.card-body{padding:.6rem .65rem .7rem;display:flex;flex-direction:column;gap:.2rem;flex:1}
-.card-nom{font-family:var(--serif);font-size:.94rem;line-height:1.25;color:var(--ink)}
-.card-precio{font-family:var(--serif);font-size:1.1rem;margin-top:auto;padding-top:.35rem}
+.card-media{position:relative}
+/* La acción de la tarjeta: un botón redondo sobre la foto. Antes era una barra
+   negra al ancho completo y, con ocho tarjetas en pantalla, esas ocho barras
+   pesaban más que los productos. */
+.add{position:absolute;right:.5rem;bottom:.5rem;width:44px;height:44px;border-radius:50%;border:0;
+  display:grid;place-items:center;cursor:pointer;color:var(--paper);background:var(--ink);
+  box-shadow:0 2px 12px color-mix(in oklab,var(--ink) 26%,transparent);
+  transition:transform .18s var(--sal),background var(--dur) var(--ease)}
+.add:hover,.card:hover .add{background:var(--acento-fuerte)}
+.add:active{transform:scale(.93)}
+.card-body{padding:.7rem .75rem .8rem;display:flex;flex-direction:column;gap:.22rem;flex:1}
+.card-nom{font-family:var(--serif);font-size:.9rem;line-height:1.3;color:var(--ink);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-body .eyebrow{font-size:var(--fs-eyebrow-xs);color:var(--ink-faint)}
+.card-precio{font-family:var(--serif);font-size:1.22rem;margin-top:auto;padding-top:.4rem;letter-spacing:-.01em}
 .antes{font-size:.72rem;color:var(--ink-faint);text-decoration:line-through;margin-left:.35rem;font-family:var(--sans)}
 /* precio rebajado: el mismo vino que la cinta de descuento */
 .precio-oferta{color:var(--acento)}
 .foto{aspect-ratio:1;background:var(--nude-50);display:grid;place-items:center;position:relative;overflow:hidden;border-bottom:1px solid var(--hairline)}
-.tono-punto{width:46%;aspect-ratio:1;border-radius:50%;border:1px solid color-mix(in oklab,var(--ink) 14%,transparent);box-shadow:var(--shadow-tono)}
 .foto img{width:100%;height:100%;object-fit:cover;display:block}
+/* Sin foto, el color del producto ocupa el cuadro entero: el faltante se lee
+   como muestra de color elegida y no como imagen rota. */
+.foto.campo-color{background:
+  radial-gradient(125% 95% at 28% 18%, color-mix(in oklab,#fff 26%, var(--tono)) 0%, transparent 62%),
+  linear-gradient(158deg, var(--tono), color-mix(in oklab,#000 16%, var(--tono)));
+  background-color:var(--tono)}
+.campo-velo{position:absolute;inset:0;
+  box-shadow:inset 0 0 0 1px color-mix(in oklab,#000 8%,transparent),
+             inset 0 -34px 44px -32px color-mix(in oklab,#000 26%,transparent)}
+/* Lo que no tiene ni foto ni color lleva placa de marca. */
+.foto.campo-marca{background:var(--nude-100)}
+.campo-placa{width:100%;height:100%;display:block}
 .tono-chip{position:absolute;bottom:.45rem;right:.45rem;width:1.15rem;aspect-ratio:1;border-radius:50%;border:2px solid var(--surface);box-shadow:var(--shadow-tono)}
 .hero-foto{position:relative;aspect-ratio:4/3;overflow:hidden;background:var(--nude-50)}
 .hero-foto img{width:100%;height:100%;object-fit:cover;object-position:50% 42%;display:block;animation:foto-entra 1.5s var(--sal) both,deriva 26s var(--ease) 1.7s infinite alternate}
@@ -74,7 +97,6 @@ button{color:inherit}
 .banda{margin:0 0 1.1rem;position:relative;overflow:hidden;border-block:1px solid var(--hairline);background:var(--nude-50)}
 .banda img{width:100%;aspect-ratio:5/4;object-fit:cover;object-position:50% 40%;display:block}
 .banda figcaption{position:absolute;inset:auto 0 0;padding:3rem 1.15rem 1.05rem;font-family:var(--serif);font-size:1.02rem;line-height:1.35;color:#fff;background:linear-gradient(to top,rgba(26,17,14,.82),rgba(26,17,14,.5) 42%,transparent)}
-.pend{position:absolute;bottom:.4rem;left:50%;transform:translateX(-50%);font-size:var(--fs-eyebrow-xs);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);background:var(--surface);border:1px solid var(--hairline);padding:.1rem .4rem;border-radius:999px;white-space:nowrap}
 .cinta{position:absolute;top:.45rem;left:.45rem;z-index:2;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;padding:.22rem .45rem;border-radius:999px;background:var(--acento);color:var(--on-acento)}
 .cinta.gris{background:var(--sunk);color:var(--ink-soft)}
 .stock{font-size:.68rem;display:flex;align-items:center;gap:.35rem;color:var(--ink-soft)}
@@ -82,7 +104,7 @@ button{color:inherit}
 .stock.ok{color:var(--ok)}.stock.bajo{color:var(--acento)}.stock.no{color:var(--ink-faint)}
 .ap{--ok:#2F6B4F;--h-tabs:56px}
 :root[data-theme="dark"] .ap{--ok:#86C4A2}
-.tonos-mini{display:flex;gap:3px;flex-wrap:wrap;padding-top:.15rem}
+.tonos-mini{display:flex;gap:3px;flex-wrap:wrap;padding-top:.15rem;min-height:13px}
 .tonos-mini i{width:11px;height:11px;border-radius:50%;border:1px solid color-mix(in oklab,var(--ink) 14%,transparent)}
 .tonos-mini u{font-size:.6rem;color:var(--ink-faint);text-decoration:none;align-self:center;margin-left:2px}
 .add{margin-top:.55rem;width:100%;padding:.6rem;font-size:var(--fs-btn-sm)}
@@ -174,7 +196,7 @@ button{color:inherit}
 
 /* ---- franja de marca / avisos ---- */
 .franja{background:var(--nude-200);color:var(--on-brand);padding:.7rem 1rem;display:flex;gap:.6rem;align-items:center;justify-content:center;font-size:.74rem;letter-spacing:.05em;text-align:center}
-.aviso{background:var(--demo-bg);border-block:1px solid var(--demo-rule);color:var(--demo-ink);padding:.55rem 1rem;font-size:.72rem;text-align:center;letter-spacing:.03em}
+.aviso{background:var(--nude-50);border-block:1px solid var(--hairline);color:var(--ink-soft);padding:.55rem 1rem;font-size:.66rem;text-align:center;letter-spacing:.06em;text-transform:uppercase}
 .nota{background:var(--nude-50);border:1px solid var(--nude-100);border-radius:var(--radio);padding:.8rem .9rem;font-size:.82rem;color:var(--ink-soft)}
 .pie{background:var(--surface);border-top:1px solid var(--hairline);padding:2rem 1rem 2.5rem;display:grid;gap:1.25rem;margin-top:2.5rem}
 .pie a{color:var(--ink-soft);font-size:.86rem}
@@ -432,7 +454,8 @@ button{color:inherit}
 .cat-carta-foto::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(26,17,14,.4),rgba(26,17,14,.05) 52%,transparent);pointer-events:none}
 .cat-carta-glow{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;mix-blend-mode:soft-light;background:radial-gradient(14rem 14rem at var(--mx) var(--my),var(--nude-200),transparent 62%);transition:opacity .4s var(--ease)}
 .cat-carta:hover .cat-carta-glow{opacity:1}
-.cat-carta-conteo{position:absolute;left:.7rem;bottom:.6rem;z-index:3;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.45)}
+.cat-carta-nom-fila{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
+.cat-carta-conteo{color:var(--ink-faint);white-space:nowrap}
 .cat-carta-txt{display:grid;align-content:start;gap:.24rem;padding:.8rem .9rem 1rem}
 .cat-carta-nom{font-size:1.05rem;line-height:1.2}
 .cat-carta-desc{font-size:.8rem;color:var(--ink-soft);text-wrap:pretty}
@@ -513,8 +536,8 @@ button{color:inherit}
 
 /* tarjetas y filas con movimiento */
 .card .foto{transition:background .3s var(--ease)}
-.card .tono-punto,.card .foto img{transition:transform .5s var(--sal)}
-.card:hover .tono-punto,.card:hover .foto img{transform:scale(1.07)}
+.card .foto img{transition:transform .5s var(--sal)}
+.card:hover .foto img{transform:scale(1.07)}
 .card:hover{transform:translateY(-3px)}
 .card .add,.card .btn{transition:background var(--dur) var(--ease),transform .2s var(--sal)}
 
