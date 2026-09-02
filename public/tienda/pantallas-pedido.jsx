@@ -1,7 +1,7 @@
 (() => {
   /* Pantallas de pedido: carrito, checkout, confirmación, ayuda y contacto. */
   const { NEGOCIO: NEG, precio: $$, prod: prodP, stockDe: stockP, HABITUALES: HAB, ENVIO: ENV, zonaDe, costoEnvio } = window.T;
-  const { I, Boton, Foto, Stock, Paso, Campo, Opcion, Acordeon, Pie, Marca } = window;
+  const { I, Boton, Img, Foto, Stock, Paso, Campo, Opcion, Acordeon, Pie, Marca } = window;
 
   function LineaItem({ it, setCant, quitar }) {
     const p = prodP(it.id);
@@ -311,7 +311,7 @@
             </ol>
           </div>
           <figure className="ayuda-foto rev">
-            <img src="tienda/img/manos-editorial.jpg" alt="Manos con esmaltado negro y tortuga" loading="lazy" decoding="async" />
+            <Img src="tienda/img/manos-editorial.webp" alt="Manos con esmaltado negro y tortuga" />
           </figure>
         </div>
 

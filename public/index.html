@@ -1,8 +1,24 @@
 <!doctype html>
 <html lang="es-AR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tienda GEA Insumos — prototipo</title>
+<title>GEA Insumos · Insumos de manicuría por mayor</title>
+<meta name="description" content="Semipermanentes, construcción, decoración y herramientas para manicuría, por mayor. Stock y tiempos de envío a la vista, sin pedir precio por chat. El pedido se cierra por WhatsApp.">
+<link rel="canonical" href="https://gea-insumos.lucas-valenti00.workers.dev/">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#E2C2B9">
+
+<!-- Vista previa al compartir. Importa más que el buscador: acá los links
+     circulan por WhatsApp e Instagram, y sin esto se veía una tarjeta vacía. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="GEA Insumos">
+<meta property="og:locale" content="es_AR">
+<meta property="og:title" content="GEA Insumos · Insumos de manicuría por mayor">
+<meta property="og:description" content="Semipermanentes, construcción, decoración y herramientas. Stock y tiempos de envío a la vista, sin pedir precio por chat.">
+<meta property="og:url" content="https://gea-insumos.lucas-valenti00.workers.dev/">
+<meta property="og:image" content="https://gea-insumos.lucas-valenti00.workers.dev/assets/og-gea.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Manos con uñas esculpidas sobre un muestrario de tips">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://unpkg.com" crossorigin>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,6 +59,32 @@ a{color:var(--ink)}a:hover{color:var(--nude-600)}
   if (window.IntersectionObserver) document.documentElement.classList.add("rev-on");
 })();
 </script>
+<!-- Solo lo que es verdad hoy. Ni dirección, ni teléfono, ni horarios: en
+     datos.js siguen siendo valores de relleno, y declararlos inventados es
+     peor que no declararlos. Entran cuando se carguen de verdad. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://gea-insumos.lucas-valenti00.workers.dev/#negocio",
+      "name": "GEA Insumos",
+      "description": "Insumos de manicuría por mayor: semipermanentes, construcción, decoración y herramientas.",
+      "url": "https://gea-insumos.lucas-valenti00.workers.dev/",
+      "image": "https://gea-insumos.lucas-valenti00.workers.dev/assets/og-gea.jpg",
+      "logo": "https://gea-insumos.lucas-valenti00.workers.dev/assets/favicon.svg"
+    },
+    {
+      "@type": "WebSite",
+      "url": "https://gea-insumos.lucas-valenti00.workers.dev/",
+      "name": "GEA Insumos",
+      "inLanguage": "es-AR",
+      "publisher": { "@id": "https://gea-insumos.lucas-valenti00.workers.dev/#negocio" }
+    }
+  ]
+}
+</script>
 </head>
 <body>
 <div id="root"></div>
@@ -50,6 +92,9 @@ a{color:var(--ink)}a:hover{color:var(--nude-600)}
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <script src="tienda/datos.js"></script>
+<!-- Medidas reales de cada foto, para reservar el lugar antes de que carguen.
+     Lo genera herramientas/imagenes.mjs; no se edita a mano. -->
+<script src="tienda/img/medidas.js"></script>
 <script type="text/babel" src="tweaks-panel.jsx"></script>
 <script type="text/babel" src="ios-frame.jsx"></script>
 <script type="text/babel" src="tienda/ui.jsx"></script>

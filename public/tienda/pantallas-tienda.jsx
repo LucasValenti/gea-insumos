@@ -2,7 +2,7 @@
   /* Pantallas de tienda: inicio (dos direcciones), catálogo, búsqueda y ficha. */
   const { PRODUCTOS: PR, CATEGORIAS: CATS, FAMILIAS, DESTACADOS, HABITUALES, NEGOCIO,
     precio: $, cat: catDe, prod, nombreSub, stockDe, familiasDe, buscar } = window.T;
-  const { I, Marca, Boton, Foto, Stock, Tarjeta, Paso, Acordeon, GrillaTonos, Pie } = window;
+  const { I, Img, Marca, Boton, Foto, Stock, Tarjeta, Paso, Acordeon, GrillaTonos, Pie } = window;
 
   const conteo = Object.fromEntries(CATS.map((c) => [c.id, PR.filter((p) => p.cat === c.id).length]));
 
@@ -110,7 +110,7 @@
         {CATS.map((c, i) =>
         <button key={c.id} className="cat-carta rev-esc" style={{ "--i": i }} onMouseMove={mover} onClick={() => ir({ v: "catalogo", cat: c.id })}>
           <span className="cat-carta-foto">
-            <img src={c.img} alt="" loading="lazy" decoding="async" />
+            <Img src={c.img} />
             <span className="cat-carta-glow" aria-hidden="true"></span>
           </span>
           {/* El conteo estaba en blanco sobre la foto y se leía distinto en cada
@@ -135,7 +135,7 @@
       <div className="card kit">
       <a href="#" className="kit-a" onClick={(e) => {e.preventDefault();ir({ v: "ficha", id: p.id });}}>
         <span className="kit-foto">
-          {p.imgKit && <img src={p.imgKit} alt="" loading="lazy" decoding="async" />}
+          {p.imgKit && <Img src={p.imgKit} />}
           <span className="brillo"></span>
           <span className="eyebrow kit-eyebrow">Kit · {p.contenido}</span>
           {ahorro && <span className="kit-ahorro">Ahorrás {ahorro}%</span>}
@@ -162,7 +162,7 @@
       {editorial ?
         <section className="hero">
           <div className="hero-foto">
-            <img src="tienda/img/hero.jpg" alt="Manos con manicura terminada junto a un abanico de tips" />
+            <Img src="tienda/img/hero.webp" alt="Manos con manicura terminada junto a un abanico de tips" prioridad />
             <span className="gloss" aria-hidden="true"></span>
             <span className="hero-cue" aria-hidden="true"><i></i></span>
           </div>
@@ -208,10 +208,10 @@
         <div className="pad" style={{ paddingTop: "2.2rem" }}>
           <div className="banda-mod banda-gab rev">
             <div className="banda-gab-mosaico">
-              <span className="gab-a"><img src="tienda/img/gab-servicio.jpg" alt="Manicura trabajando sobre la mano de una clienta" loading="lazy" decoding="async" /></span>
-              <span className="gab-b"><img src="tienda/img/gab-torno.jpg" alt="Limado sobre el aspirador de mesa" loading="lazy" decoding="async" /></span>
-              <span className="gab-c"><img src="tienda/img/gab-mesa.webp" alt="Herramientas de manicuría sobre toalla" loading="lazy" decoding="async" /></span>
-              <span className="gab-d"><img src="tienda/img/gab-herramienta.jpg" alt="Tijera de cutícula en mano enguantada" loading="lazy" decoding="async" /></span>
+              <span className="gab-a"><Img src="tienda/img/gab-servicio.webp" alt="Manicura trabajando sobre la mano de una clienta" /></span>
+              <span className="gab-b"><Img src="tienda/img/gab-torno.webp" alt="Limado sobre el aspirador de mesa" /></span>
+              <span className="gab-c"><Img src="tienda/img/gab-mesa.webp" alt="Herramientas de manicuría sobre toalla" /></span>
+              <span className="gab-d"><Img src="tienda/img/gab-herramienta.webp" alt="Tijera de cutícula en mano enguantada" /></span>
             </div>
             <div className="banda-mod-txt">
               <span className="lbl">Todo el gabinete</span>
@@ -254,7 +254,7 @@
             <div className="banda-mod-pila" aria-hidden="true">
               {kits.slice(0, 3).map((p, i) =>
               <span key={p.id} className="banda-mod-carta" style={{ "--n": i }}>
-                <img src={p.imgKit} alt="" loading="lazy" decoding="async" {...(i === 0 ? { "data-comment-anchor": "6074be1d3b-img-172-53" } : {})} />
+                <Img src={p.imgKit} />
               </span>
               )}
             </div>

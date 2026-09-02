@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gea-insumos.lucas-valenti00.workers.dev/sitemap.xml

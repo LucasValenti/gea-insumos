@@ -69,11 +69,25 @@ function Boton({ variante = "primary", tamano = "md", ancho, children, style, hr
   return href ? <a href={href} {...p}>{children}</a> : <button type="button" {...p}>{children}</button>;
 }
 
+/* Imagen con sus medidas reales declaradas. Sin width y height el navegador no
+   sabe cuánto lugar reservar, así que la página salta cuando entra cada foto.
+   Las medidas salen de medidas.js, que genera herramientas/imagenes.mjs. */
+function Img({ src, alt = "", className, prioridad = false }) {
+  const m = (window.MEDIDAS || {})[(src || "").split("/").pop()];
+  return (
+    <img src={src} alt={alt} className={className}
+      width={m && m.w} height={m && m.h}
+      loading={prioridad ? "eager" : "lazy"}
+      fetchPriority={prioridad ? "high" : undefined}
+      decoding="async" />
+  );
+}
+
 function Foto({ p, tono, className = "foto" }) {
   const c = tono ? tono.hex : p.color || (p.tonos && p.tonos[0] && p.tonos[0].hex);
   if (p.img) return (
     <div className={className}>
-      <img src={p.img} alt={p.nombre} loading="lazy" decoding="async" />
+      <Img src={p.img} alt={p.nombre} />
       {tono && <span className="tono-chip" style={{ background: tono.hex }} title={tono.nombre}></span>}
     </div>
   );
@@ -310,5 +324,5 @@ function usarRevelado(deps) {
   }, deps);
 }
 
-Object.assign(window, { usarRevelado, I, Ico, InterruptorTema, Marca, Boton, Foto, Stock, Tarjeta, Hoja, Paso, Campo, Opcion, Acordeon, GrillaTonos, SelectorTono, Pie });
+Object.assign(window, { usarRevelado, I, Ico, Img, InterruptorTema, Marca, Boton, Foto, Stock, Tarjeta, Hoja, Paso, Campo, Opcion, Acordeon, GrillaTonos, SelectorTono, Pie });
 })();

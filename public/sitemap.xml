@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Una sola dirección: las pantallas cambian por estado, no por URL. Cuando
+     cada producto tenga su propia dirección, acá entra una línea por producto
+     y se pueden compartir fichas sueltas por WhatsApp. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://gea-insumos.lucas-valenti00.workers.dev/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

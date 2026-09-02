@@ -66,7 +66,17 @@ en el navegador por Babel. Podés escribir JS normal adentro: funciones,
 `fetch`, `localStorage`, etc.
 
 ### Imágenes
-- `public/tienda/img/` — fotos de producto y de las secciones.
+- `public/tienda/img/` — fotos de producto y de las secciones. Se publican en
+  `.webp`; los `.jpg` de al lado son los originales y no se suben (los excluye
+  `public/.assetsignore`). Para preparar fotos nuevas:
+
+  ```
+  node herramientas/imagenes.mjs
+  ```
+
+  Convierte a WebP, las achica a 1100 px de ancho como mucho y regenera
+  `medidas.js`, que es de donde cada `<img>` saca su `width` y `height` para
+  que la página no salte al cargar.
 
 ## Dónde agregar cosas
 
@@ -116,3 +126,6 @@ Las capturas quedan en la carpeta temporal que imprime al terminar.
 
 `parche.mjs` aplica reemplazos literales sobre un archivo y aborta si el texto
 no aparece exactamente una vez, para no editar a ciegas.
+
+`imagenes.mjs` prepara las fotos (ver arriba). Se corre a mano cuando entran
+fotos nuevas, no en cada build.

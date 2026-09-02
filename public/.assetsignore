@@ -1,0 +1,5 @@
+# Los JPEG son los originales de los que sale cada .webp. Se quedan en el repo
+# para poder recomprimir si cambia la calidad o el tope de ancho, pero no hay
+# que publicarlos: el sitio solo pide .webp y subirlos era 1,6 MB al pedo.
+tienda/img/*.jpg
+tienda/img/*.png

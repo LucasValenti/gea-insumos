@@ -1,48 +1,64 @@
-/* Redimensiona cada foto al doble de lo que el sitio realmente la muestra
-   (medido con herramientas/medidas-img.json), que es lo que necesita una
-   pantalla 2x. Conserva nombre y formato para no tocar referencias; los
-   originales quedan en el historial de git y en la carpeta del escritorio. */
-import sharp from 'sharp';
-import fs from 'fs/promises';
+/* Prepara las fotos para la web: convierte a WebP y deja anotadas las medidas.
+ *
+ *   node herramientas/imagenes.mjs           # convierte lo que falte
+ *   node herramientas/imagenes.mjs --forzar  # rehace todo
+ *
+ * Las medidas van a parar a public/tienda/img/medidas.js, que el sitio usa
+ * para declarar width y height en cada <img>. Sin eso el navegador no sabe
+ * cuánto lugar reservar y la página salta cuando entran las fotos.
+ *
+ * WebP y no JPEG porque pesa cerca de un tercio, y porque el sitio ya pide
+ * navegadores más nuevos que WebP para otras cosas (color-mix, aspect-ratio):
+ * un respaldo en JPEG no sumaría compatibilidad real, solo peso al repo.
+ */
+import sharp from "sharp";
+import { readdir, writeFile, stat } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { join, parse } from "node:path";
 
-const DIR = 'public/tienda/img';
-const TOPE = 1800;          // ninguna foto necesita más que esto
-const POR_DEFECTO = 1200;   // para las que no llegué a medir en pantalla
-const CALIDAD = 82;
+const DIR = "public/tienda/img";
+const CALIDAD = 80;
+/* Ninguna foto se muestra a más de ~770px de ancho real, ni siquiera en un
+   escritorio grande con pantalla 2x. Guardar originales de 1440 era mandar
+   píxeles que el navegador tira. 1100 deja margen y no se nota. */
+const ANCHO_MAX = 1100;
+const forzar = process.argv.includes("--forzar");
 
-const medidas = JSON.parse(await fs.readFile('herramientas/medidas-img.json', 'utf8'));
-const files = (await fs.readdir(DIR)).filter((f) => /\.(jpg|jpeg|png|webp)$/i.test(f));
-let antes = 0, despues = 0, tocados = 0;
+const archivos = (await readdir(DIR)).filter((f) => /\.(jpe?g|png)$/i.test(f));
+const medidas = {};
+let antes = 0, despues = 0;
 
-for (const f of files) {
-  const p = DIR + '/' + f;
-  const bruto = await fs.readFile(p);
-  const m = await sharp(bruto).metadata();
-  antes += bruto.length;
+for (const f of archivos) {
+  const { name } = parse(f);
+  const origen = join(DIR, f);
+  const destino = join(DIR, name + ".webp");
+  antes += (await stat(origen)).size;
 
-  const vista = medidas[f];
-  /* Las fotos se pintan con object-fit: cover, así que el archivo tiene que
-     cubrir AMBOS ejes en una pantalla 2x. Con fit outside la imagen envuelve
-     la caja: usar el lado mayor como tope dejaba el otro eje corto. */
-  const anchoObj = Math.min(TOPE, vista ? Math.ceil(vista.w * 2) : POR_DEFECTO);
-  const altoObj  = Math.min(TOPE, vista ? Math.ceil(vista.h * 2) : POR_DEFECTO);
-  const objetivo = Math.max(anchoObj, altoObj);
-
-  if (Math.max(m.width, m.height) <= objetivo && bruto.length < 250 * 1024) { despues += bruto.length; continue; }
-
-  let t = sharp(bruto).resize({ width: anchoObj, height: altoObj, fit: 'outside', withoutEnlargement: true });
-  t = m.format === 'webp' ? t.webp({ quality: CALIDAD })
-    : m.format === 'png' ? t.png({ compressionLevel: 9 })
-      : t.jpeg({ quality: CALIDAD, mozjpeg: true, progressive: true });
-
-  const salida = await t.toBuffer();
-  if (salida.length >= bruto.length) { despues += bruto.length; continue; }
-  await fs.writeFile(p, salida);
-  const m2 = await sharp(salida).metadata();
-  despues += salida.length;
-  tocados++;
-  console.log(`  ${f.padEnd(24)} ${String(Math.round(bruto.length / 1024)).padStart(5)}KB ${String(m.width).padStart(4)}x${String(m.height).padEnd(4)}`
-    + ` → ${String(Math.round(salida.length / 1024)).padStart(4)}KB ${m2.width}x${m2.height}`
-    + (vista ? `  (en pantalla ${vista.w}x${vista.h})` : '  (sin medir)'));
+  if (!existsSync(destino) || forzar) {
+    await sharp(origen).resize({ width: ANCHO_MAX, withoutEnlargement: true })
+      .webp({ quality: CALIDAD }).toFile(destino);
+  }
+  const m = await sharp(destino).metadata();
+  medidas[name + ".webp"] = { w: m.width, h: m.height };
+  despues += (await stat(destino)).size;
+  console.log(`${name}.webp  ${m.width}x${m.height}`);
 }
-console.log(`\n  ${tocados} optimizadas · total ${(antes / 1048576).toFixed(1)} MB → ${(despues / 1048576).toFixed(2)} MB (-${Math.round((1 - despues / antes) * 100)}%)`);
+
+/* Las que ya estaban en WebP también necesitan sus medidas anotadas. */
+for (const f of (await readdir(DIR)).filter((f) => f.endsWith(".webp"))) {
+  if (medidas[f]) continue;
+  const m = await sharp(join(DIR, f)).metadata();
+  medidas[f] = { w: m.width, h: m.height };
+}
+
+/* Sale como JS y no como JSON para que el sitio lo lea con un <script> normal:
+   sin build, un fetch solo para esto sería un pedido más y una espera antes de
+   poder dibujar. */
+await writeFile(join(DIR, "medidas.js"),
+  "/* Generado por herramientas/imagenes.mjs. No editar a mano. */\n" +
+  "window.MEDIDAS = " + JSON.stringify(medidas, null, 1) + ";\n");
+
+const kb = (n) => Math.round(n / 1024) + "KB";
+console.log(`\n${archivos.length} convertidas: ${kb(antes)} -> ${kb(despues)} ` +
+  `(${Math.round((1 - despues / antes) * 100)}% menos)`);
+console.log(`medidas.js con ${Object.keys(medidas).length} entradas`);
