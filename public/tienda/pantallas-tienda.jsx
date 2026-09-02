@@ -1,7 +1,7 @@
 (() => {
   /* Pantallas de tienda: inicio (dos direcciones), catálogo, búsqueda y ficha. */
   const { PRODUCTOS: PR, CATEGORIAS: CATS, FAMILIAS, DESTACADOS, HABITUALES, NEGOCIO,
-    precio: $, cat: catDe, prod, nombreSub, stockDe, familiasDe, buscar } = window.T;
+    precio: $, cat: catDe, prod, nombreSub, stockDe, familiasDe, buscar, habitualesDe } = window.T;
   const { I, Img, Marca, Boton, Foto, Stock, Tarjeta, Paso, Acordeon, GrillaTonos, Pie } = window;
 
   const conteo = Object.fromEntries(CATS.map((c) => [c.id, PR.filter((p) => p.cat === c.id).length]));
@@ -9,7 +9,7 @@
   function Rail({ children }) {return <div className="rail">{children}</div>;}
 
   function Reposicion({ ir, agregar, enPedido, compacto }) {
-    const items = HABITUALES.map(prod);
+    const items = habitualesDe().map(prod);
     return (
       <div className="repo">
       {items.slice(0, compacto ? 4 : 6).map((p, i) =>
@@ -36,7 +36,7 @@
   /* Repedido: patrón de recompra B2B — el set entero en una carta, cantidades
      editables, faltantes marcados y un solo botón que lo suma completo. */
   function Repedido({ ir, agregar, enPedido }) {
-    const items = HABITUALES.map(prod);
+    const items = habitualesDe().map(prod);
     const [cant, setCant] = React.useState(() => Object.fromEntries(items.map((p) => [p.id, 1])));
     const hay = items.filter((p) => p.stock > 0);
     const total = hay.reduce((a, p) => a + p.precio * (cant[p.id] || 0), 0);
@@ -192,7 +192,11 @@
           <p className="pad" style={{ margin: "0 0 .8rem", fontSize: ".82rem", color: "var(--ink-soft)" }}>Lo que más pediste, listo para sumar de un toque.</p>
           <div className="pad"><Reposicion ir={ir} agregar={agregar} enPedido={enPedido} /></div>
           <div className="pad" style={{ paddingTop: ".8rem" }}>
-            <Boton variante="ghost" ancho onClick={() => HABITUALES.map(prod).forEach((p) => agregar(p, null, 1))}>Sumar los 6 al pedido</Boton>
+            {/* El "6" estaba escrito a mano y la lista ahora puede ser la que
+                guardó el cliente, que no tiene por qué tener seis. */}
+            <Boton variante="ghost" ancho onClick={() => habitualesDe().map(prod).forEach((p) => agregar(p, null, 1))}>
+              Sumar {habitualesDe().length} al pedido
+            </Boton>
           </div>
         </section>
         }

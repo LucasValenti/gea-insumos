@@ -8,6 +8,7 @@ import {
   contrasenaCorrecta, firmarSesion, sesionValida, leerCookie,
   cookieSesion, cookieBorrada, frenado, registrarFallo, limpiarIntentos, MINUTOS_BLOQUEO,
 } from "./auth.js";
+import { listarPedidos, cerrarPedido } from "./pedidos.js";
 
 const json = (data, { status = 200, headers = {} } = {}) =>
   new Response(JSON.stringify(data), {
@@ -112,6 +113,17 @@ export async function rutasAdmin(request, env, url) {
       return json({
         productos: prods.results.map((p) => ({ ...p, tonos: porProd.get(p.id) || [] })),
       });
+    }
+
+    /* --- pedidos --- */
+    if (ruta === "/pedidos" && request.method === "GET")
+      return json(await listarPedidos(db, url.searchParams.get("estado")));
+
+    let mp = ruta.match(/^\/pedido\/(\d+)\/(confirmar|cancelar)$/);
+    if (mp && request.method === "POST") {
+      const r = await cerrarPedido(db, Number(mp[1]), mp[2] === "confirmar" ? "confirmado" : "cancelado");
+      if (r.error) return json({ error: r.error }, { status: r.status });
+      return json(r);
     }
 
     /* --- editar un producto --- */

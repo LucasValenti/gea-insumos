@@ -142,6 +142,14 @@
 
   /* ===================== CHECKOUT ===================== */
   function Checkout({ ir, carrito, datos, setDatos, confirmar }) {
+  /* El pedido ahora se registra en el servidor antes de abrir WhatsApp, así que
+     confirmar tarda. Sin este freno, dos toques seguidos daban dos pedidos. */
+  const [enviando, setEnviando] = React.useState(false);
+  const mandar = async () => {
+    if (enviando) return;
+    setEnviando(true);
+    try { await confirmar(); } finally { setEnviando(false); }
+  };
     const sub = carrito.reduce((a, it) => a + prodP(it.id).precio * it.n, 0);
     const set = (k) => (e) => setDatos({ ...datos, [k]: e.target.value });
     /* Sin aplastar el null: la zona "No sé en qué zona entro" no tiene tarifa y
@@ -216,8 +224,8 @@
             </ul>
             <div className="carro-cta">
               {falta && <span className="carro-aviso">{aviso}</span>}
-              <Boton variante="primary" tamano="lg" style={{ width: "100%", opacity: falta ? .45 : 1 }} disabled={falta} onClick={() => !falta && confirmar()}>
-                <I n="wa" size="16px" /> Enviar el pedido
+              <Boton variante="primary" tamano="lg" style={{ width: "100%", opacity: falta || enviando ? .45 : 1 }} disabled={falta || enviando} onClick={() => !falta && mandar()}>
+                <I n="wa" size="16px" /> {enviando ? "Registrando…" : "Enviar el pedido"}
               </Boton>
             </div>
           </div>
@@ -225,7 +233,7 @@
       </div>
       <div className="accion accion-checkout">
         {falta && <span style={{ fontSize: ".76rem", color: "var(--ink-faint)" }}>{aviso}</span>}
-        <Boton variante="primary" tamano="lg" disabled={falta} style={{ opacity: falta ? .45 : 1 }} onClick={() => !falta && confirmar()}>
+        <Boton variante="primary" tamano="lg" disabled={falta || enviando} style={{ opacity: falta || enviando ? .45 : 1 }} onClick={() => !falta && mandar()}>
           <I n="wa" size="16px" /> Enviar el pedido · {$$(sub + (env || 0))}{env == null && datos.zona ? " + envío" : ""}
         </Boton>
       </div>

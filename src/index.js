@@ -10,6 +10,7 @@
  */
 
 import { rutasAdmin } from "./admin.js";
+import { crearPedido } from "./pedidos.js";
 
 const CACHE = "public, max-age=60, stale-while-revalidate=600";
 
@@ -132,6 +133,13 @@ export default {
         /* Si la base falla, el sitio queda sin catálogo: conviene que se vea
            el error y no una tienda vacía que parece no tener productos. */
         return json({ error: "No se pudo leer el catálogo", detalle: String(e && e.message || e) }, { status: 500 });
+      }
+    }
+
+    if (url.pathname === "/api/pedidos" && request.method === "POST") {
+      try { return await crearPedido(request, env); }
+      catch (e) {
+        return json({ error: "No se pudo registrar el pedido", detalle: String(e && e.message || e) }, { status: 500 });
       }
     }
 

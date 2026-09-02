@@ -5,6 +5,11 @@
  *
  * La mudanza solo está bien si las pantallas no pueden notar la diferencia.
  * Esto lo comprueba campo por campo en vez de confiar en que se ve parecido.
+ *
+ * Sirve para verificar la mudanza, no como control permanente: en cuanto el
+ * stock se mueva de verdad —una venta confirmada desde el panel, una
+ * corrección a mano— va a diferir del catálogo congelado, y con razón. Si
+ * las únicas diferencias son de stock, la mudanza sigue estando bien.
  */
 import { readFile } from "node:fs/promises";
 import { runInNewContext } from "node:vm";

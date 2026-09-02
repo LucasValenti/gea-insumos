@@ -123,3 +123,17 @@ body { background: var(--sunk); margin: 0; }
 @media (min-width: 640px) {
   .pa-fila-h { align-items: center; }
 }
+
+/* ---- pedidos ---- */
+.pa-tel { font-size: .82rem; color: var(--acento-fuerte); }
+.pa-items { list-style: none; margin: 0; padding: .6rem 0; display: grid; gap: .35rem;
+  border-block: 1px solid var(--hairline); font-size: .88rem; }
+.pa-items li { display: flex; gap: .5rem; align-items: baseline; }
+.pa-items li span { margin-left: auto; color: var(--ink-soft); white-space: nowrap; }
+.pa-items b { font-weight: 600; }
+.pa-envio, .pa-nota { margin: 0; font-size: .84rem; color: var(--ink-soft); }
+.pa-acciones { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
+.pa-acciones .btn { flex: 1 1 auto; min-height: 46px; }
+.pa-estado { margin: 0; font-size: .82rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+.pa-estado[data-estado="confirmado"] { color: var(--ok, #2F6B4F); }
+.pa-estado[data-estado="cancelado"] { color: var(--acento-fuerte); }

@@ -54,6 +54,22 @@ const costoEnvio = (datos, sub) => {
 
 /* Tolera que no haya número: antes, un precio indefinido tiraba TypeError
    y con él la página entera, en blanco y sin forma de salir. */
+/* "Lo de siempre" era una lista fija igual para todos. Ahora, si el cliente
+   guardó su propio pedido habitual, manda el suyo. No hay cuentas de usuario:
+   vive en su navegador, que es donde ya vive su carrito. Se filtra contra el
+   catálogo por si guardó algo que después dejó de existir. */
+const HAB_LS = "gea_habituales_v1";
+const guardarHabituales = (ids) => {
+  try { localStorage.setItem(HAB_LS, JSON.stringify([...new Set(ids)].slice(0, 12))); return true; }
+  catch (e) { return false; }
+};
+const habitualesDe = () => {
+  let propios = null;
+  try { propios = JSON.parse(localStorage.getItem(HAB_LS)); } catch (e) {}
+  const lista = Array.isArray(propios) && propios.length ? propios : HABITUALES;
+  return lista.filter((id) => prod(id));
+};
+
 const precio = (n) => (typeof n === "number" && isFinite(n) ? "$ " + n.toLocaleString("es-AR") : "");
 const cat = (id) => CATEGORIAS.find((c) => c.id === id) || {};
 const prod = (id) => PRODUCTOS.find((p) => p.id === id);
@@ -77,5 +93,6 @@ const buscar = (q) => {
   });
 };
 return { NEGOCIO, CATEGORIAS, FAMILIAS, PRODUCTOS, DESTACADOS, HABITUALES, ENVIO, cargar, estaCargado,
+  guardarHabituales, habitualesDe,
   zonaDe, costoEnvio, precio, cat, prod, nombreSub, stockDe, familiasDe, porFamilia, buscar };
 })();

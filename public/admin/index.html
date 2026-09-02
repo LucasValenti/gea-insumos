@@ -171,6 +171,99 @@ function Productos({ productos, recargar, avisar }) {
   );
 }
 
+/* ---------- pedidos ---------- */
+const ESTADOS = { nuevo: "Nuevo", confirmado: "Confirmado", cancelado: "Cancelado" };
+
+function Pedidos({ avisar }) {
+  const [pedidos, setPedidos] = useState(null);
+  const [filtro, setFiltro] = useState("nuevo");
+  const [error, setError] = useState(null);
+  const [yendo, setYendo] = useState(null);
+
+  const cargar = useCallback(async () => {
+    try { setPedidos((await api("/pedidos?estado=" + filtro)).pedidos); setError(null); }
+    catch (e) { setError(e.message); }
+  }, [filtro]);
+  useEffect(() => { cargar(); }, [cargar]);
+
+  const cerrar = async (p, accion) => {
+    setYendo(p.id);
+    try {
+      await api(`/pedido/${p.id}/${accion}`, { method: "POST" });
+      avisar(accion === "confirmar"
+        ? `Pedido #${p.id} confirmado. El stock ya bajó.`
+        : `Pedido #${p.id} cancelado. El stock quedó igual.`);
+      cargar();
+    } catch (e) { setError(e.message); }
+    finally { setYendo(null); }
+  };
+
+  const fecha = (ms) => new Date(ms).toLocaleString("es-AR",
+    { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+
+  return (
+    <>
+      <nav className="pa-tabs" aria-label="Estado de los pedidos">
+        {Object.entries(ESTADOS).map(([id, txt]) => (
+          <button key={id} aria-current={filtro === id ? "page" : undefined} onClick={() => setFiltro(id)}>{txt}</button>
+        ))}
+      </nav>
+      {error && <div className="pa-aviso mal" role="alert">{error}</div>}
+      {!pedidos ? <p className="pa-vacio">Cargando…</p>
+        : !pedidos.length ? <p className="pa-vacio">No hay pedidos {ESTADOS[filtro].toLowerCase()}s.</p>
+        : (
+        <div className="pa-lista">
+          {pedidos.map((p) => (
+            <div className="pa-fila" key={p.id}>
+              <div className="pa-fila-h">
+                <span style={{ minWidth: 0 }}>
+                  <span className="pa-marca">#{String(p.id).padStart(4, "0")} · {fecha(p.creado)}</span>
+                  <span className="pa-nom" style={{ display: "block" }}>{p.nombre || "Sin nombre"}</span>
+                  {p.telefono && <a className="pa-tel" href={"https://wa.me/" + p.telefono.replace(/\D/g, "")}
+                    target="_blank" rel="noopener">{p.telefono}</a>}
+                </span>
+                <span className="pa-precio">{plata(p.total)}</span>
+              </div>
+
+              <ul className="pa-items">
+                {p.items.map((i, j) => (
+                  <li key={j}>
+                    <b>{i.cantidad}&times;</b> {i.nombre}{i.tono ? ` · ${i.tono}` : ""}
+                    <span>{plata(i.precio * i.cantidad)}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <p className="pa-envio">
+                {p.envio_modo === "domicilio" ? `Envío a domicilio${p.envio_zona ? " · " + p.envio_zona : ""}`
+                  : p.envio_modo === "retiro" ? "Retira en el local" : "Por transporte"}
+                {p.envio_costo === null ? " · a cotizar" : p.envio_costo === 0 ? " · sin cargo" : " · " + plata(p.envio_costo)}
+                {p.direccion ? ` · ${p.direccion}` : ""}
+              </p>
+              {p.nota && <p className="pa-nota">Nota: {p.nota}</p>}
+
+              {p.estado === "nuevo" ? (
+                <div className="pa-acciones">
+                  {/* Confirmar descuenta el stock; cancelar no toca nada. */}
+                  <button className="btn btn-primary" disabled={yendo === p.id} onClick={() => cerrar(p, "confirmar")}>
+                    {yendo === p.id ? "Guardando…" : "Confirmar y descontar stock"}
+                  </button>
+                  <button className="pa-salir" disabled={yendo === p.id} onClick={() => cerrar(p, "cancelar")}>Cancelar</button>
+                </div>
+              ) : (
+                <p className="pa-estado" data-estado={p.estado}>
+                  {ESTADOS[p.estado]}{p.cerrado ? " el " + fecha(p.cerrado) : ""}
+                  {p.estado === "confirmado" && " · el stock ya bajó"}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 /* ---------- datos del negocio ---------- */
 const CAMPOS_NEGOCIO = [
   ["whatsapp", "WhatsApp", "Con código de país y sin signos: 5493415551234", "tel"],
@@ -293,7 +386,7 @@ function Envios({ zonas, recargar, avisar }) {
 
 /* ---------- armazón ---------- */
 function Panel({ onSalir }) {
-  const [tab, setTab] = useState("productos");
+  const [tab, setTab] = useState("pedidos");
   const [datos, setDatos] = useState(null);
   const [error, setError] = useState(null);
   const [aviso, setAviso] = useState(null);
@@ -341,13 +434,14 @@ function Panel({ onSalir }) {
           asociados) que no hay. Son botones de navegación, y aria-current
           dice cuál está abierto. */}
       <nav className="pa-tabs" aria-label="Secciones del panel">
-        {[["productos", "Productos y stock"], ["negocio", "Datos del negocio"], ["envios", "Envíos"]].map(([id, txt]) => (
+        {[["pedidos", "Pedidos"], ["productos", "Productos y stock"], ["negocio", "Datos del negocio"], ["envios", "Envíos"]].map(([id, txt]) => (
           <button key={id} aria-current={tab === id ? "page" : undefined} onClick={() => setTab(id)}>{txt}</button>
         ))}
       </nav>
 
       <main>
         {aviso && <div className="pa-aviso bien" role="status">{aviso}</div>}
+        {tab === "pedidos" && <Pedidos avisar={avisar} />}
         {tab === "productos" && <Productos productos={datos.productos} recargar={cargar} avisar={avisar} />}
         {tab === "negocio" && <Negocio config={config} recargar={cargar} avisar={avisar} />}
         {tab === "envios" && <Envios zonas={datos.envio.zonas} recargar={cargar} avisar={avisar} />}

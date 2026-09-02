@@ -112,3 +112,48 @@ CREATE TABLE IF NOT EXISTS intentos_login (
   cuando INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_intentos_ip ON intentos_login(ip, cuando);
+
+-- Pedidos. Hasta la fase 4 el pedido no lo veía ningún servidor: el navegador
+-- inventaba un número al azar y abría WhatsApp. Ahora queda registrado antes
+-- de abrir el chat, con número correlativo de verdad.
+CREATE TABLE IF NOT EXISTS pedidos (
+  id       INTEGER PRIMARY KEY AUTOINCREMENT,
+  creado   INTEGER NOT NULL,
+  -- nuevo -> confirmado (descuenta stock) | cancelado (no descuenta)
+  estado   TEXT NOT NULL DEFAULT 'nuevo',
+  cerrado  INTEGER,
+  nombre      TEXT,
+  telefono    TEXT,
+  gabinete    TEXT,
+  envio_modo  TEXT,
+  envio_zona  TEXT,
+  direccion   TEXT,
+  cp          TEXT,
+  transporte  TEXT,
+  pago        TEXT,
+  nota        TEXT,
+  subtotal    INTEGER NOT NULL,
+  -- NULL significa "a cotizar", que no es lo mismo que 0 (sin cargo).
+  envio_costo INTEGER,
+  total       INTEGER NOT NULL
+);
+
+-- El nombre y el precio quedan congelados: el producto puede cambiar de precio
+-- o de nombre después, y el pedido tiene que seguir diciendo lo que se pidió.
+CREATE TABLE IF NOT EXISTS pedido_items (
+  pedido_id   INTEGER NOT NULL REFERENCES pedidos(id) ON DELETE CASCADE,
+  producto_id TEXT NOT NULL,
+  tono        TEXT,
+  cantidad    INTEGER NOT NULL,
+  precio      INTEGER NOT NULL,
+  nombre      TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_pedidos_estado ON pedidos(estado, creado);
+CREATE INDEX IF NOT EXISTS idx_items_pedido   ON pedido_items(pedido_id);
+
+-- Freno para el alta de pedidos: es una ruta pública que escribe.
+CREATE TABLE IF NOT EXISTS pedidos_ritmo (
+  ip     TEXT NOT NULL,
+  cuando INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_ritmo_ip ON pedidos_ritmo(ip, cuando);

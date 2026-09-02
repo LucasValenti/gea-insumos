@@ -59,8 +59,24 @@ Todo lo que se publica vive en `public/`. Lo de afuera es configuración.
 
 ## El panel
 
-En `/admin`. Se entra con una contraseña y sirve para cargar stock, precios,
-los datos del negocio y las tarifas de envío sin tocar código.
+En `/admin`. Se entra con una contraseña y sirve para ver los pedidos que
+entran, cargar stock y precios, y completar los datos del negocio y las
+tarifas de envío sin tocar código.
+
+**Pedidos.** Cada pedido queda registrado antes de que se abra WhatsApp, con
+número correlativo de verdad. En el panel se confirma o se cancela:
+
+- **Confirmar** descuenta el stock de cada línea, todo en una sola operación:
+  o se descuenta entero y el pedido queda confirmado, o no pasa nada. Un
+  descuento a medias dejaría el stock mintiendo.
+- **Cancelar** no toca el stock.
+- Un pedido solo se puede cerrar una vez. Sin esa condición, tocar dos veces
+  "confirmar" descontaría el doble.
+
+Los precios de un pedido los pone el servidor, no el navegador: lo que llega
+del cliente son ids, tonos y cantidades. Confiar en el precio que manda el
+navegador sería dejar que cualquiera arme un pedido de cien mil pesos por dos
+mil cambiando un número en la consola.
 
 La contraseña y la clave de firma viven como secretos de Cloudflare, nunca en
 el repositorio. Para cambiarlas:
@@ -88,6 +104,11 @@ node herramientas/panel-seguridad.mjs                          # contra el dev l
 node herramientas/panel-seguridad.mjs https://gea-insumos...   # contra producción
 ```
 
+`herramientas/pedidos-prueba.mjs` recorre un pedido de punta a punta: que quede
+registrado, que confirmarlo descuente el stock exacto, que cancelarlo no lo
+toque, que no se pueda cerrar dos veces y que los precios los ponga el
+servidor. Deja el stock como estaba al terminar.
+
 ### La base y la API
 - `src/index.js` — el Worker. Atiende `/api/catalogo`, las rutas del panel y le
   pasa todo lo demás al sitio estático.
@@ -96,6 +117,7 @@ node herramientas/panel-seguridad.mjs https://gea-insumos...   # contra producci
 - `src/admin.js` — rutas de escritura. Los campos que se pueden escribir están
   enumerados uno por uno: sin esa lista, un pedido armado a mano podría tocar
   cualquier columna.
+- `src/pedidos.js` — alta de pedidos y cierre con descuento de stock.
 - `public/admin/` — la pantalla del panel.
 - `db/esquema.sql` — las tablas: productos, tonos, categorías, familias, zonas
   de envío y datos del negocio.
@@ -148,6 +170,7 @@ en el navegador por Babel. Podés escribir JS normal adentro: funciones,
 | Cambiar stock o precios | el panel, en `/admin` |
 | Cargar WhatsApp, ciudad y horarios | el panel, solapa "Datos del negocio" |
 | Cambiar tarifas de envío | el panel, solapa "Envíos" |
+| Ver los pedidos que entran | el panel, solapa "Pedidos" |
 | Sumar un producto nuevo | por ahora, SQL contra la base |
 | Nueva sección en el inicio | `public/tienda/pantallas-tienda.jsx` + estilos en `public/tienda/tienda.css` |
 | Cambiar el carrito o el checkout | `public/tienda/pantallas-pedido.jsx` |
@@ -158,8 +181,10 @@ en el navegador por Babel. Podés escribir JS normal adentro: funciones,
 
 Prototipo funcional: catálogo, búsqueda, ficha, carrito con tonos y
 cantidades, checkout y confirmación. El pedido se cierra por WhatsApp. **No**
-hay pagos online ni stock que se descuente solo. El catálogo ya sale de una
-base; el carrito se guarda en `localStorage` del navegador.
+hay pagos online: el pedido se cierra por WhatsApp. El catálogo sale de una
+base, los pedidos quedan registrados y el stock baja al confirmarlos desde el
+panel. El carrito y el pedido habitual de cada cliente se guardan en el
+`localStorage` de su navegador.
 
 Datos pendientes de cargar desde el panel: número de WhatsApp, usuario de
 Instagram, ciudad y horarios. Hoy siguen con valores de relleno, y hasta que

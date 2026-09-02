@@ -341,12 +341,43 @@ function App() {
   const setCant = (it, n) => setCarrito((c) => c.map((x) => (x === it || (x.id === it.id && x.tono === it.tono) ? { ...x, n } : x)).filter((x) => x.n > 0));
   const quitar = (it) => setCarrito((c) => c.filter((x) => !(x.id === it.id && x.tono === it.tono)));
   const enPedido = (id) => carrito.some((x) => x.id === id);
-  const confirmar = () => {
+  /* El botón "Guardar como habitual" mostraba un cartel y no guardaba nada.
+     Sin cuentas de usuario, el único lugar honesto es el navegador del propio
+     cliente, que es donde ya vive su carrito. */
+  const guardarHabitual = () => {
+    const ids = (pedido ? pedido.items : carrito).map((it) => it.id);
+    if (!ids.length) return;
+    const guardo = window.T.guardarHabituales(ids);
+    setToast({ txt: guardo
+      ? `Guardado: ${ids.length} productos en "Lo de siempre"`
+      : "No pudimos guardarlo en este navegador" });
+  };
+
+  const confirmar = async () => {
     const sub = carrito.reduce((a, it) => a + prod(it.id).precio * it.n, 0);
     /* null = no se puede calcular todavía (zona sin tarifa). No lo aplastamos a 0:
        el mensaje de WhatsApp anunciaba "sin cargo" un envío que falta cotizar. */
     const env = costoEnvio(datos, sub);
-    setPedido({ nro: nroPedido(), items: carrito, sub, envio: env, total: sub + (env || 0), datos });
+    const base = { items: carrito, sub, envio: env, total: sub + (env || 0), datos };
+
+    /* El pedido queda registrado antes de abrir WhatsApp, y de ahí sale el
+       número. Los importes que valen son los que devuelve el servidor: los de
+       acá son para mostrar mientras tanto. */
+    let nro = nroPedido(), registrado = false;
+    try {
+      const r = await fetch("/api/pedidos", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ items: carrito, datos }),
+      });
+      const d = await r.json();
+      if (r.ok && d.numero) { nro = d.numero; registrado = true; }
+    } catch (e) { /* Se sigue igual: ver abajo. */ }
+
+    /* Si no se pudo registrar, el pedido sale lo mismo. Perder la venta porque
+       falló la conexión con nuestra base sería peor que no tener el registro:
+       el pedido de verdad se cierra por WhatsApp. */
+    setPedido({ ...base, nro, registrado });
     /* El carrito NO se vacía acá: el pedido todavía no salió. Se vacía recién
        cuando tocan "Enviar por WhatsApp" en la confirmación. */
     ir({ v: "ok" });
@@ -377,7 +408,7 @@ function App() {
     ficha: <window.Ficha ir={ir} ruta={ruta} agregar={agregar} direccion={t.direccion} />,
     carrito: <window.Carrito ir={ir} carrito={carrito} setCant={setCant} quitar={quitar} agregar={agregar} enPedido={enPedido} />,
     checkout: <window.Checkout ir={ir} carrito={carrito} datos={datos} setDatos={setDatos} confirmar={confirmar} />,
-    ok: <window.Confirmacion ir={ir} pedido={pedido} vaciar={() => setCarrito([])} guardarHabituales={() => setToast({ txt: "Guardado como pedido habitual" })} />,
+    ok: <window.Confirmacion ir={ir} pedido={pedido} vaciar={() => setCarrito([])} guardarHabituales={guardarHabitual} />,
     ayuda: <window.Ayuda ir={ir} />,
     contacto: <window.Contacto ir={ir} />,
   }[ruta.v];
