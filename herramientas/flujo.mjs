@@ -1,7 +1,11 @@
 import { chromium } from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
 
-const BASE = 'http://127.0.0.1:8788/';
+/* El sitio ya no se puede probar contra archivos estáticos: el catálogo lo
+   sirve el Worker en /api/catalogo. Por eso apunta a `wrangler dev`
+   (npm run dev), no a herramientas/servidor.mjs. Se puede pasar otra
+   dirección por GEA_URL para auditar producción. */
+const BASE = process.env.GEA_URL || 'http://127.0.0.1:8787/';
 const nav = await chromium.launch();
 const ctx = await nav.newContext({ viewport: { width: 1440, height: 900 } });
 const page = await ctx.newPage();

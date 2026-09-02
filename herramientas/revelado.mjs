@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 const nav = await chromium.launch();
 const page = await (await nav.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true })).newPage();
-await page.goto('http://127.0.0.1:8788/', { waitUntil: 'networkidle' });
+await page.goto(process.env.GEA_URL || 'http://127.0.0.1:8787/', { waitUntil: 'networkidle' });
 await page.waitForSelector('.ap'); await page.waitForTimeout(1000);
 const tabs = page.locator('.barra-bot button');
 

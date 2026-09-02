@@ -1,5 +1,9 @@
 import { chromium } from 'playwright';
-const BASE = 'http://127.0.0.1:8788/';
+/* El sitio ya no se puede probar contra archivos estáticos: el catálogo lo
+   sirve el Worker en /api/catalogo. Por eso apunta a `wrangler dev`
+   (npm run dev), no a herramientas/servidor.mjs. Se puede pasar otra
+   dirección por GEA_URL para auditar producción. */
+const BASE = process.env.GEA_URL || 'http://127.0.0.1:8787/';
 const nav = await chromium.launch();
 
 for (const v of [{ id: 'movil-390', w: 390, h: 844 }, { id: 'escritorio-1440', w: 1440, h: 900 }]) {

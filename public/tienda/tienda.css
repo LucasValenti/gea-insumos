@@ -659,3 +659,14 @@ button{color:inherit}
 .sw-tema[aria-checked="true"] .sw-pista{color:var(--paper)}
 .sw-bolita{position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:var(--surface);color:var(--ink);display:grid;place-items:center;box-shadow:var(--shadow);transition:transform .26s var(--sal,cubic-bezier(.22,.72,.24,1))}
 .sw-tema[aria-checked="true"] .sw-bolita{transform:translateX(24px);background:var(--paper)}
+
+/* ---- espera del catálogo ---- */
+/* El catálogo llega por red. Mientras tanto la tienda no puede mostrar
+   productos, y una grilla vacía se lee como "no hay stock". */
+.cargando-pantalla{min-height:60vh;display:grid;place-content:center;justify-items:center;
+  gap:.9rem;padding:3rem 1.5rem;text-align:center}
+.cargando-marca{color:var(--ink-faint);animation:respira 1.8s var(--ease) infinite}
+.cargando-t{font-size:1.15rem}
+.cargando-p{color:var(--ink-soft);font-size:.9rem;max-width:34ch}
+@keyframes respira{0%,100%{opacity:.4}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.cargando-marca{animation:none;opacity:.7}}

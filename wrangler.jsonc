@@ -8,12 +8,29 @@
   // Sin telemetría de Cloudflare.
   "send_metrics": false,
 
+  // El sitio dejó de ser solo archivos: este script atiende /api/* y le pasa
+  // todo lo demás al binding ASSETS, que sirve public/ igual que antes.
+  "main": "src/index.js",
+
   "assets": {
     "directory": "./public",
 
     // La tienda es una sola página: la navegación pasa por estado de
     // React, no por direcciones. Cualquier ruta devuelve la app en vez
     // de un 404, así un link mal copiado igual abre.
-    "not_found_handling": "single-page-application"
-  }
+    "not_found_handling": "single-page-application",
+
+    // Con "main" presente hay que nombrar el binding para poder servir los
+    // archivos desde el Worker.
+    "binding": "ASSETS"
+  },
+
+  // El catálogo: productos, tonos, categorías, envíos y datos del negocio.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "gea-catalogo",
+      "database_id": "a44a717e-bc5f-4b2a-b1ce-a41a1288c72f"
+    }
+  ]
 }

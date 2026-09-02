@@ -2,7 +2,11 @@ import { chromium } from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
 import fs from 'fs/promises';
 
-const BASE = 'http://127.0.0.1:8788/';
+/* El sitio ya no se puede probar contra archivos estáticos: el catálogo lo
+   sirve el Worker en /api/catalogo. Por eso apunta a `wrangler dev`
+   (npm run dev), no a herramientas/servidor.mjs. Se puede pasar otra
+   dirección por GEA_URL para auditar producción. */
+const BASE = process.env.GEA_URL || 'http://127.0.0.1:8787/';
 const OUT = 'C:/Users/Lucas/AppData/Local/Temp/claude/c--Users-Lucas-proyectos-gea-insumos/1c52ca13-f0eb-4cc4-8526-febb796ce818/scratchpad/shots';
 await fs.mkdir(OUT, { recursive: true });
 

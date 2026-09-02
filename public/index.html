@@ -127,14 +127,17 @@ const leerVer = () => { try { return JSON.parse(localStorage.getItem(VER_LS)) ||
 
 /* Lo guardado puede venir de una versión anterior del catálogo. Si un producto
    o un tono ya no existe, prod(it.id).precio tiraba TypeError y la tienda
-   quedaba en blanco, sin forma de salir salvo borrar el localStorage a mano. */
-const sanear = (g) => ({
-  carrito: (Array.isArray(g.carrito) ? g.carrito : []).filter((it) => {
-    const p = it && prod(it.id);
-    if (!p || !(it.n > 0)) return false;
-    return !it.tono || (p.tonos || []).some((x) => x.nombre === it.tono);
-  }),
-  datos: g.datos && typeof g.datos === "object" ? g.datos : null,
+   quedaba en blanco, sin forma de salir salvo borrar el localStorage a mano.
+
+   Va partido en dos porque el catálogo ahora llega por red: contrastar el
+   carrito contra los productos hay que hacerlo DESPUÉS de que lleguen, o se
+   borraría entero por comparar contra una lista vacía. Lo que no depende del
+   catálogo se puede sanear de entrada. */
+const saneaDatos = (g) => (g && g.datos && typeof g.datos === "object" ? g.datos : null);
+const saneaCarrito = (carrito) => (Array.isArray(carrito) ? carrito : []).filter((it) => {
+  const p = it && prod(it.id);
+  if (!p || !(it.n > 0)) return false;
+  return !it.tono || (p.tonos || []).some((x) => x.nombre === it.tono);
 });
 
 /* Número legible y ordenable por fecha. El azar solo desempata dentro del
@@ -163,9 +166,13 @@ const usarAncho = (consulta) => {
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const angosto = usarAncho("(max-width: 820px)");
-  const guardado = React.useRef(sanear(cargar()));
+  const guardado = React.useRef(cargar());
   const [ruta, setRuta] = React.useState({ v: "inicio" });
-  const [carrito, setCarrito] = React.useState(guardado.current.carrito || []);
+  /* Entra crudo: recién se contrasta contra el catálogo cuando el catálogo
+     llega, más abajo. */
+  const [carrito, setCarrito] = React.useState(() =>
+    Array.isArray(guardado.current.carrito) ? guardado.current.carrito : []);
+  const [catalogo, setCatalogo] = React.useState({ estado: "cargando", error: null });
   const [q, setQ] = React.useState("");
   const [hoja, setHoja] = React.useState(null);
   const [toast, setToast] = React.useState(null);
@@ -175,7 +182,7 @@ function App() {
      de desmontaje y capa quedaba apuntando a un nodo muerto al volver de la
      vista móvil a escritorio; las hojas y el toast dejaban de verse. */
   const capaRef = React.useCallback((n) => setCapa(n), []);
-  const [datos, setDatos] = React.useState(guardado.current.datos || { nombre: "", tel: "", gabinete: "", envio: "domicilio", zona: "", direccion: "", cp: "", transporte: "", pago: "mp", nota: "" });
+  const [datos, setDatos] = React.useState(saneaDatos(guardado.current) || { nombre: "", tel: "", gabinete: "", envio: "domicilio", zona: "", direccion: "", cp: "", transporte: "", pago: "mp", nota: "" });
   const [ver, setVer] = React.useState(leerVer);
   const [osOscuro, setOsOscuro] = React.useState(() => !!(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches));
   /* Al volver de oscuro se restituye lo que había —"automático" incluido— y
@@ -187,7 +194,23 @@ function App() {
   const [busca, setBusca] = React.useState(false);
   const vuelta = React.useRef({ v: "inicio" });
 
-  window.usarRevelado([ruta, t.direccion, t.vista, angosto]);
+  /* El catálogo llega de /api/catalogo. Hasta que llega no hay productos, así
+     que las pantallas mostrarían una tienda vacía: por eso se espera. Y recién
+     con los productos a mano se puede contrastar el carrito guardado, que
+     puede traer cosas que ya no existen. */
+  React.useEffect(() => {
+    let vivo = true;
+    window.T.cargar()
+      .then(() => {
+        if (!vivo) return;
+        setCarrito((c) => saneaCarrito(c));
+        setCatalogo({ estado: "listo", error: null });
+      })
+      .catch((e) => { if (vivo) setCatalogo({ estado: "error", error: String(e.message || e) }); });
+    return () => { vivo = false; };
+  }, []);
+
+  window.usarRevelado([ruta, t.direccion, t.vista, angosto, catalogo.estado]);
   /* Barra de vidrio: se activa recién cuando el contenido pasó por debajo. */
   React.useEffect(() => {
     const n = sent.current;
@@ -329,7 +352,25 @@ function App() {
     ir({ v: "ok" });
   };
 
-  const P = {
+  /* Mientras el catálogo viaja no hay nada que mostrar, y una tienda vacía se
+     lee como una tienda sin productos. Si además falla, hay que decirlo: el
+     silencio haría pensar que no hay stock. */
+  const P = catalogo.estado !== "listo" ? (
+    <div className="cargando-pantalla">
+      {catalogo.estado === "error" ? (
+        <>
+          <p className="serif cargando-t">No pudimos cargar el catálogo</p>
+          <p className="cargando-p">Puede ser la conexión. Probá de nuevo en un momento.</p>
+          <Boton variante="primary" onClick={() => location.reload()}>Reintentar</Boton>
+        </>
+      ) : (
+        <>
+          <span className="cargando-marca" aria-hidden="true"><Marca tamano="medio" /></span>
+          <p className="cargando-p" role="status">Cargando el catálogo…</p>
+        </>
+      )}
+    </div>
+  ) : {
     inicio: <window.Inicio ir={ir} agregar={agregar} enPedido={enPedido} direccion={t.direccion} />,
     catalogo: <window.Catalogo ir={ir} ruta={ruta} agregar={agregar} destino={capa} />,
     buscar: <window.Busqueda ir={ir} agregar={agregar} q={q} setQ={setQ} />,
@@ -366,9 +407,11 @@ function App() {
       {/* La franja anunciaba "Prototipo con catálogo de ejemplo" al cliente. Ese
           lugar vale para las dos condiciones que el mayorista necesita saber
           antes de armar el pedido. */}
-      <aside className="aviso" aria-label="Condiciones de compra">
-        Pedido mínimo {precio(NEGOCIO.minimo)} · Envío sin cargo desde {precio(window.T.ENVIO.gratisDesde)}
-      </aside>
+      {catalogo.estado === "listo" && (
+        <aside className="aviso" aria-label="Condiciones de compra">
+          Pedido mínimo {precio(NEGOCIO.minimo)} · Envío sin cargo desde {precio(window.T.ENVIO.gratisDesde)}
+        </aside>
+      )}
       <div ref={sent} className="sentinela" aria-hidden="true"></div>
       <header className="barra-top">
         <div className="barra-top-in">

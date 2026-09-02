@@ -1,5 +1,5 @@
 import { chromium } from 'playwright';
-const BASE = process.argv[2] || 'http://127.0.0.1:8788/';
+const BASE = process.argv[2] || process.env.GEA_URL || 'http://127.0.0.1:8787/';
 const nav = await chromium.launch();
 const page = await (await nav.newContext({ viewport: { width: 390, height: 844 } })).newPage();
 const t0 = Date.now();
