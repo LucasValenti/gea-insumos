@@ -40,6 +40,19 @@ const MEDIR = () => {
     const conBorde = parseFloat(s.borderTopWidth) > 0 && !transparente(s.borderTopColor);
     const conFondo = !transparente(s.backgroundColor);
     return {
+      /* Cuatro cosas se tocan y no son botones: la tarjeta de una categoría, su
+         fila en el listado, la baldosa de un tono y la fila de una opción de
+         envío o de pago. Llevan el radio de las superficies porque son
+         superficies, y con forma de píldora quedarían ridículas.
+
+         Van nombradas y no medidas. Antes esto se decidía por la altura —menos
+         de 56px es un botón—, y en producción una zona de envío sin costo quedó
+         de un solo renglón, bajó a 53px y la herramienta la denunció como botón
+         cuadrado. El tamaño no dice qué es una cosa.
+
+         Va con matches y no con closest a propósito: el botón de agregar vive
+         adentro de la tarjeta y sí tiene que ser cápsula. */
+      superficie: el.matches(".cat-carta, .cat-fila, .tono, .opt"),
       etiqueta: (el.className && typeof el.className === "string" ? "." + el.className.trim().split(/\s+/).join(".") : el.tagName.toLowerCase()),
       texto: (el.getAttribute("aria-label") || el.value || el.textContent || "").trim().replace(/\s+/g, " ").slice(0, 34),
       w: Math.round(r.width), h: Math.round(r.height),
@@ -54,13 +67,6 @@ const nav = await chromium.launch();
 const ctx = await nav.newContext({ viewport: { width: 402, height: 860 }, isMobile: true, hasTouch: true });
 const page = await ctx.newPage();
 
-/* Dónde termina el botón y empieza la superficie. Un botón entra en el alto de
-   un dedo: los más grandes del sistema son los de 48px. Lo que pasa de ahí ya
-   no es un botón aunque se toque —la tarjeta de una categoría, la baldosa de un
-   tono, la fila de una opción de envío— y lleva el radio de las superficies.
-   Una tarjeta de 173x285 con forma de píldora sería un disparate. */
-const ALTO_BOTON = 56;
-
 let cuadrados = 0, sinCaja = 0, medidos = 0, superficies = 0;
 const revisar = async (pantalla) => {
   await page.waitForTimeout(500);
@@ -70,7 +76,7 @@ const revisar = async (pantalla) => {
        son botones. Se cuentan pero no se exigen. */
     if (c.campo) continue;
     if (!c.caja) { sinCaja++; continue; }
-    if (c.h > ALTO_BOTON) { superficies++; continue; }
+    if (c.superficie) { superficies++; continue; }
     medidos++; n++;
     const capsula = c.radio >= Math.min(c.w, c.h) / 2 - 1;
     if (!capsula) {
