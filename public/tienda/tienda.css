@@ -41,21 +41,26 @@ button{color:inherit}
 .gr{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem}
 .card{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radio);overflow:hidden;display:flex;flex-direction:column;position:relative;text-align:left;transition:border-color var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
 .card:hover{border-color:var(--nude-300);box-shadow:var(--shadow)}
-.card-media{position:relative}
-/* La acción de la tarjeta: un botón redondo sobre la foto. Antes era una barra
-   negra al ancho completo y, con ocho tarjetas en pantalla, esas ocho barras
-   pesaban más que los productos. */
-.add{position:absolute;right:.5rem;bottom:.5rem;width:44px;height:44px;border-radius:50%;border:0;
-  display:grid;place-items:center;cursor:pointer;color:var(--paper);background:var(--ink);
-  box-shadow:0 2px 12px color-mix(in oklab,var(--ink) 26%,transparent);
-  transition:transform .18s var(--sal),background var(--dur) var(--ease)}
-.add:hover,.card:hover .add{background:var(--acento-fuerte)}
-.add:active{transform:scale(.93)}
+.card-media{display:block;position:relative}
+/* Pie de la tarjeta: precio y stock a la izquierda, la acción a la derecha.
+   Antes era una barra negra al ancho completo —con ocho tarjetas en pantalla
+   pesaban más que los productos— y después un círculo encima de la foto, que
+   tapaba el producto y chocaba con la cinta de descuento. Acá la acción queda
+   al lado del precio, que es donde se decide comprar. */
+.card-pie{display:flex;flex-direction:column;gap:.3rem;margin-top:auto;padding-top:.5rem}
+.card-pie-b{display:flex;align-items:center;justify-content:space-between;gap:.5rem;min-width:0}
+.card-pie-b .stock{min-width:0}
+.card-accion{flex:none;width:42px;height:42px;border-radius:50%;
+  border:1px solid var(--border);background:var(--surface);color:var(--ink);
+  display:grid;place-items:center;cursor:pointer;
+  transition:background var(--dur) var(--ease),color var(--dur) var(--ease),border-color var(--dur) var(--ease),transform .18s var(--sal)}
+.card-accion:hover{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.card-accion:active{transform:scale(.92)}
 .card-body{padding:.7rem .75rem .8rem;display:flex;flex-direction:column;gap:.22rem;flex:1}
 .card-nom{font-family:var(--serif);font-size:.9rem;line-height:1.3;color:var(--ink);
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card-body .eyebrow{font-size:var(--fs-eyebrow-xs);color:var(--ink-faint)}
-.card-precio{font-family:var(--serif);font-size:1.22rem;margin-top:auto;padding-top:.4rem;letter-spacing:-.01em}
+.card-precio{font-family:var(--serif);font-size:1.22rem;letter-spacing:-.01em;line-height:1.15}
 .antes{font-size:.72rem;color:var(--ink-faint);text-decoration:line-through;margin-left:.35rem;font-family:var(--sans)}
 /* precio rebajado: el mismo vino que la cinta de descuento */
 .precio-oferta{color:var(--acento)}
@@ -107,7 +112,6 @@ button{color:inherit}
 .tonos-mini{display:flex;gap:3px;flex-wrap:wrap;padding-top:.15rem;min-height:13px}
 .tonos-mini i{width:11px;height:11px;border-radius:50%;border:1px solid color-mix(in oklab,var(--ink) 14%,transparent)}
 .tonos-mini u{font-size:.6rem;color:var(--ink-faint);text-decoration:none;align-self:center;margin-left:2px}
-.add{margin-top:.55rem;width:100%;padding:.6rem;font-size:var(--fs-btn-sm)}
 
 /* ---- chips / filtros ---- */
 .rail{display:flex;gap:.45rem;overflow-x:auto;padding:0 1rem .2rem;scrollbar-width:none;-webkit-overflow-scrolling:touch}
@@ -190,8 +194,8 @@ button{color:inherit}
 /* ---- linea de item de carrito ---- */
 .item{display:grid;grid-template-columns:76px 1fr;gap:.8rem;padding:.9rem 0;border-bottom:1px solid var(--hairline)}
 .item .foto{border:1px solid var(--hairline);border-radius:var(--radio)}
-.item-top{display:flex;justify-content:space-between;gap:.6rem;align-items:flex-start}
-.quitar{border:0;background:transparent;color:var(--ink-faint);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;padding:.2rem 0}
+.item-top{display:flex;justify-content:space-between;gap:.6rem;align-items:flex-start;flex-wrap:wrap}
+.quitar{flex:none;border:0;background:transparent;color:var(--ink-faint);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;padding:.2rem 0;white-space:nowrap}
 .quitar:hover{color:var(--nude-600)}
 
 /* ---- franja de marca / avisos ---- */
@@ -222,8 +226,8 @@ button{color:inherit}
 .repo{display:grid;gap:0;background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radio)}
 .repo-fila{display:grid;grid-template-columns:40px 1fr auto;gap:.7rem;align-items:center;padding:.7rem .8rem;border-bottom:1px solid var(--hairline);text-align:left}
 .repo-fila:last-child{border-bottom:0}
-.repo-fila .mini{width:40px;height:40px;border-radius:var(--radio);background:var(--nude-50);border:1px solid var(--hairline);display:grid;place-items:center}
-.repo-fila .mini s{width:60%;aspect-ratio:1;border-radius:50%;text-decoration:none;border:1px solid color-mix(in oklab,var(--ink) 14%,transparent)}
+.repo-fila .mini{width:40px;height:40px;border-radius:var(--radio);overflow:hidden;border:1px solid var(--hairline);display:block}
+.mini-foto{border-bottom:0;border-radius:0}
 .repo-nom{font-size:.86rem;line-height:1.3}
 .repo-meta{font-size:.7rem;color:var(--ink-faint)}
 .mas{width:40px;height:40px;border:1px solid var(--border);border-radius:var(--radio);background:var(--surface);cursor:pointer;font-size:1.1rem;color:var(--ink);display:grid;place-items:center}
@@ -451,21 +455,12 @@ button{color:inherit}
 .cat-carta-foto{position:relative;display:block;aspect-ratio:4/3;overflow:hidden;background:var(--nude-50)}
 .cat-carta-foto img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .85s var(--sal)}
 .cat-carta:hover .cat-carta-foto img{transform:scale(1.07)}
-.cat-carta-foto::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(26,17,14,.4),rgba(26,17,14,.05) 52%,transparent);pointer-events:none}
 .cat-carta-glow{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;mix-blend-mode:soft-light;background:radial-gradient(14rem 14rem at var(--mx) var(--my),var(--nude-200),transparent 62%);transition:opacity .4s var(--ease)}
 .cat-carta:hover .cat-carta-glow{opacity:1}
-.cat-carta-nom-fila{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
-.cat-carta-conteo{color:var(--ink-faint);white-space:nowrap}
+.cat-carta-conteo{margin-top:.5rem;font-size:var(--fs-eyebrow-xs);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
 .cat-carta-txt{display:grid;align-content:start;gap:.24rem;padding:.8rem .9rem 1rem}
 .cat-carta-nom{font-size:1.05rem;line-height:1.2}
 .cat-carta-desc{font-size:.8rem;color:var(--ink-soft);text-wrap:pretty}
-.cat-carta-cta{display:flex;align-items:center;gap:.4rem;margin-top:.35rem;font-size:var(--fs-eyebrow);letter-spacing:var(--track-eyebrow);text-transform:uppercase;color:var(--nude-600)}
-.cat-carta-cta svg{transition:transform .35s var(--sal)}
-.cat-carta:hover .cat-carta-cta svg{transform:translateX(5px)}
-@media (hover:hover) and (pointer:fine){
-  .cat-carta-cta{opacity:0;transform:translateY(5px);transition:opacity .3s var(--ease),transform .38s var(--sal)}
-  .cat-carta:hover .cat-carta-cta,.cat-carta:focus-visible .cat-carta-cta{opacity:1;transform:none}
-}
 
 /* ---- carta de repedido ---- */
 .repedido{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radio);overflow:hidden}
@@ -545,7 +540,7 @@ button{color:inherit}
 .card .foto img{transition:transform .5s var(--sal)}
 .card:hover .foto img{transform:scale(1.07)}
 .card:hover{transform:translateY(-3px)}
-.card .add,.card .btn{transition:background var(--dur) var(--ease),transform .2s var(--sal)}
+.card .card-accion,.card .btn{transition:background var(--dur) var(--ease),transform .2s var(--sal)}
 
 .cat-fila{color:var(--ink);background:var(--surface);border:1px solid var(--hairline);border-left:3px solid var(--nude-200);border-radius:var(--radio);padding:.9rem 1rem;display:grid;gap:.2rem;text-align:left;cursor:pointer;position:relative;transition:border-color var(--dur) var(--ease),border-left-width .25s var(--sal),transform .28s var(--sal),box-shadow .28s var(--sal),padding-left .28s var(--sal)}
 .cat-fila:hover{border-color:var(--nude-300);border-left-width:7px;padding-left:calc(1rem - 4px);box-shadow:var(--shadow);transform:translateX(2px)}
@@ -585,8 +580,8 @@ button{color:inherit}
 
 .repo-fila{transition:background var(--dur) var(--ease)}
 .repo-fila:hover{background:var(--nude-50)}
-.repo-fila .mini s,.repo-fila .mini span{transition:transform .35s var(--sal)}
-.repo-fila:hover .mini s{transform:scale(1.12)}
+.repo-fila .mini .foto{transition:transform .35s var(--sal)}
+.repo-fila:hover .mini .foto{transform:scale(1.08)}
 .mas{transition:background var(--dur) var(--ease),border-color var(--dur) var(--ease),transform .2s var(--sal)}
 .mas:hover{transform:scale(1.08)}
 .mas:active{transform:scale(.94)}

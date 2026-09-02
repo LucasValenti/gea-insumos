@@ -108,10 +108,12 @@ function Foto({ p, tono, className = "foto" }) {
   );
 }
 
-function Stock({ p, tono, envio = true }) {
+function Stock({ p, tono, envio = true, breve = false }) {
   const n = stockDe(p, tono);
   const cls = n === 0 ? "no" : n <= 5 ? "bajo" : "ok";
-  const txt = n === 0 ? "Sin stock" : n <= 5 ? `Últimas ${n} unidades` : "En stock";
+  /* En la tarjeta el renglón es angosto y "Últimas 4 unidades" se partía en
+     dos líneas. Al lado del precio, "Últimas 4" se entiende igual. */
+  const txt = n === 0 ? "Sin stock" : n <= 5 ? (breve ? `Últimas ${n}` : `Últimas ${n} unidades`) : "En stock";
   return (
     <span className={`stock ${cls}`}><i></i>{txt}{envio && n > 0 && <em style={{ fontStyle: "normal", color: "var(--ink-faint)" }}>· llega en {p.envio}</em>}</span>
   );
@@ -134,14 +136,9 @@ function Tarjeta({ p, ir, onAgregar }) {
     <div className="card">
       {p.precioAntes && <span className="cinta">Ahorrás {Math.round((1 - p.precio / p.precioAntes) * 100)}%</span>}
       {agot && <span className="cinta gris">Sin stock</span>}
-      <div className="card-media">
-        <a href="#" onClick={abrir} style={{ display: "block" }} aria-label={p.nombre}>
-          <Foto p={p} tono={t0} />
-        </a>
-        {accion.href
-          ? <a className="add" href={accion.href} target="_blank" rel="noopener" aria-label={accion.etiqueta}><I n={accion.ico} size="18px" /></a>
-          : <button type="button" className="add" onClick={accion.onClick} aria-label={accion.etiqueta}><I n={accion.ico} size="18px" /></button>}
-      </div>
+      <a href="#" onClick={abrir} className="card-media" aria-label={p.nombre}>
+        <Foto p={p} tono={t0} />
+      </a>
       <div className="card-body">
         <span className="eyebrow">{p.marca}</span>
         <a href="#" className="card-nom" onClick={abrir}>{p.nombre}</a>
@@ -153,8 +150,20 @@ function Tarjeta({ p, ir, onAgregar }) {
             {p.tonos.length > 6 && <u>+{p.tonos.length - 6}</u>}
           </>}
         </span>
-        <span className={"card-precio num" + (p.precioAntes ? " precio-oferta" : "")}>{precio(p.precio)}{p.precioAntes && <span className="antes">{precio(p.precioAntes)}</span>}</span>
-        <Stock p={p} envio={false} />
+        {/* La acción va al lado del precio, que es donde se decide la compra, y
+            no encima de la foto: tapaba el producto y competía con la cinta de
+            descuento. */}
+        <div className="card-pie">
+          {/* El precio ocupa su renglón entero: al lado del botón, en dos
+              columnas de celular, el precio tachado se caía a otra línea. */}
+          <span className={"card-precio num" + (p.precioAntes ? " precio-oferta" : "")}>{precio(p.precio)}{p.precioAntes && <span className="antes">{precio(p.precioAntes)}</span>}</span>
+          <div className="card-pie-b">
+            <Stock p={p} envio={false} breve />
+            {accion.href
+              ? <a className="card-accion" href={accion.href} target="_blank" rel="noopener" aria-label={accion.etiqueta}><I n={accion.ico} size="17px" /></a>
+              : <button type="button" className="card-accion" onClick={accion.onClick} aria-label={accion.etiqueta}><I n={accion.ico} size="17px" /></button>}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -14,12 +14,11 @@
       <div className="repo">
       {items.slice(0, compacto ? 4 : 6).map((p, i) =>
         <div className="repo-fila rev" key={p.id} style={{ "--i": i }}>
+          {/* Misma imagen que en las tarjetas. Antes acá había un puntito de
+              color o un ícono de foto genérico, así que la misma tienda usaba
+              dos lenguajes distintos para lo mismo. */}
           <a href="#" className="mini" onClick={(e) => {e.preventDefault();ir({ v: "ficha", id: p.id });}} aria-label={p.nombre}>
-            {p.color || p.tonos ? <s style={{ background: p.color || p.tonos[0].hex }}></s>
-            : <svg aria-hidden="true" viewBox="0 0 24 24" width="15" height="15" fill="none"
-                stroke="var(--nude-300)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="5" width="18" height="14" rx="2.5" /><path d="M5 16l4-4 3.5 3 3-2.5L19 16" />
-              </svg>}
+            <Foto p={p} className="foto mini-foto" />
           </a>
           <span>
             <a href="#" className="repo-nom" style={{ display: "block" }} onClick={(e) => {e.preventDefault();ir({ v: "ficha", id: p.id });}}>{p.nombre}</a>
@@ -114,15 +113,15 @@
             <img src={c.img} alt="" loading="lazy" decoding="async" />
             <span className="cat-carta-glow" aria-hidden="true"></span>
           </span>
+          {/* El conteo estaba en blanco sobre la foto y se leía distinto en cada
+              imagen. Pasarlo al lado del nombre lo rompía cuando el nombre
+              ocupaba dos líneas, así que va abajo, como dato tranquilo que no
+              compite con el título. El "Ver la categoría" se fue: la tarjeta
+              entera ya es el botón, y repetirlo cuatro veces era ruido. */}
           <span className="cat-carta-txt">
-            {/* El conteo estaba en blanco sobre la foto: se leía distinto en
-                cada imagen. Abajo mantiene el mismo contraste siempre. */}
-            <span className="cat-carta-nom-fila">
-              <span className="serif cat-carta-nom">{c.nombre}</span>
-              <span className="eyebrow cat-carta-conteo">{conteo[c.id]} productos</span>
-            </span>
+            <span className="serif cat-carta-nom">{c.nombre}</span>
             <span className="cat-carta-desc">{c.desc}</span>
-            <span className="cat-carta-cta">Ver la categoría <I n="flecha" size="14px" /></span>
+            <span className="cat-carta-conteo">{conteo[c.id]} productos</span>
           </span>
         </button>
         )}
