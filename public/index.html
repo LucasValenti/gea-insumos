@@ -110,7 +110,6 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "direccion": "editorial",
   "vista": "escritorio",
   "tema": "automático",
-  "boton": "cápsula",
   "movimiento": "expresivo",
   "barras": "vidrio"
 }/*EDITMODE-END*/;
@@ -432,7 +431,7 @@ function App() {
   );
 
   const app = (
-    <div className={"ap" + (esc ? " esc" : " movil")} ref={cont} data-btn={t.boton === "cápsula" ? "capsula" : "recto"}
+    <div className={"ap" + (esc ? " esc" : " movil")} ref={cont}
       data-mov={expr ? "expresivo" : "sobrio"} data-barras={t.barras === "vidrio" ? "vidrio" : "opaco"} data-pegado={pegado}>
       {enmarcado && <div className="tapa"></div>}
       {/* La franja anunciaba "Prototipo con catálogo de ejemplo" al cliente. Ese
@@ -507,7 +506,6 @@ function App() {
         <TweakSection label="Vista" />
         <TweakRadio label="Dispositivo" value={t.vista} options={["movil", "escritorio"]} onChange={(v) => setTweak("vista", v)} />
         <TweakRadio label="Tema" value={t.tema} options={["automático", "claro", "oscuro"]} onChange={(v) => setTweak("tema", v)} />
-        <TweakRadio label="Botones" value={t.boton} options={["cápsula", "recto"]} onChange={(v) => setTweak("boton", v)} />
         <TweakSection label="Movimiento y materia" />
         <TweakRadio label="Transiciones" value={t.movimiento} options={["sobrio", "expresivo"]} onChange={(v) => setTweak("movimiento", v)} />
         <TweakRadio label="Barras" value={t.barras} options={["opaco", "vidrio"]} onChange={(v) => setTweak("barras", v)} />

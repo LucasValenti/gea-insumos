@@ -19,7 +19,7 @@ body { background: var(--sunk); margin: 0; }
 .pa-barra .lbl { font-size: .6rem; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-soft); }
 .pa-salir {
   margin-left: auto; border: 1px solid var(--border); background: var(--surface);
-  color: var(--ink-soft); border-radius: 999px; padding: .5rem .9rem; cursor: pointer;
+  color: var(--ink-soft); border-radius: var(--radio-boton); padding: .5rem .9rem; cursor: pointer;
   font-family: inherit; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; min-height: 40px;
 }
 .pa-salir:hover { color: var(--ink); border-color: var(--ink); }
@@ -28,7 +28,7 @@ body { background: var(--sunk); margin: 0; }
 .pa-tabs { display: flex; gap: .3rem; padding: .7rem 1rem; overflow-x: auto; }
 .pa-tabs button {
   flex: none; border: 1px solid var(--hairline); background: var(--surface); color: var(--ink-soft);
-  border-radius: 999px; padding: .55rem 1rem; cursor: pointer; font-family: inherit;
+  border-radius: var(--radio-boton); padding: .55rem 1rem; cursor: pointer; font-family: inherit;
   font-size: .78rem; min-height: 40px; transition: background .2s var(--ease), color .2s var(--ease);
 }
 .pa-tabs button[aria-current="page"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
@@ -48,7 +48,7 @@ body { background: var(--sunk); margin: 0; }
   padding: .8rem; display: grid; gap: .6rem;
 }
 .pa-fila-h { display: flex; gap: .7rem; align-items: flex-start; }
-.pa-mini { width: 44px; height: 44px; border-radius: 8px; overflow: hidden; flex: none; border: 1px solid var(--hairline); }
+.pa-mini { width: 44px; height: 44px; border-radius: var(--radio); overflow: hidden; flex: none; border: 1px solid var(--hairline); }
 .pa-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .pa-mini-color { width: 100%; height: 100%; }
 .pa-nom { font-family: var(--serif); font-size: .95rem; line-height: 1.25; }
@@ -60,7 +60,7 @@ body { background: var(--sunk); margin: 0; }
 .pa-stock .lbl { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
 .pa-paso { display: flex; align-items: center; gap: .2rem; margin-left: auto; }
 .pa-paso button {
-  width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border);
+  width: 44px; height: 44px; border-radius: var(--radio-boton); border: 1px solid var(--border);
   background: var(--surface); color: var(--ink); font-size: 1.2rem; cursor: pointer;
   display: grid; place-items: center; font-family: inherit;
   transition: background .18s var(--ease), transform .15s var(--sal);
@@ -68,9 +68,12 @@ body { background: var(--sunk); margin: 0; }
 .pa-paso button:hover:not(:disabled) { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .pa-paso button:active:not(:disabled) { transform: scale(.92); }
 .pa-paso button:disabled { opacity: .35; cursor: not-allowed; }
+/* El número va con la forma de los botones que tiene al lado, no con la de los
+   campos del formulario: acá es parte del control de stock, no un campo suelto.
+   Cuadrado entre dos círculos se veía roto. */
 .pa-paso input {
   width: 68px; height: 44px; text-align: center; font-family: var(--serif); font-size: 1.1rem;
-  border: 1px solid var(--border); border-radius: var(--radio); background: var(--surface); color: var(--ink);
+  border: 1px solid var(--border); border-radius: var(--radio-boton); background: var(--surface); color: var(--ink);
 }
 .pa-agotado { color: var(--acento); }
 

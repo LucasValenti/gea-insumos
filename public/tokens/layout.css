@@ -1,9 +1,19 @@
-/* Ancho, radios y ritmo. El radio de 2px es casi recto a propósito:
-   la única forma redonda del sistema son las cápsulas (999px). */
+/* Ancho, radios y ritmo.
+
+   Dos radios, y cada uno tiene su trabajo. Lo que se mira —tarjetas, paneles,
+   campos de texto, fotos— lleva 2px, casi recto. Lo que se toca —botones,
+   pasos, chips, íconos del header— va con --radio-boton, que es cápsula; si el
+   control es cuadrado de lado, la cápsula le queda redonda, y esa es la misma
+   regla, no otra.
+
+   Un botón con esquinas rectas es un error, no una variante: quiere decir que
+   se escribió el radio a mano en vez de usar el token. Antes había un
+   interruptor para elegir entre cápsula y recto, y lo único que hacía era
+   dejar entrar la forma que no queremos. */
 :root{
   --maxw:78rem;
   --radio:2px;
-  --radio-capsula:999px;
+  --radio-boton:999px;
 
   --gap-grid:1.15rem;
   --gap-grid-movil:.8rem;
