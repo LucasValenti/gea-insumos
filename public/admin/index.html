@@ -670,14 +670,53 @@ function Negocio({ config, recargar, avisar }) {
     finally { setYendo(false); }
   };
 
-  const falta = !v.whatsapp || String(v.whatsapp).startsWith("549000");
+  /* El número va tal cual al link wa.me, que necesita el número internacional
+     completo. Antes esto solo miraba si era el de relleno, y dejó pasar uno
+     real pero sin código de país: wa.me devolvía "Chat on WhatsApp with
+     3416012708" en vez de resolverlo, y ningún pedido llegaba a ningún lado.
+     Un número que parece bien es peor que uno vacío, porque nadie lo revisa. */
+  const wa = String(v.whatsapp || "").replace(/\D/g, "");
+  const problemaWa =
+    !wa || wa.startsWith("549000") ? "relleno" :
+    wa.length < 11 ? "corto" :
+    !wa.startsWith("54") ? "sinPais" :
+    wa.startsWith("54") && !wa.startsWith("549") ? "sinNueve" : null;
+  /* La sugerencia solo agrega lo que falta adelante; los dígitos son los que
+     ya estaban. */
+  const sugerencia = problemaWa === "sinPais" ? "549" + wa
+    : problemaWa === "sinNueve" ? "549" + wa.slice(2) : null;
+
+  const AVISOS = {
+    relleno: "El número de WhatsApp todavía es el de relleno. Hasta que lo cargues, los pedidos no le llegan a nadie.",
+    corto: "Ese número es demasiado corto para WhatsApp. Va completo, con código de país y de área.",
+    sinPais: "Falta el código de país. WhatsApp necesita el número internacional entero, si no el link no abre ningún chat.",
+    sinNueve: "Para un celular argentino WhatsApp pide el 9 después del 54.",
+  };
 
   return (
     <>
-      {falta && (
+      {problemaWa && (
         <div className="pa-aviso mal">
-          El número de WhatsApp todavía es el de relleno. Hasta que lo cargues, los
-          pedidos no le llegan a nadie.
+          <span>
+            {AVISOS[problemaWa]}
+            {sugerencia && <>
+              {" "}Debería ser <b>{sugerencia}</b>.{" "}
+              <button type="button" className="pa-cancela" style={{ marginTop: ".4rem" }}
+                onClick={() => setV((x) => ({ ...x, whatsapp: sugerencia }))}>
+                Poner {sugerencia}
+              </button>
+            </>}
+          </span>
+        </div>
+      )}
+      {/* Para comprobarlo sin adivinar: abre el chat con el número que está
+          guardado. Si no abre tu WhatsApp, está mal. */}
+      {!problemaWa && wa && (
+        <div className="pa-aviso">
+          <span>
+            El link que van a tocar tus clientas es <b>wa.me/{wa}</b>.{" "}
+            <a href={"https://wa.me/" + wa} target="_blank" rel="noopener">Probalo</a>: tiene que abrir tu chat.
+          </span>
         </div>
       )}
       <div className="pa-form">
