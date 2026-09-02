@@ -25,6 +25,19 @@ const asentado = async () => {
     const r = e.getBoundingClientRect();
     return r.top < innerHeight && r.bottom > 0 && parseFloat(getComputedStyle(e).opacity) < 0.99;
   }), null, { timeout: 4000 }).catch(() => {});
+
+  /* Y también las entradas de animate.css. En producción, que tarda más que el
+     dev local, la confirmación todavía estaba haciendo su fundido cuando axe
+     medía: reportaba veinte fallas de contraste con colores mezclados
+     (#b0afae sobre #faf8f7) que no existen una vez terminada.
+     Las animaciones infinitas quedan afuera o esto no terminaría nunca. */
+  await page.evaluate(() => Promise.race([
+    Promise.allSettled(document.getAnimations()
+      .filter((a) => a.playState === 'running'
+        && a.effect?.getComputedTiming?.().iterations !== Infinity)
+      .map((a) => a.finished)),
+    new Promise((r) => setTimeout(r, 4000)),
+  ])).catch(() => {});
 };
 
 const axe = async (donde) => {
