@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+# El panel de administración no va a buscadores.
+Disallow: /admin
 
 Sitemap: https://gea-insumos.lucas-valenti00.workers.dev/sitemap.xml

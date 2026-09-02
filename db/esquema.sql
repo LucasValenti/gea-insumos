@@ -103,3 +103,12 @@ CREATE TABLE IF NOT EXISTS zonas_envio (
 
 CREATE INDEX IF NOT EXISTS idx_productos_categoria ON productos(categoria_id);
 CREATE INDEX IF NOT EXISTS idx_tonos_producto      ON tonos(producto_id);
+
+-- Intentos fallidos de entrar al panel, para frenar la fuerza bruta. Va en la
+-- base y no en memoria porque cada pedido puede caer en otra instancia del
+-- Worker, y un contador local no vería los intentos de las demás.
+CREATE TABLE IF NOT EXISTS intentos_login (
+  ip     TEXT NOT NULL,
+  cuando INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_intentos_ip ON intentos_login(ip, cuando);

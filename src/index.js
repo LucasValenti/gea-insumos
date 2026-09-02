@@ -9,6 +9,8 @@
  * pantallas no se enteren del cambio.
  */
 
+import { rutasAdmin } from "./admin.js";
+
 const CACHE = "public, max-age=60, stale-while-revalidate=600";
 
 const json = (data, { status = 200, headers = {} } = {}) =>
@@ -131,6 +133,12 @@ export default {
            el error y no una tienda vacía que parece no tener productos. */
         return json({ error: "No se pudo leer el catálogo", detalle: String(e && e.message || e) }, { status: 500 });
       }
+    }
+
+    if (url.pathname.startsWith("/api/admin")) {
+      if (!env.ADMIN_PASSWORD || !env.SESION_SECRETO)
+        return json({ error: "El panel no está configurado en este entorno" }, { status: 503 });
+      return rutasAdmin(request, env, url);
     }
 
     if (url.pathname.startsWith("/api/")) return json({ error: "No existe" }, { status: 404 });

@@ -57,9 +57,46 @@ Todo lo que se publica vive en `public/`. Lo de afuera es configuración.
 - `public/base/reset.css`, `public/base/utilities.css` — normalización y utilidades.
 - `public/styles.css` — importa lo anterior.
 
+## El panel
+
+En `/admin`. Se entra con una contraseña y sirve para cargar stock, precios,
+los datos del negocio y las tarifas de envío sin tocar código.
+
+La contraseña y la clave de firma viven como secretos de Cloudflare, nunca en
+el repositorio. Para cambiarlas:
+
+```
+npx wrangler secret put ADMIN_PASSWORD
+npx wrangler secret put SESION_SECRETO
+```
+
+Para desarrollo local, los mismos nombres van en `.dev.vars`, que está en
+`.gitignore`.
+
+Cómo funciona el acceso: al entrar, el servidor devuelve una cookie firmada que
+solo guarda hasta cuándo vale, nunca la contraseña. Va `HttpOnly` (ningún
+script la puede leer), `Secure` y `SameSite=Strict` (no viaja desde otro
+sitio). Los intentos fallidos se cuentan por IP en la base y después de ocho
+se frena quince minutos; va en la base y no en memoria porque cada pedido
+puede caer en otra instancia del Worker.
+
+`herramientas/panel-seguridad.mjs` comprueba todo eso, incluido que sin sesión
+no se pueda escribir nada:
+
+```
+node herramientas/panel-seguridad.mjs                          # contra el dev local
+node herramientas/panel-seguridad.mjs https://gea-insumos...   # contra producción
+```
+
 ### La base y la API
-- `src/index.js` — el Worker. Atiende `/api/catalogo` y le pasa todo lo demás
-  al sitio estático.
+- `src/index.js` — el Worker. Atiende `/api/catalogo`, las rutas del panel y le
+  pasa todo lo demás al sitio estático.
+- `src/auth.js` — sesión firmada, comparaciones de tiempo constante y freno a
+  la fuerza bruta.
+- `src/admin.js` — rutas de escritura. Los campos que se pueden escribir están
+  enumerados uno por uno: sin esa lista, un pedido armado a mano podría tocar
+  cualquier columna.
+- `public/admin/` — la pantalla del panel.
 - `db/esquema.sql` — las tablas: productos, tonos, categorías, familias, zonas
   de envío y datos del negocio.
 - `db/semilla.sql` — la carga inicial. **Generado**, no se edita a mano.
@@ -108,8 +145,10 @@ en el navegador por Babel. Podés escribir JS normal adentro: funciones,
 
 | Querés… | Archivo |
 | --- | --- |
-| Sumar o editar un producto | por ahora, SQL contra la base (el panel llega en la fase 3) |
-| Cambiar precios o envíos | tablas `productos` y `zonas_envio` |
+| Cambiar stock o precios | el panel, en `/admin` |
+| Cargar WhatsApp, ciudad y horarios | el panel, solapa "Datos del negocio" |
+| Cambiar tarifas de envío | el panel, solapa "Envíos" |
+| Sumar un producto nuevo | por ahora, SQL contra la base |
 | Nueva sección en el inicio | `public/tienda/pantallas-tienda.jsx` + estilos en `public/tienda/tienda.css` |
 | Cambiar el carrito o el checkout | `public/tienda/pantallas-pedido.jsx` |
 | Colores o tipografías | `public/tokens/colors.css`, `public/tokens/typography.css` |
@@ -122,9 +161,10 @@ cantidades, checkout y confirmación. El pedido se cierra por WhatsApp. **No**
 hay pagos online ni stock que se descuente solo. El catálogo ya sale de una
 base; el carrito se guarda en `localStorage` del navegador.
 
-Datos pendientes de confirmar con el cliente, en `public/tienda/datos.js`
-(constante `NEGOCIO`): número de WhatsApp, usuario de Instagram, ciudad y
-horarios. Hoy tienen valores de relleno.
+Datos pendientes de cargar desde el panel: número de WhatsApp, usuario de
+Instagram, ciudad y horarios. Hoy siguen con valores de relleno, y hasta que
+se cargue el WhatsApp real los pedidos no le llegan a nadie. El panel lo avisa
+en rojo al entrar.
 
 ## Para pasar a producción
 

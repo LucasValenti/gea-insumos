@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="es-AR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel · GEA Insumos</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="admin.css">
+<script>
+/* Mismo criterio que la tienda: el tema se estampa antes de pintar. */
+(function () {
+  var v = {};
+  try { v = JSON.parse(localStorage.getItem("gea_ver_v1")) || {}; } catch (e) {}
+  var attr = { claro: "light", oscuro: "dark" }[v.tema];
+  if (attr) document.documentElement.setAttribute("data-theme", attr);
+})();
+</script>
+</head>
+<body>
+<div id="raiz"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" data-presets="react">
+(() => {
+const { useState, useEffect, useCallback } = React;
+
+const api = async (ruta, opciones = {}) => {
+  const r = await fetch("/api/admin" + ruta, {
+    headers: { "content-type": "application/json" },
+    ...opciones,
+    body: opciones.cuerpo ? JSON.stringify(opciones.cuerpo) : undefined,
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || "Falló el pedido (" + r.status + ")");
+  return d;
+};
+
+const plata = (n) => (typeof n === "number" ? "$ " + n.toLocaleString("es-AR") : "");
+
+/* ---------- ingreso ---------- */
+function Entrar({ onEntro }) {
+  const [clave, setClave] = useState("");
+  const [error, setError] = useState(null);
+  const [yendo, setYendo] = useState(false);
+
+  const enviar = async (e) => {
+    e.preventDefault();
+    setYendo(true); setError(null);
+    try { await api("/entrar", { method: "POST", cuerpo: { contrasena: clave } }); onEntro(); }
+    catch (err) { setError(err.message); setClave(""); }
+    finally { setYendo(false); }
+  };
+
+  return (
+    <main className="pa-entrar">
+      <h1>Panel de GEA</h1>
+      <p>Para cargar productos, precios y stock.</p>
+      <form onSubmit={enviar}>
+        <div className="pa-campo">
+          <label htmlFor="clave">Contraseña</label>
+          <input id="clave" type="password" value={clave} autoComplete="current-password"
+            onChange={(e) => setClave(e.target.value)} autoFocus />
+        </div>
+        {error && <div className="pa-aviso mal" role="alert">{error}</div>}
+        <button className="btn btn-primary" type="submit" disabled={yendo || !clave}
+          style={{ minHeight: 48, width: "100%" }}>
+          {yendo ? "Entrando…" : "Entrar"}
+        </button>
+      </form>
+    </main>
+  );
+}
+
+/* ---------- control de stock reutilizable ---------- */
+function Stock({ valor, onGuardar }) {
+  const [n, setN] = useState(valor);
+  const [estado, setEstado] = useState(null);
+  useEffect(() => { setN(valor); }, [valor]);
+
+  const mandar = useCallback(async (nuevo) => {
+    setN(nuevo); setEstado("yendo");
+    try { await onGuardar(nuevo); setEstado("ok"); setTimeout(() => setEstado(null), 1200); }
+    catch (e) { setEstado("mal"); setN(valor); }
+  }, [onGuardar, valor]);
+
+  return (
+    <span className="pa-paso">
+      <button type="button" onClick={() => mandar(Math.max(0, n - 1))} disabled={n <= 0}
+        aria-label="Restar uno">–</button>
+      <input type="number" min="0" value={n} inputMode="numeric"
+        onChange={(e) => setN(Math.max(0, Number(e.target.value) || 0))}
+        onBlur={() => n !== valor && mandar(n)}
+        aria-label="Stock"
+        style={estado === "mal" ? { borderColor: "var(--acento)" } : estado === "ok" ? { borderColor: "var(--ok, #2F6B4F)" } : undefined} />
+      <button type="button" onClick={() => mandar(n + 1)} aria-label="Sumar uno">+</button>
+    </span>
+  );
+}
+
+/* ---------- lista de productos ---------- */
+function Productos({ productos, recargar, avisar }) {
+  const [q, setQ] = useState("");
+  const filtro = q.trim().toLowerCase();
+  const lista = filtro
+    ? productos.filter((p) => (p.nombre + " " + (p.marca || "")).toLowerCase().includes(filtro))
+    : productos;
+
+  const guardarStock = (p) => async (n) => {
+    await api("/producto/" + p.id, { method: "PATCH", cuerpo: { stock: n } });
+    avisar(`Stock de ${p.nombre}: ${n}`);
+    recargar();
+  };
+  const guardarTono = (p, t) => async (n) => {
+    await api("/tono/" + p.id, { method: "PATCH", cuerpo: { nombre: t.nombre, stock: n } });
+    avisar(`${p.nombre} · ${t.nombre}: ${n}`);
+    recargar();
+  };
+
+  return (
+    <>
+      <div className="pa-buscar">
+        <input value={q} onChange={(e) => setQ(e.target.value)}
+          placeholder="Buscar producto o marca…" aria-label="Buscar producto" />
+      </div>
+      <div className="pa-lista">
+        {lista.map((p) => {
+          const conTonos = p.tonos.length > 0;
+          const total = conTonos ? p.tonos.reduce((a, t) => a + t.stock, 0) : p.stock;
+          return (
+            <div className="pa-fila" key={p.id}>
+              <div className="pa-fila-h">
+                <span className="pa-mini">
+                  {p.img ? <img src={"../" + p.img} alt="" />
+                    : <span className="pa-mini-color" style={{ display: "block", background: p.color || "var(--nude-100)" }}></span>}
+                </span>
+                <span style={{ minWidth: 0 }}>
+                  <span className="pa-marca">{p.marca || "Sin marca"}</span>
+                  <span className="pa-nom" style={{ display: "block" }}>{p.nombre}</span>
+                </span>
+                <span className="pa-precio">{plata(p.precio)}</span>
+              </div>
+
+              <div className="pa-stock">
+                <span className="lbl">Stock</span>
+                <span className={total === 0 ? "pa-agotado" : ""} style={{ fontSize: ".85rem" }}>
+                  {total === 0 ? "Agotado" : total + " unidades"}
+                  {conTonos && " · suma de los tonos"}
+                </span>
+                {/* Con tonos el total es la suma: se edita tono por tono, si no
+                    quedarían dos números diciendo cosas distintas. */}
+                {!conTonos && <Stock valor={p.stock} onGuardar={guardarStock(p)} />}
+              </div>
+
+              {conTonos && (
+                <div className="pa-tonos">
+                  {p.tonos.map((t) => (
+                    <div className="pa-tono" key={t.nombre}>
+                      <s style={{ background: t.hex }}></s>
+                      <span className="pa-tono-nom">{t.nombre}</span>
+                      <Stock valor={t.stock} onGuardar={guardarTono(p, t)} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {!lista.length && <p className="pa-vacio">No hay productos que coincidan.</p>}
+      </div>
+    </>
+  );
+}
+
+/* ---------- datos del negocio ---------- */
+const CAMPOS_NEGOCIO = [
+  ["whatsapp", "WhatsApp", "Con código de país y sin signos: 5493415551234", "tel"],
+  ["instagramUsuario", "Usuario de Instagram", "@geainsumos", "text"],
+  ["instagram", "Link de Instagram", "https://instagram.com/geainsumos", "url"],
+  ["ciudad", "Ciudad", "Rosario, Santa Fe", "text"],
+  ["horarios", "Horarios", "Lunes a viernes de 9 a 18", "text"],
+  ["minimo", "Pedido mínimo", "25000", "number"],
+  ["envioGratisDesde", "Envío sin cargo desde", "120000", "number"],
+];
+
+function Negocio({ config, recargar, avisar }) {
+  const [v, setV] = useState(() => ({ ...config }));
+  const [yendo, setYendo] = useState(false);
+  const [error, setError] = useState(null);
+  useEffect(() => { setV({ ...config }); }, [config]);
+
+  const guardar = async () => {
+    setYendo(true); setError(null);
+    try {
+      const cuerpo = {};
+      for (const [k] of CAMPOS_NEGOCIO) cuerpo[k] = v[k] ?? "";
+      await api("/config", { method: "PATCH", cuerpo });
+      avisar("Datos del negocio guardados");
+      recargar();
+    } catch (e) { setError(e.message); }
+    finally { setYendo(false); }
+  };
+
+  const falta = !v.whatsapp || String(v.whatsapp).startsWith("549000");
+
+  return (
+    <>
+      {falta && (
+        <div className="pa-aviso mal">
+          El número de WhatsApp todavía es el de relleno. Hasta que lo cargues, los
+          pedidos no le llegan a nadie.
+        </div>
+      )}
+      <div className="pa-form">
+        {CAMPOS_NEGOCIO.map(([k, etiqueta, ejemplo, tipo]) => (
+          <div className="pa-campo" key={k}>
+            <label htmlFor={k}>{etiqueta}</label>
+            <input id={k} type={tipo} value={v[k] ?? ""} placeholder={ejemplo}
+              inputMode={tipo === "number" ? "numeric" : undefined}
+              onChange={(e) => setV((x) => ({ ...x, [k]: e.target.value }))} />
+            <span className="ayuda">Ejemplo: {ejemplo}</span>
+          </div>
+        ))}
+        {error && <div className="pa-aviso mal" role="alert">{error}</div>}
+      </div>
+      <div className="pa-guardar">
+        <button className="btn btn-primary" onClick={guardar} disabled={yendo} style={{ minHeight: 48 }}>
+          {yendo ? "Guardando…" : "Guardar cambios"}
+        </button>
+      </div>
+    </>
+  );
+}
+
+/* ---------- zonas de envío ---------- */
+function Envios({ zonas, recargar, avisar }) {
+  const [v, setV] = useState(() => zonas.map((z) => ({ ...z })));
+  const [yendo, setYendo] = useState(false);
+  const [error, setError] = useState(null);
+  useEffect(() => { setV(zonas.map((z) => ({ ...z }))); }, [zonas]);
+
+  const guardar = async () => {
+    setYendo(true); setError(null);
+    try {
+      for (const z of v) {
+        await api("/zona/" + z.id, {
+          method: "PATCH",
+          cuerpo: { nombre: z.nombre, costo: z.costo === "" || z.costo === null ? null : Number(z.costo), plazo: z.plazo },
+        });
+      }
+      avisar("Zonas de envío guardadas");
+      recargar();
+    } catch (e) { setError(e.message); }
+    finally { setYendo(false); }
+  };
+
+  return (
+    <>
+      <div className="pa-aviso">
+        Dejá el costo vacío si esa zona se cotiza por chat. No es lo mismo que
+        poner cero, que significa sin cargo.
+      </div>
+      <div className="pa-form">
+        {v.map((z, i) => (
+          <div className="pa-fila" key={z.id}>
+            <div className="pa-campo">
+              <label htmlFor={`z-nom-${z.id}`}>Nombre de la zona</label>
+              <input id={`z-nom-${z.id}`} value={z.nombre || ""} onChange={(e) => setV((x) => x.map((y, j) => j === i ? { ...y, nombre: e.target.value } : y))} />
+            </div>
+            <div className="pa-dos">
+              <div className="pa-campo">
+                <label htmlFor={`z-costo-${z.id}`}>Costo</label>
+                <input id={`z-costo-${z.id}`} type="number" inputMode="numeric" value={z.costo ?? ""} placeholder="A cotizar"
+                  onChange={(e) => setV((x) => x.map((y, j) => j === i ? { ...y, costo: e.target.value } : y))} />
+              </div>
+              <div className="pa-campo">
+                <label htmlFor={`z-plazo-${z.id}`}>Plazo</label>
+                <input id={`z-plazo-${z.id}`} value={z.plazo || ""} placeholder="2 a 4 días"
+                  onChange={(e) => setV((x) => x.map((y, j) => j === i ? { ...y, plazo: e.target.value } : y))} />
+              </div>
+            </div>
+          </div>
+        ))}
+        {error && <div className="pa-aviso mal" role="alert">{error}</div>}
+      </div>
+      <div className="pa-guardar">
+        <button className="btn btn-primary" onClick={guardar} disabled={yendo} style={{ minHeight: 48 }}>
+          {yendo ? "Guardando…" : "Guardar zonas"}
+        </button>
+      </div>
+    </>
+  );
+}
+
+/* ---------- armazón ---------- */
+function Panel({ onSalir }) {
+  const [tab, setTab] = useState("productos");
+  const [datos, setDatos] = useState(null);
+  const [error, setError] = useState(null);
+  const [aviso, setAviso] = useState(null);
+
+  const cargar = useCallback(async () => {
+    try {
+      const [prods, cat] = await Promise.all([api("/productos"), fetch("/api/catalogo").then((r) => r.json())]);
+      setDatos({ productos: prods.productos, negocio: cat.NEGOCIO, envio: cat.ENVIO });
+      setError(null);
+    } catch (e) { setError(e.message); }
+  }, []);
+  useEffect(() => { cargar(); }, [cargar]);
+
+  const avisar = (txt) => { setAviso(txt); setTimeout(() => setAviso(null), 2600); };
+
+  const salir = async () => { await api("/salir", { method: "POST" }).catch(() => {}); onSalir(); };
+
+  if (error) return (
+    <div className="pa">
+      <div className="pa-aviso mal" style={{ marginTop: "2rem" }} role="alert">{error}</div>
+      <div style={{ padding: "0 1rem" }}>
+        <button className="btn btn-primary" onClick={cargar}>Reintentar</button>
+      </div>
+    </div>
+  );
+  if (!datos) return <p className="pa-vacio">Cargando…</p>;
+
+  const config = {
+    ...datos.negocio,
+    envioGratisDesde: datos.envio.gratisDesde,
+  };
+
+  return (
+    <div className="pa">
+      <header className="pa-barra">
+        <span>
+          <span className="lbl">GEA Insumos</span>
+          <h1>Panel</h1>
+        </span>
+        <button className="pa-salir" onClick={salir}>Salir</button>
+      </header>
+
+      {/* Sin role="tablist": pisaba el landmark del nav, y además prometía un
+          widget de pestañas de verdad (navegación con flechas, paneles
+          asociados) que no hay. Son botones de navegación, y aria-current
+          dice cuál está abierto. */}
+      <nav className="pa-tabs" aria-label="Secciones del panel">
+        {[["productos", "Productos y stock"], ["negocio", "Datos del negocio"], ["envios", "Envíos"]].map(([id, txt]) => (
+          <button key={id} aria-current={tab === id ? "page" : undefined} onClick={() => setTab(id)}>{txt}</button>
+        ))}
+      </nav>
+
+      <main>
+        {aviso && <div className="pa-aviso bien" role="status">{aviso}</div>}
+        {tab === "productos" && <Productos productos={datos.productos} recargar={cargar} avisar={avisar} />}
+        {tab === "negocio" && <Negocio config={config} recargar={cargar} avisar={avisar} />}
+        {tab === "envios" && <Envios zonas={datos.envio.zonas} recargar={cargar} avisar={avisar} />}
+      </main>
+    </div>
+  );
+}
+
+function App() {
+  const [sesion, setSesion] = useState(null);   // null = averiguando
+  useEffect(() => {
+    api("/sesion").then((d) => setSesion(!!d.activa)).catch(() => setSesion(false));
+  }, []);
+  if (sesion === null) return <p className="pa-vacio">Cargando…</p>;
+  return sesion
+    ? <Panel onSalir={() => setSesion(false)} />
+    : <Entrar onEntro={() => setSesion(true)} />;
+}
+
+ReactDOM.createRoot(document.getElementById("raiz")).render(<App />);
+})();
+</script>
+</body></html>

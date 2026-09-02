@@ -10,3 +10,6 @@ Thumbs.db
 .claude/settings.local.json
 .claude/skills/
 skills-lock.json
+
+# Secretos locales del Worker. Nunca al repositorio.
+.dev.vars
