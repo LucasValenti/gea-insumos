@@ -12,7 +12,19 @@ page.on('console', (m) => { if (m.type() === 'error') errores.push('[error] ' + 
 await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForSelector('.ap'); await page.waitForTimeout(1200);
 
+/* Las apariciones al entrar en pantalla animan la opacidad durante .6s. Si axe
+   mide en el medio, lee el texto mezclado con el fondo y reporta contrastes
+   que no existen: el .eyebrow del carrito daba 4.31 al 95% de opacidad y 4.77
+   ya terminado. Esperamos a que lo visible esté asentado. */
+const asentado = async () => {
+  await page.waitForFunction(() => ![...document.querySelectorAll('.rev,.rev-esc')].some((e) => {
+    const r = e.getBoundingClientRect();
+    return r.top < innerHeight && r.bottom > 0 && parseFloat(getComputedStyle(e).opacity) < 0.99;
+  }), null, { timeout: 4000 }).catch(() => {});
+};
+
 const axe = async (donde) => {
+  await asentado();
   const r = await new AxeBuilder({ page }).analyze();
   const v = r.violations;
   console.log(`   axe ${donde}: ${v.length ? v.map((x) => x.id + ' x' + x.nodes.length).join(', ') : 'limpio'}`);

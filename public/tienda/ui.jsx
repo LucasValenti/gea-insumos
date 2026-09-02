@@ -262,6 +262,10 @@ function Pie({ ir }) {
 
 function usarRevelado(deps) {
   React.useEffect(() => {
+    /* Sin IntersectionObserver esto tiraba ReferenceError y se caía la app
+       entera. El CSS ya deja todo visible cuando falta (no se estampa
+       .rev-on), así que acá alcanza con no hacer nada. */
+    if (!window.IntersectionObserver) return;
     const SEL = ".rev:not(.vis), .rev-esc:not(.vis)";
     let sc = document.querySelector(".ap");
     while (sc && sc !== document.body && !/auto|scroll/.test(getComputedStyle(sc).overflowY)) sc = sc.parentElement;

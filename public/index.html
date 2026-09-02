@@ -34,6 +34,13 @@ a{color:var(--ink)}a:hover{color:var(--nude-600)}
   var attr = { claro: "light", oscuro: "dark" }[v.tema];
   /* Sin atributo manda prefers-color-scheme, que es el valor por defecto. */
   if (attr) document.documentElement.setAttribute("data-theme", attr);
+  /* Las secciones aparecen al entrar en pantalla, y para eso arrancan en
+     opacity 0 esperando que el JS les ponga .vis. Si el navegador no tiene
+     IntersectionObserver, o algo falla antes, quedaban invisibles para
+     siempre. El estado invisible ahora vive detrás de esta clase: se estampa
+     acá, antes de pintar —así no hay parpadeo— y solo cuando sabemos que se
+     puede animar. Sin ella el contenido se ve igual, sin animación. */
+  if (window.IntersectionObserver) document.documentElement.classList.add("rev-on");
 })();
 </script>
 </head>

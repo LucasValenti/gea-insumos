@@ -503,9 +503,15 @@ button{color:inherit}
 
 /* ================= movimiento ================= */
 .ap{--sal:cubic-bezier(.22,.72,.24,1)}
-.rev{opacity:0;transform:translateY(16px);transition:opacity .6s var(--sal),transform .6s var(--sal);transition-delay:calc(var(--i,0)*70ms);will-change:opacity,transform}
+/* Las apariciones al hacer scroll arrancan invisibles y dependen de que el JS
+   les agregue .vis. Si algo falla —sin IntersectionObserver, un error antes
+   del efecto, un lector que no scrollea— el contenido quedaba invisible para
+   siempre. Ahora el estado invisible solo se aplica bajo .rev-on, que el
+   script de <head> estampa cuando comprueba que el navegador puede animar.
+   Sin esa clase todo se ve, sin animación. */
+:where(.rev-on) .rev{opacity:0;transform:translateY(16px);transition:opacity .6s var(--sal),transform .6s var(--sal);transition-delay:calc(var(--i,0)*70ms);will-change:opacity,transform}
 .rev.vis{opacity:1;transform:none}
-.rev-esc{opacity:0;transform:scale(.965);transition:opacity .55s var(--sal),transform .55s var(--sal);transition-delay:calc(var(--i,0)*55ms)}
+:where(.rev-on) .rev-esc{opacity:0;transform:scale(.965);transition:opacity .55s var(--sal),transform .55s var(--sal);transition-delay:calc(var(--i,0)*55ms)}
 .rev-esc.vis{opacity:1;transform:none}
 
 /* hero con atmósfera */
@@ -568,9 +574,9 @@ button{color:inherit}
 
 /* revelado de imágenes al entrar en pantalla */
 .foto img,.cat-thumb img{transition:transform .5s var(--sal),clip-path 1s var(--sal)}
-.rev:not(.vis) .foto img,.rev:not(.vis) .kit-foto img,.rev:not(.vis) .cat-thumb img{clip-path:inset(0 0 100% 0);transform:scale(1.1)}
+:where(.rev-on) .rev:not(.vis) .foto img,:where(.rev-on) .rev:not(.vis) .kit-foto img,:where(.rev-on) .rev:not(.vis) .cat-thumb img{clip-path:inset(0 0 100% 0);transform:scale(1.1)}
 .banda img{transition:transform 1.2s var(--sal),clip-path 1.2s var(--sal)}
-.banda.rev:not(.vis) img{clip-path:inset(0 0 100% 0);transform:scale(1.08)}
+:where(.rev-on) .banda.rev:not(.vis) img{clip-path:inset(0 0 100% 0);transform:scale(1.08)}
 .banda figcaption>b{display:block;overflow:hidden}
 @supports (animation-timeline:view()){
   .banda img{animation:paneo linear;animation-timeline:view();animation-range:entry 10% exit 90%}
