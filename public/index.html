@@ -180,14 +180,51 @@ function App() {
      catálogo completo y perder el filtro. */
   const anterior = React.useRef({ v: "inicio" });
   const ir = (r) => { anterior.current = ruta; setRuta(r); };
+
+  /* El botón atrás del celular cerraba el sitio. La app no registraba nada en
+     el historial —ni una llamada a pushState— así que atrás no tenía a dónde
+     volver y salía. Pasaba con la búsqueda, con la ficha y con el carrito.
+     Ahora cada pantalla, la búsqueda y la hoja de tonos dejan una marca, y
+     atrás deshace la última en vez de irse. */
+  const hist = React.useRef(0);
+  const desdePop = React.useRef(false);
+  const primera = React.useRef(true);
+  React.useEffect(() => {
+    history.replaceState({ gea: { ruta, busca: false, hoja: null, i: 0 } }, "");
+    const alVolver = (e) => {
+      const s = e.state && e.state.gea;
+      desdePop.current = true;
+      hist.current = s ? s.i : 0;
+      setRuta(s && s.ruta ? s.ruta : { v: "inicio" });
+      setBusca(!!(s && s.busca));
+      setHoja(s && s.hoja ? prod(s.hoja) : null);
+      if (!(s && s.busca)) setQ("");
+    };
+    window.addEventListener("popstate", alVolver);
+    return () => window.removeEventListener("popstate", alVolver);
+  }, []);
+  React.useEffect(() => {
+    if (primera.current) { primera.current = false; return; }
+    /* Lo que vino de atrás ya está en el historial: registrarlo otra vez
+       dejaría al botón rebotando entre las dos últimas pantallas. */
+    if (desdePop.current) { desdePop.current = false; return; }
+    hist.current += 1;
+    history.pushState({ gea: { ruta, busca, hoja: hoja ? hoja.id : null, i: hist.current } }, "");
+  }, [ruta, busca, hoja]);
+
+  /* Todo lo que cierra algo pasa por el historial, así la flecha de la pantalla
+     y la del teléfono hacen exactamente lo mismo. */
+  const atras = () => { if (hist.current > 0) { history.back(); return true; } return false; };
   const volver = () => {
+    if (atras()) return;
     const prev = anterior.current;
-    /* No registra: volver no debe generar historial nuevo, o el botón
-       rebotaría entre las dos últimas pantallas. */
     setRuta(ruta.v === "checkout" ? { v: "carrito" }
       : prev && prev.v !== ruta.v ? prev : { v: "catalogo" });
   };
-  const cerrarBusca = () => { setBusca(false); setQ(""); setRuta((r) => (r.v === "buscar" ? vuelta.current : r)); };
+  const cerrarBusca = () => {
+    if (busca && atras()) return;
+    setBusca(false); setQ(""); setRuta((r) => (r.v === "buscar" ? vuelta.current : r));
+  };
   const abrirBusca = () => {
     if (busca) { cerrarBusca(); return; }
     vuelta.current = ruta.v === "buscar" ? { v: "inicio" } : ruta;
@@ -315,7 +352,10 @@ function App() {
         </nav>
       )}
 
-      {hoja && <SelectorTono p={hoja} onAgregar={agregar} onCerrar={() => setHoja(null)} destino={capa} />}
+      {/* Cerrar la hoja pasa por el historial igual que todo lo demás: así el
+          botón atrás del teléfono la cierra en vez de salir del sitio, y
+          después de agregar no queda una marca que la reabra. */}
+      {hoja && <SelectorTono p={hoja} onAgregar={agregar} onCerrar={() => { if (!atras()) setHoja(null); }} destino={capa} />}
       {toast && ReactDOM.createPortal(
         <div className={"toast animate__animated " + (expr ? "animate__fadeInUp" : "animate__fadeIn")} role="status">
           <span>{toast.txt}</span>
