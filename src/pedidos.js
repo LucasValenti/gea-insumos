@@ -161,6 +161,7 @@ export async function cerrarPedido(db, id, estado) {
 
   if (estado === "cancelado") {
     const r = await marcar.run();
+    if (!r.meta.changes) return { error: "El pedido ya estaba cerrado", status: 409 };
     return { ok: true, cambiados: r.meta.changes };
   }
 
@@ -171,13 +172,32 @@ export async function cerrarPedido(db, id, estado) {
      descuenta todo y se marca el pedido, o no pasa nada. Un descuento a medias
      dejaría el stock mintiendo.
      El MAX(0, ...) es para no dejar stock negativo si algo ya se vendió por
-     otro lado entre que entró el pedido y se confirmó. */
-  const ops = items.map((i) => i.tono
-    ? db.prepare("UPDATE tonos SET stock = MAX(0, stock - ?) WHERE producto_id = ? AND nombre = ?")
-        .bind(i.cantidad, i.producto_id, i.tono)
-    : db.prepare("UPDATE productos SET stock = MAX(0, stock - ?) WHERE id = ?")
-        .bind(i.cantidad, i.producto_id));
+     otro lado entre que entró el pedido y se confirmó.
 
-  await db.batch([...ops, marcar]);
+     Cada descuento lleva su propia condición de que el pedido siga en "nuevo".
+     No alcanza con haberlo comprobado arriba: esa lectura pasa fuera de la
+     transacción, y dos confirmaciones en paralelo la pasaban las dos antes de
+     que ninguna escribiera. El UPDATE de "marcar" no se repetía, pero los
+     descuentos sí, y el stock bajaba el doble.
+
+     Local no lo mostraba: SQLite en un archivo serializa las escrituras y las
+     dos confirmaciones salían una después de la otra. En producción D1 está
+     distribuido y las dos entraron juntas. Apareció recién probando contra
+     producción, con 200 y 200 y el stock bajando seis en vez de tres. */
+  const sigueNuevo = "(SELECT estado FROM pedidos WHERE id = ?) = 'nuevo'";
+  const ops = items.map((i) => i.tono
+    ? db.prepare(`UPDATE tonos SET stock = MAX(0, stock - ?)
+                  WHERE producto_id = ? AND nombre = ? AND ${sigueNuevo}`)
+        .bind(i.cantidad, i.producto_id, i.tono, id)
+    : db.prepare(`UPDATE productos SET stock = MAX(0, stock - ?)
+                  WHERE id = ? AND ${sigueNuevo}`)
+        .bind(i.cantidad, i.producto_id, id));
+
+  /* "marcar" va último: los descuentos tienen que leer el estado todavía en
+     "nuevo". Si cambió 0 filas, otra confirmación llegó primero y esta no
+     descontó nada. */
+  const r = await db.batch([...ops, marcar]);
+  if (!r[r.length - 1].meta.changes)
+    return { error: "El pedido ya estaba cerrado", status: 409 };
   return { ok: true, descontadas: items.length };
 }
