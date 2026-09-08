@@ -3,12 +3,15 @@
 <title>Tienda GEA Insumos — prototipo</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#E2C2B9">
-<link rel="preconnect" href="https://unpkg.com" crossorigin>
-<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Nada de esto sale a buscar afuera. Las librerías, la hoja de
+     animaciones y las tipografías viven en este mismo dominio: si un CDN
+     no responde, la tienda no se cae. crossorigin es obligatorio en el
+     preload de la fuente aunque sea del mismo origen —las fuentes siempre
+     se piden en modo CORS— y sin él se descarga dos veces. -->
+<link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="tienda/tienda.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link rel="stylesheet" href="vendor/animate.min.css">
 <style>
 /* Animate.css afinado al sistema: duraciones cortas y curva de la marca. */
 :root{--animate-duration:.5s;--animate-delay:.1s}
@@ -39,9 +42,12 @@ a{color:var(--ink)}a:hover{color:var(--nude-600)}
 </head>
 <body>
 <div id="root"></div>
-<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<!-- Versiones fijas en package.json; los archivos se refrescan con
+     node herramientas/vendor.mjs. Babel es el más pesado de los tres por
+     lejos: traduce el JSX en el navegador de cada visitante. -->
+<script src="vendor/react.production.min.js"></script>
+<script src="vendor/react-dom.production.min.js"></script>
+<script src="vendor/babel.min.js"></script>
 <script src="tienda/datos.js"></script>
 <script type="text/babel" src="tweaks-panel.jsx"></script>
 <script type="text/babel" src="ios-frame.jsx"></script>

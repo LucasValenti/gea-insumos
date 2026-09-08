@@ -44,6 +44,8 @@ Todo lo que se publica vive en `public/`. Lo de afuera es configuración.
 - `public/tokens/colors.css`, `typography.css`, `layout.css`, `effects.css`,
   `theme-dark.css` — variables del sistema de diseño GEA (paleta nude, el
   acento vino, tipografías, espaciados, sombras, tema oscuro).
+- `public/tokens/fonts.css` — los `@font-face` de Inter y Playfair Display,
+  que se sirven desde `public/fonts/` y no desde Google.
 - `public/base/reset.css`, `public/base/utilities.css` — normalización y utilidades.
 - `public/styles.css` — importa lo anterior.
 
@@ -65,6 +67,24 @@ Los `.jsx` son JavaScript con sintaxis JSX (marcado dentro del JS), traducido
 en el navegador por Babel. Podés escribir JS normal adentro: funciones,
 `fetch`, `localStorage`, etc.
 
+### Librerías y tipografías
+
+- `public/vendor/` — React, ReactDOM, Babel y animate.css. **No se editan a
+  mano**: las versiones están fijas en `package.json` y los archivos se
+  refrescan con `node herramientas/vendor.mjs`.
+- `public/fonts/` — Inter y Playfair Display, subconjunto latino. Son fuentes
+  variables: un archivo por familia cubre todos los pesos.
+
+Antes las cuatro librerías venían de unpkg y cdnjs, y las tipografías de
+Google. Eso era un punto único de falla: sin React no se dibuja nada, así que
+una red que filtrara unpkg —o un corte del CDN— dejaba la tienda **en blanco**,
+ni siquiera un mensaje de error. Ahora sale todo del mismo dominio.
+
+El precio de tener a Babel adentro es que pesa 3 MB (unos 650 KB comprimidos),
+más que todo el resto junto. Se va el día que precompilemos los `.jsx` en vez
+de traducirlos en el navegador de cada visitante; eso suma un paso de build,
+que es justamente lo que este proyecto viene evitando.
+
 ### Imágenes
 - `public/tienda/img/` — fotos de producto y de las secciones.
 
@@ -77,6 +97,7 @@ en el navegador por Babel. Podés escribir JS normal adentro: funciones,
 | Nueva sección en el inicio | `public/tienda/pantallas-tienda.jsx` + estilos en `public/tienda/tienda.css` |
 | Cambiar el carrito o el checkout | `public/tienda/pantallas-pedido.jsx` |
 | Colores o tipografías | `public/tokens/colors.css`, `public/tokens/typography.css` |
+| Actualizar React o Babel | `npm install …` y después `node herramientas/vendor.mjs` |
 | Lógica nueva (cupones, descuentos) | función en `public/tienda/datos.js`, llamada desde la pantalla |
 
 ## Estado actual
@@ -113,6 +134,9 @@ node herramientas/medidas.mjs         # texto chico y áreas táctiles menores a
 `auditoria.mjs` reescribe el bloque EDITMODE al vuelo para fijar cada variante,
 así que no hace falta tocar `index.html` para probar tema oscuro o vista móvil.
 Las capturas quedan en la carpeta temporal que imprime al terminar.
+
+`vendor.mjs` copia las librerías de `node_modules` a `public/vendor/`. Corrélo
+después de cambiar una versión en `package.json`.
 
 `parche.mjs` aplica reemplazos literales sobre un archivo y aborta si el texto
 no aparece exactamente una vez, para no editar a ciegas.

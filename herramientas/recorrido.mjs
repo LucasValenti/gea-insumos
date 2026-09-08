@@ -1,9 +1,13 @@
 import { chromium } from 'playwright';
 import fs from 'fs/promises';
+import os from 'os';
+import path from 'path';
 
 const BASE = 'http://127.0.0.1:8788/';
-const OUT = 'C:/Users/Lucas/AppData/Local/Temp/claude/c--Users-Lucas-proyectos-gea-insumos/1c52ca13-f0eb-4cc4-8526-febb796ce818/scratchpad/shots2';
-await fs.mkdir(OUT, { recursive: true });
+/* Carpeta temporal del sistema, no una ruta de una máquina en particular:
+   la anterior estaba escrita a mano y en Linux creaba un directorio
+   llamado «C:» adentro del repo. */
+const OUT = await fs.mkdtemp(path.join(os.tmpdir(), 'gea-'));
 
 const variante = process.argv[2] || 'esc';
 const conf = variante === 'movil'

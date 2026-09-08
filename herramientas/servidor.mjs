@@ -8,7 +8,8 @@ const RAIZ = path.resolve('public');
 const TIPOS = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8', '.jsx': 'text/javascript; charset=utf-8',
   '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
-  '.png': 'image/png', '.webp': 'image/webp' };
+  '.png': 'image/png', '.webp': 'image/webp',
+  '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8' };
 
 http.createServer(async (req, res) => {
   const url = decodeURIComponent(req.url.split('?')[0]);

@@ -1,4 +1,35 @@
-/* Las dos familias del sistema. El sitio original las carga desde Google Fonts
-   (link en src/layouts/Base.astro) — no hay binarios de fuente en el repo,
-   así que acá se mantiene la misma fuente de origen. */
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap");
+/* Las dos familias del sistema, servidas desde este mismo dominio.
+   ────────────────────────────────────────────────────────────────────────
+   Antes venían de Google Fonts con un @import. Un @import bloquea la
+   pintura hasta que el archivo llega, así que una red que filtre
+   fonts.googleapis.com no solo cambiaba la tipografía: retrasaba la página
+   entera. Ahora salen de acá.
+
+   Las dos son variables: un archivo cubre todos los pesos, por eso hay dos
+   archivos y no siete. Subconjunto latino, que es todo lo que necesita el
+   castellano.
+
+   Licencia SIL Open Font License 1.1 — ver public/fonts/LICENCIA.txt.
+   ──────────────────────────────────────────────────────────────────────── */
+
+@font-face{
+  font-family:'Inter';
+  src:url('../fonts/inter-latin.woff2') format('woff2');
+  font-weight:100 900;      /* variable: del 300 al 600 salen del mismo archivo */
+  font-style:normal;
+  font-display:swap;
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,
+                U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,
+                U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face{
+  font-family:'Playfair Display';
+  src:url('../fonts/playfair-display-latin.woff2') format('woff2');
+  font-weight:100 900;
+  font-style:normal;
+  font-display:swap;
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,
+                U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,
+                U+2212,U+2215,U+FEFF,U+FFFD;
+}

@@ -1,0 +1,20 @@
+Inter y Playfair Display
+SIL Open Font License, Version 1.1
+
+Los dos archivos .woff2 de esta carpeta son el subconjunto latino de las
+familias publicadas en Google Fonts:
+
+  Inter            — https://fonts.google.com/specimen/Inter
+  Playfair Display — https://fonts.google.com/specimen/Playfair+Display
+
+Están servidas desde este dominio en vez de desde Google. La OFL 1.1 lo
+permite expresamente: se pueden usar, estudiar, modificar y redistribuir
+libremente, incluso incrustadas en un sitio.
+
+Las dos condiciones que hay que respetar:
+  · no se venden por sí solas;
+  · si se modifican y redistribuyen, no pueden llevar el nombre original
+    («Reserved Font Name»).
+
+Texto completo de la licencia:
+https://openfontlicense.org/open-font-license-official-text/
