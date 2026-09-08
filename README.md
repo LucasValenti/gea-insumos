@@ -23,7 +23,7 @@ alcanza, porque la tienda se queda esperando datos que nadie le manda.
 La primera vez hay que llenar la base local:
 
 ```
-node herramientas/semilla.mjs                                   # genera db/semilla.sql
+npm run semilla                                                 # genera db/semilla.sql
 npx wrangler d1 execute gea-catalogo --local --file=db/esquema.sql
 npx wrangler d1 execute gea-catalogo --local --file=db/semilla.sql
 ```
@@ -100,8 +100,8 @@ puede caer en otra instancia del Worker.
 no se pueda escribir nada:
 
 ```
-node herramientas/panel-seguridad.mjs                          # contra el dev local
-node herramientas/panel-seguridad.mjs https://gea-insumos...   # contra producción
+npm run panel:seguridad                                        # contra el dev local
+npm run panel:seguridad -- https://gea-insumos...              # contra producción
 ```
 
 `herramientas/pedidos-prueba.mjs` recorre un pedido de punta a punta: que quede
@@ -156,7 +156,7 @@ en el navegador por Babel. Podés escribir JS normal adentro: funciones,
   `public/.assetsignore`). Para preparar fotos nuevas:
 
   ```
-  node herramientas/imagenes.mjs
+  npm run imagenes
   ```
 
   Convierte a WebP, las achica a 1100 px de ancho como mucho y regenera
@@ -201,34 +201,57 @@ en el segundo caso.
 ## Herramientas de auditoría
 
 `herramientas/` no se publica: son scripts para revisar el sitio con un
-navegador de verdad (Playwright + axe-core). Necesitan el servidor de pruebas
-levantado en otra terminal:
+navegador de verdad (Playwright + axe-core). Cada uno tiene su `npm run`, así
+que `npm run` a secas lista todo lo que hay:
+
+| Comando | Qué hace |
+| --- | --- |
+| `npm run servidor` | Sirve `public/` en el 8788, para lo que no necesita la API |
+| `npm run semilla` | Genera `db/semilla.sql` a partir de `datos.js` |
+| `npm run imagenes` | Convierte las fotos a WebP y regenera `medidas.js` |
+| `npm run audita` | 7 variantes: anchos, temas y direcciones |
+| `npm run audita:medidas` | Texto chico y áreas táctiles menores a 44 px |
+| `npm run audita:formas` | Que ningún botón tenga esquinas cuadradas |
+| `npm run audita:responsive` | Barrido de anchos y temas, en la tienda y en el panel |
+| `npm run audita:rendimiento` | Tiempos de montaje y peso de cada recurso |
+| `npm run audita:revelado` | Que nada quede invisible después de pasarle por encima |
+| `npm run audita:jsx` | Que el JSX del sitio compile |
+| `npm run flujo` | Recorre la compra entera y audita cada pantalla |
+| `npm run flujo:movil` | Lo mismo en un viewport de celular con táctil |
+| `npm run flujo:recorrido` | Baja por toda la página y deja capturas |
+| `npm run panel:ficha` | La ficha de producto del panel, como se usa en un celular |
+| `npm run panel:seguridad` | Que el panel no se pueda usar sin entrar |
+| `npm run api:catalogo` | Alta, edición y baja de productos y tonos contra la API |
+| `npm run api:pedidos` | Un pedido de punta a punta, con el stock como estaba al terminar |
+| `npm run api:seguridad` | Repaso de seguridad y robustez de la API |
+| `npm run api:comparar` | La API contra el catálogo original, campo por campo |
+
+`api:comparar` es la prueba de que mudar los datos a la base no le cambió nada
+al que mira la tienda: contrasta campo por campo lo que devuelve `/api/catalogo`
+contra el `datos.js` de antes de la mudanza.
+
+`herramientas/parche.mjs` no está en la tabla porque no es un comando: es una
+librería que usan los otros scripts para aplicar reemplazos literales sobre un
+archivo, abortando si el texto no aparece exactamente una vez.
+
+### Contra qué corren
+
+Casi todas apuntan al `wrangler dev` del 8787, así que hace falta `npm run dev`
+en otra terminal. Las excepciones son `semilla`, `imagenes` y `audita:jsx`, que
+no abren el navegador, y `servidor`, que es el servidor de pruebas.
+
+Para auditar producción hay dos formas, según el script:
 
 ```
-node herramientas/servidor.mjs        # sirve public/ en el puerto 8788
-node herramientas/auditoria.mjs       # 7 variantes: anchos, temas y direcciones
-node herramientas/flujo.mjs           # recorre la compra entera y audita cada pantalla
-node herramientas/medidas.mjs         # texto chico y áreas táctiles menores a 44px
+GEA_URL=https://gea-insumos.lucas-valenti00.workers.dev/ npm run audita
+npm run api:comparar -- https://gea-insumos.lucas-valenti00.workers.dev/
 ```
 
-`auditoria.mjs` reescribe el bloque EDITMODE al vuelo para fijar cada variante,
-así que no hace falta tocar `index.html` para probar tema oscuro o vista móvil.
-Las capturas quedan en la carpeta temporal que imprime al terminar.
+El `--` es de npm: separa los argumentos del script de los suyos propios.
 
-`comparar-catalogo.mjs` contrasta lo que devuelve la API contra el catálogo
-original, campo por campo. Es la prueba de que mudar los datos a la base no le
-cambió nada al que mira la tienda:
+`audita` reescribe el bloque EDITMODE al vuelo para fijar cada variante, así
+que no hace falta tocar `index.html` para probar tema oscuro o vista móvil.
+Las capturas y el informe van a la carpeta temporal del sistema, que el script
+imprime al terminar; se puede fijar otra con `GEA_OUT`.
 
-```
-node herramientas/comparar-catalogo.mjs                          # contra el dev local
-node herramientas/comparar-catalogo.mjs https://gea-insumos...   # contra producción
-```
-
-Las demás herramientas apuntan al `wrangler dev` del 8787. Para auditar
-producción, `GEA_URL=https://gea-insumos.lucas-valenti00.workers.dev/`.
-
-`parche.mjs` aplica reemplazos literales sobre un archivo y aborta si el texto
-no aparece exactamente una vez, para no editar a ciegas.
-
-`imagenes.mjs` prepara las fotos (ver arriba). Se corre a mano cuando entran
-fotos nuevas, no en cada build.
+`imagenes` se corre a mano cuando entran fotos nuevas, no en cada publicación.
