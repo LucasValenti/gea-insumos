@@ -1,12 +1,16 @@
 import { chromium } from 'playwright';
 import fs from 'fs/promises';
+import os from 'os';
+import path from 'path';
 
 /* El sitio ya no se puede probar contra archivos estáticos: el catálogo lo
    sirve el Worker en /api/catalogo. Por eso apunta a `wrangler dev`
    (npm run dev), no a herramientas/servidor.mjs. Se puede pasar otra
    dirección por GEA_URL para auditar producción. */
 const BASE = process.env.GEA_URL || 'http://127.0.0.1:8787/';
-const OUT = 'C:/Users/Lucas/AppData/Local/Temp/claude/c--Users-Lucas-proyectos-gea-insumos/1c52ca13-f0eb-4cc4-8526-febb796ce818/scratchpad/shots2';
+/* Igual que auditoria.mjs: las capturas van a la carpeta temporal del
+   sistema. Se puede fijar otra con GEA_OUT. */
+const OUT = process.env.GEA_OUT || path.join(os.tmpdir(), 'gea-recorrido');
 await fs.mkdir(OUT, { recursive: true });
 
 const variante = process.argv[2] || 'esc';
@@ -69,3 +73,4 @@ async function estado(nombre) {
 await estado('inicio');
 await nav.close();
 console.log('\nerrores JS: ' + JSON.stringify(errores));
+console.log('capturas en ' + OUT);
