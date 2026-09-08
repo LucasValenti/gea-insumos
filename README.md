@@ -3,7 +3,7 @@
 Tienda de insumos de manicuría. HTML + CSS + JavaScript, sin build: se abre
 y se edita en VS Code.
 
-Publicada en https://gea-insumos.lucas-valenti00.workers.dev
+Publicada en https://gea-insumos.kusak.workers.dev
 
 ## Cómo levantarlo
 
