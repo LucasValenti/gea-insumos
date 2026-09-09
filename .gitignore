@@ -24,3 +24,9 @@ public/tienda/ui.js
 public/tienda/pantallas-tienda.js
 public/tienda/pantallas-pedido.js
 public/admin/panel.js
+
+# Los bundles de CSS, que junta el mismo compilar.mjs a partir de los tokens, de
+# base/ y de la hoja de cada superficie. Los fuentes siguen versionados: esto es
+# lo que sale de ellos.
+public/estilos.css
+public/admin/estilos.css

@@ -8,3 +8,13 @@ tienda/img/*.png
 # herramientas/compilar.mjs. Publicarlos sería mandar dos veces el mismo código,
 # y uno de los dos el navegador no lo sabe leer.
 *.jsx
+
+# Lo mismo con el CSS: los tokens, base/ y la hoja de cada superficie son el
+# fuente, y lo que se publica es el estilos.css que arma compilar.mjs con todos
+# ellos en orden. styles.css es la lista del orden, no una hoja que alguien
+# cargue. Ninguna página los pide sueltos.
+styles.css
+tokens/*.css
+base/*.css
+tienda/tienda.css
+admin/admin.css

@@ -3,14 +3,12 @@
 <title>Panel · GEA Insumos</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<!-- Las familias venían por un @import adentro de tokens/fonts.css. Salió de ahí
-     para no encadenar cinco viajes antes de la primera letra, así que el panel
-     también las pide acá: si no, hereda Times New Roman. -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<!-- Las @font-face viven adentro de estilos.css, así que el panel no pide nada a
+     fonts.googleapis.com. Los .woff2 siguen saliendo de gstatic. -->
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap">
-<link rel="stylesheet" href="../styles.css">
-<link rel="stylesheet" href="admin.css">
+<!-- Uno solo, igual que la tienda: lo arma herramientas/compilar.mjs con los
+     mismos tokens más admin.css. -->
+<link rel="stylesheet" href="estilos.css">
 <script>
 /* Mismo criterio que la tienda: el tema se estampa antes de pintar. */
 (function () {
@@ -23,7 +21,11 @@
 </head>
 <body>
 <div id="raiz"></div>
-<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
-<script src="panel.js"></script>
+<!-- El mismo React que la tienda, del propio dominio. Los baja y los verifica
+     herramientas/vendor.mjs contra el sha384 que tenían de integrity. -->
+<!-- Con defer, igual que la tienda: conserva el orden —panel.js necesita React
+     ya cargado— y deja de frenar al parser. -->
+<script defer src="../vendor/react-18.3.1.min.js"></script>
+<script defer src="../vendor/react-dom-18.3.1.min.js"></script>
+<script defer src="panel.js"></script>
 </body></html>

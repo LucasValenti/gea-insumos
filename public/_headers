@@ -15,7 +15,7 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://unpkg.com 'sha256-Wq9ymUCEuqKrKZ0KtESmxENcYNyHLjrnKnTFCQVT6CE=' 'sha256-SqzUQOWLIxFSmtP/GnZsGMmuTPRRBRMnxy9CbVsfZxo=' 'sha256-f3IColzFaI8v1iUu7Dv2EbTO5YRLzy2nCHQkViKJXa4='; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-Wq9ymUCEuqKrKZ0KtESmxENcYNyHLjrnKnTFCQVT6CE=' 'sha256-SqzUQOWLIxFSmtP/GnZsGMmuTPRRBRMnxy9CbVsfZxo=' 'sha256-f3IColzFaI8v1iUu7Dv2EbTO5YRLzy2nCHQkViKJXa4='; style-src 'self' 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
 
 # Sobre la Content-Security-Policy de arriba.
 #
@@ -26,24 +26,27 @@
 # que corresponde.
 #
 # Qué permite cada cosa, y por qué:
-#   script-src   los .js propios, React y ReactDOM de unpkg, y por hash los tres
-#                bloques en línea: el que estampa el tema antes de pintar, el
-#                mismo del panel, y el JSON-LD. Con hashes presentes el
-#                navegador ignora 'unsafe-inline' aunque estuviera: cualquier
-#                otro script inyectado no corre.
+#   script-src   los .js propios —React incluido, que ahora sale de /vendor/— y
+#                por hash los tres bloques en línea: el que estampa el tema antes
+#                de pintar, el mismo del panel, y el JSON-LD. Con hashes
+#                presentes el navegador ignora 'unsafe-inline' aunque estuviera:
+#                cualquier otro script inyectado no corre. Acá estaba unpkg y ya
+#                no hace falta: no queda un solo script de un origen ajeno.
 #   style-src    'unsafe-inline' es inevitable hoy: las pantallas usan style={{}}
 #                de React, que termina en atributos style. Sacarlo pide mover
-#                todo eso a clases, y es un trabajo aparte.
-#   font-src     solo gstatic, que es de donde salen los .woff2.
+#                todo eso a clases, y es un trabajo aparte. Ya no hay ningún
+#                origen ajeno: cdnjs se fue con animate.css a /vendor/, y
+#                fonts.googleapis con las @font-face, que ahora viven adentro de
+#                estilos.css.
+#   font-src     solo gstatic, que es de donde salen los .woff2. Es el único
+#                tercero que queda en todo el sitio, y no bloquea el pintado.
 #   img-src      data: por el SVG de fondo del selector en tweaks-panel.
-#   connect-src  el fetch propio va todo a /api/* del mismo origen, pero acá
-#                además están los cuatro orígenes de los <link rel="preconnect">
-#                del <head>. Está medido: Chrome aplica connect-src también a
-#                las preconexiones, así que con 'self' solo quedaban bloqueadas
-#                —la página andaba igual, pero la optimización no surtía efecto
-#                y la consola se llenaba de violaciones. Lo encontró npm run
-#                flujo; no lo agrega permiso nuevo de verdad: a esos orígenes ya
-#                se les permite servir scripts, estilos y fuentes.
+#   connect-src  el fetch propio va todo a /api/* del mismo origen, y acá además
+#                está el origen del <link rel="preconnect"> del <head>. Está
+#                medido: Chrome aplica connect-src también a las preconexiones,
+#                así que con 'self' solo quedaba bloqueada —la página andaba
+#                igual, pero la optimización no surtía efecto y la consola se
+#                llenaba de violaciones. Lo encontró npm run flujo.
 #
 # IMPORTANTE: los hashes se comprueban en cada build. Si se toca un <script> en
 # línea sin actualizar el hash de acá, herramientas/compilar.mjs falla y dice
@@ -59,6 +62,14 @@
 # revalida por atrás— sin dejar a nadie clavado con una versión vieja.
 #
 # El html no lleva regla y revalida siempre: es lo que apunta a todo lo demás.
+#
+# public/vendor/ NO lleva regla propia, aunque su nombre trae la versión y se
+# podría cachear para siempre. El motivo es el de arriba: el splat de _headers
+# cruza las barras, así que /*.js y /*.css ya matchean /vendor/react-18.3.1.min.js,
+# y agregar /vendor/* dejaría dos Cache-Control en conflicto sobre el mismo
+# archivo. Para darle 'immutable' hay que antes acotar esos dos patrones a las
+# carpetas que no son vendor; queda pendiente, y mientras tanto cae en los 5
+# minutos con revalidación por atrás, que es correcto aunque no sea lo óptimo.
 
 /*.webp
   Cache-Control: public, max-age=2592000

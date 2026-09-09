@@ -19,32 +19,35 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Manos con uñas esculpidas sobre un muestrario de tips">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://unpkg.com" crossorigin>
-<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-<!-- Las dos familias entraban por un @import adentro de tokens/fonts.css, que a
-     su vez importa styles.css: cinco viajes en serie antes de pedir la primera
-     letra, y todos bloqueando el pintado. Acá arriba es uno solo. El preconnect
-     a gstatic tampoco servía por su cuenta: hasta que googleapis no contesta no
-     se sabe qué archivo de fuente hay que pedir. -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<!-- Acá había preconexiones a unpkg y a cdnjs. Ya no hacen falta: React y
+     animate.css se sirven de este mismo dominio, por la conexión que el
+     navegador ya abrió para pedir esta página. -->
+<!-- Las @font-face ya no vienen de una hoja de fonts.googleapis.com: están
+     adentro de estilos.css, traídas por herramientas/vendor.mjs. Esa hoja pesaba
+     1385 bytes y costaba 844 ms, porque era DNS + TCP + TLS a un origen nuevo
+     antes siquiera de saber qué archivo de fuente pedir, y bloqueaba el pintado.
+     Los .woff2 siguen saliendo de gstatic —no hay binarios de fuente en el
+     repo— pero ahora se descubren leyendo un CSS que ya venía viajando, y con
+     display=swap no bloquean nada. Por eso queda solo esta preconexión. -->
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap">
 <!-- La foto del hero es lo más grande de la primera pantalla, o sea la métrica
      que Google mira. Sin este preload no se podía ni pedir hasta que React
      montaba y llegaba el catálogo: medido, se descubría recién a los 3,1 s
      estando el html en el navegador desde los 40 ms. Acá baja en paralelo con
      todo lo demás. -->
 <link rel="preload" as="image" href="tienda/img/hero.webp" fetchpriority="high">
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="tienda/tienda.css">
-<!-- Con integridad, como los scripts. Una hoja de estilos de un CDN ajeno no
-     ejecuta código, pero sí puede tapar la pantalla, cambiar lo que dice un
-     botón o mandar a un servidor lo que se escribe en un campo, usando
-     selectores de atributo y fondos. El hash se verificó contra jsDelivr: los
-     dos CDN sirven el mismo archivo byte a byte. -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-      integrity="sha384-Gu3KVV2H9d+yA4QDpVB7VcOyhJlAVrcXd0thEjr4KznfaFPLe0xQJyonVxONa4ZC"
-      crossorigin="anonymous">
+<!-- Uno solo. Eran diez: styles.css encadenaba ocho @import, que no se descubren
+     al leer el html —hay que bajar y parsear styles.css primero— y bloquean el
+     pintado los diez. Los fuentes siguen partidos en tokens y base; los junta
+     herramientas/compilar.mjs, igual que el JSX. -->
+<link rel="stylesheet" href="estilos.css">
+<!-- Venía de cdnjs con integrity. Ahora es nuestro: lo baja y lo verifica
+     herramientas/vendor.mjs contra el mismo sha384 que tenía el atributo, así
+     que la copia está probada byte a byte contra lo que servía el CDN. Sin
+     integrity porque ya no aplica: el archivo sale del mismo origen que la
+     página. La versión va en el nombre para que actualizar sea una dirección
+     nueva y nadie quede servido con una copia vieja. -->
+<link rel="stylesheet" href="vendor/animate-4.1.1.min.css">
 <style>
 /* Animate.css afinado al sistema: duraciones cortas y curva de la marca. */
 :root{--animate-duration:.5s;--animate-delay:.1s}
@@ -108,21 +111,40 @@ a{color:var(--ink)}a:hover{color:var(--nude-600)}
 </head>
 <body>
 <div id="root"></div>
-<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
-<script src="tienda/datos.js"></script>
+<!-- React salía de unpkg. Cada origen ajeno cuesta DNS, TCP y TLS antes del
+     primer byte, y estos dos bloquean el pintado: Lighthouse los midió en
+     1019 ms y 693 ms con 4G y CPU frenada. Los baja y los verifica
+     herramientas/vendor.mjs contra el sha384 que tenían de integrity. -->
+
+<!-- Todos con defer, y por eso siguen acá abajo y no en el <head>: defer conserva
+     el orden de ejecución, que acá es obligatorio —cada archivo se cuelga de
+     window y el siguiente lo usa—, pero deja de frenar al parser. Estando al
+     final del body igual bloqueaban: Lighthouse los contaba a los ocho como
+     render-blocking, 305 ms cada uno. Con defer bajan en paralelo con el CSS y
+     corren cuando la página terminó de leerse.
+     No pongas async: async no respeta el orden y app.js correría antes que
+     React. -->
+<script defer src="vendor/react-18.3.1.min.js"></script>
+<script defer src="vendor/react-dom-18.3.1.min.js"></script>
+<script defer src="tienda/datos.js"></script>
 <!-- Medidas reales de cada foto, para reservar el lugar antes de que carguen.
      Lo genera herramientas/imagenes.mjs; no se edita a mano. -->
-<script src="tienda/img/medidas.js"></script>
-<!-- Estos seis los genera herramientas/compilar.mjs desde los .jsx de al lado.
+<script defer src="tienda/img/medidas.js"></script>
+<!-- Estos cuatro los genera herramientas/compilar.mjs desde los .jsx de al lado.
      Antes venían como type="text/babel" y los iba a buscar Babel por XHR
      después de bajarse él mismo, así que el navegador no podía adelantarlos: la
      foto del hero recién se descubría al final de toda esa cadena. Ahora son
-     scripts comunes y el preload scanner los ve al leer el html. -->
-<script src="tweaks-panel.js"></script>
-<script src="ios-frame.js"></script>
-<script src="tienda/ui.js"></script>
-<script src="tienda/pantallas-tienda.js"></script>
-<script src="tienda/pantallas-pedido.js"></script>
-<script src="app.js"></script>
+     scripts comunes y el preload scanner los ve al leer el html.
+
+     Acá estaban también tweaks-panel.js y ios-frame.js, que son de prototipado:
+     el panel de opciones de diseño y el marco de iPhone. Nunca se veían en la
+     tienda publicada —vista arranca en "escritorio" y el panel solo abre si un
+     anfitrión lo activa— pero se bajaban y se ejecutaban en cada visita, y
+     Lighthouse los midió bloqueando el pintado 622 ms y 468 ms. Los archivos
+     siguen publicados: las herramientas de auditoría los inyectan cuando el
+     caso los necesita, y así lo que se audita es lo que se sirve. -->
+<script defer src="tienda/ui.js"></script>
+<script defer src="tienda/pantallas-tienda.js"></script>
+<script defer src="tienda/pantallas-pedido.js"></script>
+<script defer src="app.js"></script>
 </body></html>

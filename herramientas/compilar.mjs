@@ -52,6 +52,64 @@ export const OPCIONES = {
   target: "esnext",
 };
 
+/* Los CSS también se juntan, uno por superficie, y por la misma razón que el
+   JSX: lo que estaba escrito para trabajar cómodo se le estaba cobrando a cada
+   visita.
+ *
+ * public/styles.css era una cadena de ocho @import. Un @import no se descubre
+ * al leer el html: hay que bajar styles.css primero, parsearlo, y recién ahí
+ * pedir los ocho — y todos bloquean el pintado. Diez pedidos para la tienda,
+ * ocho de ellos en serie detrás del primero. Lighthouse los midió en 161 ms
+ * cada uno con 4G.
+ *
+ * Los archivos fuente no se tocan: el sistema de diseño sigue partido en tokens
+ * y base, que es como se lee y se edita. Lo que cambia es que se publica uno
+ * solo, igual que .jsx → .js.
+ *
+ * El orden es el de la cascada y no es decorativo: los tokens definen las
+ * variables que usan reset y utilities, y theme-dark redefine las de colors. */
+/* El orden del sistema no se copia acá: se lee de public/styles.css, que es
+   donde ya estaba escrito. Una lista copiada deja agregar un token de un lado y
+   no del otro, y el síntoma sería un color que no se aplica en producción y sí
+   al abrir el archivo suelto. */
+async function sistema() {
+  const entrada = await readFile(path.join(RAIZ, "public/styles.css"), "utf8");
+  const partes = [...entrada.matchAll(/@import\s+url\(\s*["']?\.\/([^"')]+)["']?\s*\)/g)]
+    .map((m) => "public/" + m[1]);
+  if (!partes.length) throw new Error("public/styles.css no declara ningún @import: no sé en qué orden va el sistema");
+  /* Las @font-face, traídas de Google por herramientas/vendor.mjs. Van primero
+     porque son declaraciones, no reglas: no compiten en la cascada. */
+  return ["public/vendor/fuentes.css", ...partes];
+}
+
+/* Qué hoja arma cada superficie: el sistema, y encima lo suyo. */
+export const PROPIO = {
+  "public/estilos.css": "public/tienda/tienda.css",
+  "public/admin/estilos.css": "public/admin/admin.css",
+};
+
+export async function partesDe(destino) {
+  return [...(await sistema()), PROPIO[destino]];
+}
+
+export async function compilarCSS() {
+  const hechos = [];
+  for (const destino of Object.keys(PROPIO)) {
+    const partes = await partesDe(destino);
+    const trozos = [];
+    for (const rel of partes) {
+      const css = await readFile(path.join(RAIZ, rel), "utf8");
+      trozos.push(`/* ── ${rel} ─────────────────────────────────────── */\n${css}`);
+    }
+    const aviso = `/* Generado por herramientas/compilar.mjs a partir de:\n`
+      + partes.map((p) => `     ${p}`).join("\n")
+      + `\n   No lo edites: se sobrescribe en cada build. */\n\n`;
+    await writeFile(path.join(RAIZ, destino), aviso + trozos.join("\n\n"), "utf8");
+    hechos.push(destino);
+  }
+  return hechos;
+}
+
 const salidaDe = (rel) => rel.replace(/\.jsx$/, ".js");
 
 export async function compilarUno(rel) {
@@ -69,6 +127,10 @@ export async function compilarTodo({ callado = false } = {}) {
   for (const rel of FUENTES) {
     hechos.push(await compilarUno(rel));
     if (!callado) console.log("  " + salidaDe(rel));
+  }
+  for (const destino of await compilarCSS()) {
+    hechos.push(destino);
+    if (!callado) console.log("  " + destino);
   }
   return hechos;
 }
@@ -134,6 +196,24 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
               + String(e && e.message || e).split("\n").slice(0, 3).join("\n      "));
           }
         }, 40));
+      });
+    }
+
+    /* El CSS también, o editar un token no se vería hasta el próximo build y se
+       perdería un rato buscando por qué el color no cambia. */
+    const cssUnicos = [...new Set((await Promise.all(Object.keys(PROPIO).map(partesDe))).flat())];
+    cssUnicos.push("public/styles.css");
+    let pendienteCSS;
+    for (const rel of cssUnicos) {
+      watch(path.join(RAIZ, rel), () => {
+        clearTimeout(pendienteCSS);
+        pendienteCSS = setTimeout(async () => {
+          try {
+            for (const d of await compilarCSS()) console.log(`  ${new Date().toLocaleTimeString("es-AR")}  ${d}`);
+          } catch (e) {
+            console.error(`  ${new Date().toLocaleTimeString("es-AR")}  MAL  ${rel}\n     ` + String(e && e.message || e));
+          }
+        }, 40);
       });
     }
   }
