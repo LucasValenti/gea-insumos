@@ -55,16 +55,19 @@ export async function crearPedido(request, env) {
   const ids = [...new Set(cuerpo.items.map((i) => String(i.id)))];
   const marcas = ids.map(() => "?").join(", ");
   const [prods, tonos, zonasR, cfgR] = await db.batch([
-    db.prepare(`SELECT id, nombre, precio FROM productos WHERE id IN (${marcas})`).bind(...ids),
-    db.prepare(`SELECT producto_id, nombre FROM tonos WHERE producto_id IN (${marcas})`).bind(...ids),
+    db.prepare(`SELECT id, nombre, precio, stock FROM productos WHERE id IN (${marcas})`).bind(...ids),
+    db.prepare(`SELECT producto_id, nombre, stock FROM tonos WHERE producto_id IN (${marcas})`).bind(...ids),
     db.prepare("SELECT id, costo FROM zonas_envio"),
     db.prepare("SELECT clave, valor FROM config WHERE clave IN ('envioGratisDesde', 'minimo')"),
   ]);
   const porId = new Map(prods.results.map((p) => [p.id, p]));
+  /* Nombre del tono -> stock. Que el producto esté en este mapa es además la
+     forma de saber que tiene tonos, y por lo tanto que su stock no está en
+     productos.stock sino repartido acá. */
   const tonosDe = new Map();
   for (const t of tonos.results) {
-    if (!tonosDe.has(t.producto_id)) tonosDe.set(t.producto_id, new Set());
-    tonosDe.get(t.producto_id).add(t.nombre);
+    if (!tonosDe.has(t.producto_id)) tonosDe.set(t.producto_id, new Map());
+    tonosDe.get(t.producto_id).set(t.nombre, t.stock);
   }
   /* Vacío no es cero. Si el panel deja "envío sin cargo desde" en blanco se
      guarda NULL, y Number(null) da 0: con eso todo pedido superaba el umbral y
@@ -73,7 +76,12 @@ export async function crearPedido(request, env) {
   const aNumero = (v) => (v === null || v === undefined || v === "" ? null : Number(v));
   const conf = Object.fromEntries(cfgR.results.map((r) => [r.clave, aNumero(r.valor)]));
 
+  /* El stock se comprueba acá y no solo al confirmar. El freno que hay en el
+     navegador no cuenta: un POST armado a mano no lo ejecuta, y un pedido que
+     entra por más de lo que hay deja al panel eligiendo entre dejar el stock en
+     negativo o descontar de menos. Las dos son mentiras distintas. */
   const lineas = [];
+  const pedidas = new Map();   // producto+tono -> unidades que pide el pedido entero
   for (const it of cuerpo.items) {
     const p = porId.get(String(it.id));
     if (!p) return json({ error: `Ya no tenemos ${it.id} en el catálogo` }, { status: 400 });
@@ -81,13 +89,49 @@ export async function crearPedido(request, env) {
     if (!Number.isInteger(n) || n < 1 || n > MAX_UNIDADES)
       return json({ error: `Cantidad inválida en ${p.nombre}` }, { status: 400 });
     const tono = it.tono ? String(it.tono) : null;
-    if (tono && !(tonosDe.get(p.id) || new Set()).has(tono))
+    const suyos = tonosDe.get(p.id);
+    /* Un producto con tonos reparte el stock entre ellos y deja productos.stock
+       en 0. Sin tono, el descuento al confirmar iría contra esa columna que no
+       mira nadie: el pedido quedaría confirmado sin bajar una sola unidad. */
+    if (suyos && !tono)
+      return json({ error: `Elegí un tono para ${p.nombre}` }, { status: 400 });
+    if (tono && !(suyos && suyos.has(tono)))
       return json({ error: `El tono ${tono} ya no está disponible` }, { status: 400 });
+
+    /* Lo que decide es la suma: el mismo producto puede venir en dos líneas. */
+    const clave = p.id + "\u0000" + (tono || "");
+    const acumulado = (pedidas.get(clave) || 0) + n;
+    pedidas.set(clave, acumulado);
+    const hay = tono ? suyos.get(tono) : p.stock;
+    if (acumulado > hay) {
+      const cual = p.nombre + (tono ? ` (${tono})` : "");
+      return json({
+        error: hay > 0
+          ? `Nos queda${hay === 1 ? "" : "n"} ${hay} de ${cual}`
+          : `Nos quedamos sin ${cual}`,
+      }, { status: 400 });
+    }
+
     lineas.push({ producto_id: p.id, tono, cantidad: n, precio: p.precio, nombre: p.nombre });
   }
 
   const subtotal = lineas.reduce((a, l) => a + l.precio * l.cantidad, 0);
   const d = cuerpo.datos || {};
+
+  /* Modo y pago salen de una lista corta, y la zona tiene que existir de verdad.
+     costoEnvio no distingue "zona sin tarifa" de "zona que no existe": las dos
+     dan null, o sea "a cotizar". Con una zona inventada quedaba registrado un
+     pedido con el envío a cotizar y un total que no cierra con nada, y del otro
+     lado no hay forma de saber qué se quiso pedir. */
+  const MODOS = ["domicilio", "retiro", "transporte"];
+  const PAGOS = ["efectivo", "mp"];
+  if (!MODOS.includes(d.envio))
+    return json({ error: "Elegí cómo querés recibir el pedido" }, { status: 400 });
+  if (!PAGOS.includes(d.pago))
+    return json({ error: "Elegí cómo vas a pagar" }, { status: 400 });
+  if (d.envio === "domicilio" && !zonasR.results.some((z) => z.id === d.zona))
+    return json({ error: "Elegí una zona de envío de la lista" }, { status: 400 });
+
   const envioCosto = costoEnvio({ modo: d.envio, zona: d.zona }, subtotal,
     zonasR.results, conf.envioGratisDesde == null ? Infinity : conf.envioGratisDesde);
   const total = subtotal + (envioCosto || 0);
@@ -119,7 +163,16 @@ export async function crearPedido(request, env) {
   const numero = String(f.getFullYear()).slice(2) + String(f.getMonth() + 1).padStart(2, "0") +
     String(f.getDate()).padStart(2, "0") + "-" + String(id).padStart(4, "0");
 
-  return json({ ok: true, id, numero, subtotal, envio: envioCosto, total });
+  /* Las líneas van con el precio que quedó anotado. El mensaje de WhatsApp se
+     arma con esto y no con el catálogo del navegador, que puede tener precios de
+     hace horas: cuando diferían, el mensaje mostraba renglones que no sumaban el
+     subtotal escrito abajo, y la clienta leía la contradicción antes que GEA. */
+  return json({
+    ok: true, id, numero, subtotal, envio: envioCosto, total,
+    items: lineas.map((l) => ({
+      id: l.producto_id, tono: l.tono, n: l.cantidad, precio: l.precio, nombre: l.nombre,
+    })),
+  });
 }
 
 /* ---------- lo que ve y hace el panel ---------- */
@@ -168,11 +221,50 @@ export async function cerrarPedido(db, id, estado) {
   const { results: items } = await db.prepare(
     "SELECT producto_id, tono, cantidad FROM pedido_items WHERE pedido_id = ?").bind(id).run();
 
+  /* ¿Alcanza el stock? Ya se comprobó cuando entró el pedido, pero entre que
+     entró y se confirma pudo venderse lo mismo por otro lado. Sin esta lectura
+     el panel confirma igual y el faltante aparece mucho después, o nunca.
+     Contesta con nombres y números: el que confirma tiene que poder saber qué
+     pasó, no solo que no se pudo. */
+  const clave = (pid, tono) => JSON.stringify([pid, tono || null]);
+  const pide = new Map();
+  for (const i of items) {
+    const k = clave(i.producto_id, i.tono);
+    pide.set(k, (pide.get(k) || 0) + i.cantidad);
+  }
+
+  const idsPedidos = [...new Set(items.map((i) => i.producto_id))];
+  const marcasP = idsPedidos.map(() => "?").join(", ");
+  const [prodR, tonoR] = await db.batch([
+    db.prepare(`SELECT id, nombre, stock FROM productos WHERE id IN (${marcasP})`).bind(...idsPedidos),
+    db.prepare(`SELECT producto_id, nombre, stock FROM tonos WHERE producto_id IN (${marcasP})`).bind(...idsPedidos),
+  ]);
+  const prodPorId = new Map(prodR.results.map((p) => [p.id, p]));
+  const stockTono = new Map(tonoR.results.map((t) => [clave(t.producto_id, t.nombre), t.stock]));
+
+  const faltan = [];
+  for (const [k, cantidad] of pide) {
+    const [pid, tono] = JSON.parse(k);
+    const p = prodPorId.get(pid);
+    const hay = tono ? stockTono.get(k) : (p ? p.stock : undefined);
+    const cual = (p ? p.nombre : pid) + (tono ? ` (${tono})` : "");
+    if (hay === undefined) faltan.push(`${cual}: ya no está en el catálogo`);
+    else if (hay < cantidad) faltan.push(`${cual}: hay ${hay} y el pedido pide ${cantidad}`);
+  }
+  if (faltan.length)
+    return { error: "No alcanza el stock. " + faltan.join("; "), status: 409 };
+
   /* Todo en un batch: D1 lo corre como una sola transacción, así que o se
      descuenta todo y se marca el pedido, o no pasa nada. Un descuento a medias
      dejaría el stock mintiendo.
-     El MAX(0, ...) es para no dejar stock negativo si algo ya se vendió por
-     otro lado entre que entró el pedido y se confirmó.
+
+     Acá había un MAX(0, stock - ?), y era justamente lo que rompía esa promesa:
+     cuando el stock no alcanzaba, la resta se recortaba a cero, el pedido
+     quedaba confirmado y no quedaba rastro de las unidades vendidas sin existir.
+     Ahora la resta escribe NULL en ese caso; la columna es NOT NULL, SQLite
+     corta el batch entero y no se aplica nada. Es a propósito: la comprobación
+     de arriba es la que avisa bien, y esta es la red por si el stock cambió
+     entre esa lectura y este batch.
 
      Cada descuento lleva su propia condición de que el pedido siga en "nuevo".
      No alcanza con haberlo comprobado arriba: esa lectura pasa fuera de la
@@ -185,19 +277,40 @@ export async function cerrarPedido(db, id, estado) {
      distribuido y las dos entraron juntas. Apareció recién probando contra
      producción, con 200 y 200 y el stock bajando seis en vez de tres. */
   const sigueNuevo = "(SELECT estado FROM pedidos WHERE id = ?) = 'nuevo'";
+  const resta = "CASE WHEN stock >= ? THEN stock - ? ELSE NULL END";
   const ops = items.map((i) => i.tono
-    ? db.prepare(`UPDATE tonos SET stock = MAX(0, stock - ?)
+    ? db.prepare(`UPDATE tonos SET stock = ${resta}
                   WHERE producto_id = ? AND nombre = ? AND ${sigueNuevo}`)
-        .bind(i.cantidad, i.producto_id, i.tono, id)
-    : db.prepare(`UPDATE productos SET stock = MAX(0, stock - ?)
+        .bind(i.cantidad, i.cantidad, i.producto_id, i.tono, id)
+    : db.prepare(`UPDATE productos SET stock = ${resta}
                   WHERE id = ? AND ${sigueNuevo}`)
-        .bind(i.cantidad, i.producto_id, id));
+        .bind(i.cantidad, i.cantidad, i.producto_id, id));
 
   /* "marcar" va último: los descuentos tienen que leer el estado todavía en
      "nuevo". Si cambió 0 filas, otra confirmación llegó primero y esta no
      descontó nada. */
-  const r = await db.batch([...ops, marcar]);
+  let r;
+  try {
+    r = await db.batch([...ops, marcar]);
+  } catch (e) {
+    /* La resta escribió NULL: entre la lectura de arriba y este batch se vendió
+       lo mismo por otro lado. No se aplicó nada, así que se puede reintentar. */
+    console.error("cerrar pedido:", e && e.stack || e);
+    return { error: "El stock cambió mientras se confirmaba. Probá de nuevo.", status: 409 };
+  }
   if (!r[r.length - 1].meta.changes)
     return { error: "El pedido ya estaba cerrado", status: 409 };
+
+  /* Cada descuento tenía que tocar su fila. Si alguno no lo hizo —el producto
+     se borró entre medio, por ejemplo—, el pedido quedó marcado sin descontar.
+     Eso hay que verlo, no suponerlo: un ok acá sería el fallo silencioso que
+     todo lo de arriba trata de evitar. */
+  const mudos = r.slice(0, ops.length).filter((x) => !x.meta.changes).length;
+  if (mudos)
+    return {
+      error: `El pedido quedó confirmado pero ${mudos} de ${ops.length} líneas no descontaron stock. Revisalo a mano.`,
+      status: 500,
+    };
+
   return { ok: true, descontadas: items.length };
 }

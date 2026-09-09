@@ -185,8 +185,16 @@ console.log("\n7. CONFIGURACIÓN EN BLANCO");
   const minimo = c0.NEGOCIO.minimo;
   const zona = c0.ENVIO.zonas.find((z) => z.costo > 0);
   /* Un pedido que pase el mínimo pero no llegue al envío gratis: es el único
-     tramo donde se ve si el umbral se está respetando. */
-  const p0 = c0.PRODUCTOS.find((p) => p.precio > 0 && p.stock > 0);
+     tramo donde se ve si el umbral se está respetando.
+
+     Sin tonos y con stock de sobra a propósito. Un producto con tonos exige que
+     se elija uno, y el servidor rechaza pedir más de lo que hay: las dos reglas
+     están bien, pero acá hacían fallar la sección por un motivo que no es el
+     que está probando. Pasó de verdad, y el mensaje decía "elegí un tono"
+     mientras la comprobación hablaba del costo de envío. */
+  const suficiente = (p) => p.stock >= Math.max(1, Math.ceil(minimo / p.precio));
+  const p0 = c0.PRODUCTOS.find((p) => p.precio > 0 && !p.tonos && suficiente(p));
+  if (!p0) ok(false, "hay un producto sin tonos con stock para probar el envío");
   const n = Math.max(1, Math.ceil(minimo / p0.precio));
   const conEnvio = () => pedirOk({
     items: [{ id: p0.id, n }],

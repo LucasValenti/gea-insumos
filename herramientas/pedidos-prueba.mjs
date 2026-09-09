@@ -102,7 +102,43 @@ for (const [txt, cuerpo, esperado] of [
   ok(x.status === esperado, `rechaza ${txt}`, "respondió " + x.status);
 }
 
-console.log("\n8. SIN SESIÓN NO SE CIERRAN PEDIDOS");
+console.log("\n8. NO SE VENDE MÁS DE LO QUE HAY");
+{
+  /* El freno de stock que tiene la tienda vive en el navegador, y un POST
+     armado a mano no lo ejecuta. Todo esto entra por la puerta de atrás. */
+  const hay = await stockDe("removedor-500");
+  const x = await pedir({ items: [{ id: "removedor-500", n: hay + 1 }], datos: DATOS });
+  const cuerpo = await x.json();
+  ok(x.status === 400, `pedir ${hay + 1} cuando hay ${hay} se rechaza`, "respondió " + x.status);
+  ok(!cuerpo.id, "y el pedido no queda registrado", cuerpo.id ? "quedó el " + cuerpo.id : "");
+  ok(await stockDe("removedor-500") === hay, "el stock no se movió");
+
+  /* Dos líneas del mismo producto: lo que decide es la suma, no cada una. */
+  const mitad = Math.ceil(hay / 2) + 1;
+  const y = await pedir({
+    items: [{ id: "removedor-500", n: mitad }, { id: "removedor-500", n: mitad }], datos: DATOS,
+  });
+  ok(y.status === 400, `dos líneas de ${mitad} que suman más de ${hay} se rechazan`, "respondió " + y.status);
+
+  /* Un producto con tonos reparte el stock entre ellos y deja productos.stock
+     en 0: sin tono, el descuento al confirmar no bajaría ninguna unidad y el
+     pedido quedaría confirmado igual. Se mira el mensaje y no solo el 400,
+     porque un pedido de una unidad también cae por debajo del mínimo y daría
+     400 por el motivo equivocado. */
+  const z = await pedir({ items: [{ id: "semi-15-basicos", n: 1 }], datos: DATOS });
+  const zc = await z.json();
+  ok(z.status === 400 && /tono/i.test(zc.error || ""),
+    "un producto con tonos sin elegir tono se rechaza", `${z.status} — ${zc.error || "sin mensaje"}`);
+
+  const hayTono = await stockDe("semi-15-basicos", "Nude Rosado");
+  const w = await pedir({
+    items: [{ id: "semi-15-basicos", tono: "Nude Rosado", n: hayTono + 1 }], datos: DATOS,
+  });
+  ok(w.status === 400, `pedir ${hayTono + 1} del tono cuando hay ${hayTono} se rechaza`, "respondió " + w.status);
+  ok(await stockDe("semi-15-basicos", "Nude Rosado") === hayTono, "el stock del tono no se movió");
+}
+
+console.log("\n9. SIN SESIÓN NO SE CIERRAN PEDIDOS");
 {
   const d2 = await (await pedir({ items: [{ id: "removedor-500", n: 1 }], datos: DATOS })).json();
   const x = await fetch(`${BASE}/api/admin/pedido/${d2.id}/confirmar`, { method: "POST" });
@@ -112,7 +148,7 @@ console.log("\n8. SIN SESIÓN NO SE CIERRAN PEDIDOS");
   await admin(`/pedido/${d2.id}/cancelar`, { method: "POST" });
 }
 
-console.log("\n9. DEJO EL STOCK COMO ESTABA");
+console.log("\n10. DEJO EL STOCK COMO ESTABA");
 await admin("/producto/removedor-500", { method: "PATCH", cuerpo: { stock: antes } });
 await admin("/tono/semi-15-basicos", { method: "PATCH", cuerpo: { nombre: "Nude Rosado", stock: antesTono } });
 ok(await stockDe("removedor-500") === antes, "producto restaurado");
