@@ -1,6 +1,6 @@
 (() => {
   /* Pantallas de pedido: carrito, checkout, confirmación, ayuda y contacto. */
-  const { NEGOCIO: NEG, precio: $$, prod: prodP, stockDe: stockP, HABITUALES: HAB, ENVIO: ENV, zonaDe, costoEnvio } = window.T;
+  const { NEGOCIO: NEG, precio: $$, prod: prodP, stockDe: stockP, subtotalDe, HABITUALES: HAB, ENVIO: ENV, zonaDe, costoEnvio } = window.T;
   const { I, Boton, Img, Foto, Stock, Paso, Campo, Opcion, Acordeon, Pie, Marca } = window;
 
   function LineaItem({ it, setCant, quitar }) {
@@ -32,7 +32,7 @@
   }
 
   function Resumen({ carrito, datos }) {
-    const sub = carrito.reduce((a, it) => a + prodP(it.id).precio * it.n, 0);
+    const sub = subtotalDe(carrito);
     const unidades = carrito.reduce((a, it) => a + it.n, 0);
     const env = costoEnvio(datos, sub);
     const z = datos && zonaDe(datos.zona);
@@ -73,7 +73,7 @@
   }
 
   function Carrito({ ir, carrito, setCant, quitar, agregar, enPedido }) {
-    const sub = carrito.reduce((a, it) => a + prodP(it.id).precio * it.n, 0);
+    const sub = subtotalDe(carrito);
     const unidades = carrito.reduce((a, it) => a + it.n, 0);
     if (!carrito.length) return (
       <>
@@ -146,12 +146,22 @@
   /* El pedido ahora se registra en el servidor antes de abrir WhatsApp, así que
      confirmar tarda. Sin este freno, dos toques seguidos daban dos pedidos. */
   const [enviando, setEnviando] = React.useState(false);
+  /* Lo que contestó el servidor cuando rechazó el pedido. Antes cualquier "no"
+     —se acabó el stock, se dio de baja un producto, no llega al mínimo— caía en
+     el mismo camino que una falla de red, y la clienta terminaba en "Pedido
+     armado" con un número que en la base no existía. El motivo es accionable:
+     tiene que verlo acá y poder arreglarlo. */
+  const [rechazo, setRechazo] = React.useState(null);
   const mandar = async () => {
     if (enviando) return;
     setEnviando(true);
-    try { await confirmar(); } finally { setEnviando(false); }
+    setRechazo(null);
+    try {
+      const problema = await confirmar();
+      if (problema) setRechazo(problema);
+    } finally { setEnviando(false); }
   };
-    const sub = carrito.reduce((a, it) => a + prodP(it.id).precio * it.n, 0);
+    const sub = subtotalDe(carrito);
     const set = (k) => (e) => setDatos({ ...datos, [k]: e.target.value });
     /* Sin aplastar el null: la zona "No sé en qué zona entro" no tiene tarifa y
        antes se cobraba como envío gratis. */
@@ -225,6 +235,7 @@
             </ul>
             <div className="carro-cta">
               {falta && <span className="carro-aviso">{aviso}</span>}
+              {rechazo && <span className="carro-aviso" role="alert">{rechazo}</span>}
               <Boton variante="primary" tamano="lg" style={{ width: "100%", opacity: falta || enviando ? .45 : 1 }} disabled={falta || enviando} onClick={() => !falta && mandar()}>
                 <I n="wa" size="16px" /> {enviando ? "Registrando…" : "Enviar el pedido"}
               </Boton>
@@ -234,6 +245,7 @@
       </div>
       <div className="accion accion-checkout">
         {falta && <span style={{ fontSize: ".76rem", color: "var(--ink-faint)" }}>{aviso}</span>}
+        {!falta && rechazo && <span role="alert" style={{ fontSize: ".76rem", color: "var(--acento)" }}>{rechazo}</span>}
         <Boton variante="primary" tamano="lg" disabled={falta || enviando} style={{ opacity: falta || enviando ? .45 : 1 }} onClick={() => !falta && mandar()}>
           <I n="wa" size="16px" /> Enviar el pedido · {$$(sub + (env || 0))}{env == null && datos.zona ? " + envío" : ""}
         </Boton>
@@ -260,7 +272,18 @@
        nombre y el total: GEA no recibía ni dirección ni teléfono para despachar. */
     const entregaDetalle = d.envio === "domicilio" ? `\nDirección: ${d.direccion}${d.cp ? ` · ${d.cp}` : ""}`
       : d.envio === "transporte" && d.transporte ? `\nTransporte: ${d.transporte}` : "";
-    const texto = `${NEG.saludo}\n\n${pedido.items.map((it) => `• ${it.n} × ${prodP(it.id).nombre}${it.tono ? ` (${it.tono})` : ""} — ${$$(prodP(it.id).precio * it.n)}`).join("\n")}\n\nSubtotal: ${$$(pedido.sub != null ? pedido.sub : pedido.total)}\n${lineaEnvio}\nTotal: ${$$(pedido.total)}${pedido.envio == null ? " + envío a cotizar" : ""}\nEntrega: ${entrega}${entregaDetalle}\nPago: ${d.pago === "mp" ? "Mercado Pago" : "efectivo"}\n\nNombre: ${d.nombre}${d.gabinete ? ` · ${d.gabinete}` : ""}\nWhatsApp: ${d.tel}${d.nota ? `\nNota: ${d.nota}` : ""}\nPedido ${pedido.nro}`;
+    /* Cada renglón sale del pedido que devolvió el servidor, con el nombre y el
+       precio que quedaron anotados. Armarlos con el catálogo del navegador hacía
+       que, si un precio cambió entre que se cargó la página y se confirmó, los
+       renglones no sumaran el subtotal escrito abajo — y la clienta leía la
+       contradicción antes que GEA. El catálogo queda de respaldo para el caso en
+       que el registro no llegó y no hay líneas del servidor. */
+    const renglon = (it) => {
+      const nom = it.nombre || prodP(it.id).nombre;
+      const unit = it.precio != null ? it.precio : prodP(it.id).precio;
+      return `• ${it.n} × ${nom}${it.tono ? ` (${it.tono})` : ""} — ${$$(unit * it.n)}`;
+    };
+    const texto = `${NEG.saludo}\n\n${pedido.items.map(renglon).join("\n")}\n\nSubtotal: ${$$(pedido.sub != null ? pedido.sub : pedido.total)}\n${lineaEnvio}\nTotal: ${$$(pedido.total)}${pedido.envio == null ? " + envío a cotizar" : ""}\nEntrega: ${entrega}${entregaDetalle}\nPago: ${d.pago === "mp" ? "Mercado Pago" : "efectivo"}\n\nNombre: ${d.nombre}${d.gabinete ? ` · ${d.gabinete}` : ""}\nWhatsApp: ${d.tel}${d.nota ? `\nNota: ${d.nota}` : ""}\nPedido ${pedido.nro}`;
     return (
       <>
       <div className="pad" style={{ paddingTop: "2rem", maxWidth: "34rem", marginInline: "auto" }}>
@@ -268,6 +291,15 @@
         <h1 className="serif animate__animated animate__fadeInUp" style={{ margin: "1rem 0 .4rem", fontSize: "1.7rem", lineHeight: 1.15, animationDelay: ".16s" }}>Pedido armado</h1>
         <p className="animate__animated animate__fadeInUp" style={{ margin: 0, color: "var(--ink-soft)", animationDelay: ".26s" }}>Falta un paso: enviarlo por WhatsApp. Ya está todo escrito, no tenés que explicar nada.</p>
         <p className="num" style={{ margin: ".9rem 0 0", fontSize: ".8rem", color: "var(--ink-faint)" }}>Pedido {pedido.nro} · {pedido.items.reduce((a, i) => a + i.n, 0)} unidades · {$$(pedido.total)}</p>
+
+        {/* El pedido sale igual cuando no se pudo registrar —perder la venta por
+            una falla de conexión sería peor—, pero callarlo no: el número de
+            arriba es inventado por el navegador y del otro lado no existe. */}
+        {!pedido.registrado &&
+          <div className="nota" role="alert" style={{ marginTop: "1.1rem", borderColor: "var(--acento)" }}>
+            <b style={{ fontWeight: 500, color: "var(--acento)", display: "block", marginBottom: ".3rem" }}>No quedó registrado de nuestro lado</b>
+            No pudimos guardarlo en el sistema y el número de arriba es provisorio. Mandalo igual por WhatsApp: así nos llega y lo cargamos a mano.
+          </div>}
 
         <div style={{ marginTop: "1.4rem" }}>
           <Boton variante="primary" tamano="lg" ancho onClick={vaciar} href={`https://wa.me/${NEG.whatsapp}?text=${encodeURIComponent(texto)}`} target="_blank" rel="noopener">
