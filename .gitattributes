@@ -1,0 +1,6 @@
+# public/vendor/ son copias de archivos de terceros, y herramientas/vendor.mjs
+# las verifica byte a byte contra el sha384 que tenían cuando las servía un CDN.
+# Esa garantía no sobrevive a que git les cambie los saltos de línea al clonar:
+# el archivo en disco dejaría de ser el que se verificó. Con -text no se toca
+# nada, ni al guardar ni al sacar.
+public/vendor/** -text
