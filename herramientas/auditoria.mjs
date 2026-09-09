@@ -15,7 +15,26 @@ const BASE = process.env.GEA_URL || 'http://127.0.0.1:8787/';
 const OUT = process.env.GEA_OUT || path.join(os.tmpdir(), 'gea-auditoria');
 await fs.mkdir(OUT, { recursive: true });
 
-// Reescribe el bloque EDITMODE al vuelo para fijar la variante, sin tocar archivos.
+/* Fija la variante inyectando window.GEA_TWEAKS arriba de app.js, sin tocar
+   archivos.
+
+   Antes reescribía el bloque EDITMODE sobre la respuesta del documento. Eso
+   funcionaba cuando la app vivía adentro de index.html; desde que se compila
+   aparte no puede funcionar de dos maneras a la vez: el bloque ya no está en el
+   html, y en app.js esbuild conserva el comentario de apertura pero borra el de
+   cierre, así que la expresión regular no coincide. Ninguna de las dos fallaba
+   —replace() sin coincidencia devuelve el texto igual—, y las siete variantes
+   corrieron con los valores por defecto mientras el informe las nombraba una por
+   una: tema oscuro, movil-preview y reposición nunca se auditaron.
+
+   Ahora se comprueba contra la página cargada, que es lo único que prueba que la
+   variante llegó, y si no llegó el caso es un fallo y no un silencio. */
+/* El marco se inyecta justo antes de app.js, y con defer como los demás: así
+   entra en la misma cola y corre después de React y antes de la app, que es el
+   orden que necesita. */
+const TAG_APP = '<script defer src="app.js"></script>';
+const TAG_MARCO = '<script defer src="ios-frame.js"></script>';
+
 function tweaks(o) {
   return JSON.stringify({
     direccion: 'editorial', vista: 'escritorio', tema: 'claro',
@@ -29,6 +48,10 @@ const CASOS = [
   { id: 'esc-768-claro',   w: 768,  h: 1024, tw: {} },
   { id: 'real-390-claro',  w: 390,  h: 844, tw: {} },
   { id: 'real-390-oscuro', w: 390,  h: 844, tw: { tema: 'oscuro' } },
+  /* Este mira la previsualización enmarcada, que es una herramienta de diseño:
+     el marco de iPhone ya no se publica y se inyecta solo para este caso. Su
+     axe:1 —"region", contenido fuera de landmarks— es del reloj de la barra de
+     estado falsa del marco, no de la tienda. No lo persigas. */
   { id: 'movil-preview',   w: 1440, h: 900, tw: { vista: 'movil' } },
   { id: 'esc-1440-repos',  w: 1440, h: 900, tw: { direccion: 'reposición' } },
 ];
@@ -45,16 +68,33 @@ for (const c of CASOS) {
   page.on('pageerror', (e) => consola.push(`[pageerror] ${String(e).slice(0, 300)}`));
   page.on('requestfailed', (r) => consola.push(`[requestfailed] ${r.url()} — ${r.failure()?.errorText}`));
 
-  await page.route(BASE, async (route) => {
+  const esperado = tweaks(c.tw);
+  await page.route('**/app.js', async (route) => {
     const res = await route.fetch();
-    let body = await res.text();
-    body = body.replace(/\/\*EDITMODE-BEGIN\*\/[\s\S]*?\/\*EDITMODE-END\*\//,
-      `/*EDITMODE-BEGIN*/${tweaks(c.tw)}/*EDITMODE-END*/`);
-    await route.fulfill({ response: res, body });
+    const body = await res.text();
+    await route.fulfill({ response: res, body: `window.GEA_TWEAKS = ${esperado};\n${body}` });
   });
+
+  /* El marco de iPhone ya no se publica —es de prototipado y bloqueaba el
+     pintado—, y esta variante es justamente la que lo mira. Se inyecta solo acá:
+     lo demás se audita tal como se sirve. */
+  let marco = c.tw.vista !== 'movil';
+  if (!marco) {
+    await page.route(BASE, async (route) => {
+      const res = await route.fetch();
+      const body = await res.text();
+      marco = body.includes(TAG_APP);
+      await route.fulfill({ response: res, body: body.replace(TAG_APP, TAG_MARCO + TAG_APP) });
+    });
+  }
 
   const t0 = Date.now();
   await page.goto(BASE, { waitUntil: 'networkidle' });
+  /* Contra la página cargada, no contra el texto que mandamos: es lo único que
+     prueba que la variante llegó, se parseó y es la que se está mirando. */
+  const aplicada = await page.evaluate(() => (window.GEA_TWEAKS ? JSON.stringify(window.GEA_TWEAKS, null, 2) : null));
+  if (aplicada !== esperado) throw new Error(`${c.id}: la variante no llegó a la página — se pidió ${JSON.stringify(c.tw)} y la página tiene ${aplicada}`);
+  if (!marco) throw new Error(`${c.id}: no encontré ${TAG_APP} en el html — no pude inyectar el marco`);
   await page.waitForSelector('.ap', { timeout: 20000 }).catch(() => {});
   await page.waitForTimeout(1200);
   const mount = Date.now() - t0;

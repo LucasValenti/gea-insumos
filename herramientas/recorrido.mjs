@@ -30,13 +30,22 @@ const errores = [];
 page.on('pageerror', (e) => errores.push('[pageerror] ' + String(e).slice(0, 200)));
 page.on('console', (m) => { if (m.type() === 'error') errores.push('[error] ' + m.text().slice(0, 200)); });
 
-await page.route(BASE, async (route) => {
+/* La variante se fija inyectando window.GEA_TWEAKS arriba de app.js. Antes se
+   reescribía el bloque EDITMODE sobre la respuesta del documento, que dejó de
+   contener la app cuando el JSX pasó a compilarse — y en app.js esbuild borra el
+   comentario de cierre, así que la expresión regular tampoco coincide ahí.
+   Ninguna de las dos fallaba: replace() sin coincidencia devuelve el texto
+   igual, y el recorrido salía con los valores por defecto haciéndose pasar por
+   otro. Se comprueba contra la página cargada. */
+const esperado = tweaks(conf.tw);
+await page.route('**/app.js', async (route) => {
   const res = await route.fetch();
-  let body = await res.text();
-  body = body.replace(/\/\*EDITMODE-BEGIN\*\/[\s\S]*?\/\*EDITMODE-END\*\//, `/*EDITMODE-BEGIN*/${tweaks(conf.tw)}/*EDITMODE-END*/`);
-  await route.fulfill({ response: res, body });
+  const body = await res.text();
+  await route.fulfill({ response: res, body: `window.GEA_TWEAKS = ${esperado};\n${body}` });
 });
 await page.goto(BASE, { waitUntil: 'networkidle' });
+const aplicada = await page.evaluate(() => (window.GEA_TWEAKS ? JSON.stringify(window.GEA_TWEAKS, null, 2) : null));
+if (aplicada !== esperado) throw new Error('la variante no llegó a la página — la página tiene ' + aplicada);
 await page.waitForSelector('.ap');
 await page.waitForTimeout(1000);
 

@@ -8,7 +8,11 @@
 (() => {
 const { I, Marca, Boton, SelectorTono, InterruptorTema } = window;
 const { NEGOCIO, PRODUCTOS, prod, precio, stockDe, subtotalDe, costoEnvio, urlProducto, clicPropio } = window.T;
-const { useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakSelect } = window;
+/* El panel de prototipado y el marco de teléfono ya no se publican: index.html
+   no los carga más. Estos cuatro quedan por si están —los inyectan las
+   herramientas de auditoría cuando hacen falta—, y si no están la tienda anda
+   con los valores fijos de acá abajo, que son los que se publican. */
+const { TweaksPanel, TweakSection, TweakRadio, TweakSelect } = window;
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "direccion": "editorial",
@@ -17,6 +21,22 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "movimiento": "expresivo",
   "barras": "vidrio"
 }/*EDITMODE-END*/;
+
+/* Las herramientas de auditoría fijan la variante con window.GEA_TWEAKS, que
+   inyectan arriba de este archivo.
+
+   Antes reescribían el bloque EDITMODE de acá arriba sobre la respuesta HTTP, y
+   eso dejó de poder funcionar cuando el JSX pasó a compilarse: esbuild se queda
+   con el comentario de apertura y borra el de cierre, así que la expresión
+   regular no encuentra nada — y replace() sin coincidencia no falla, devuelve el
+   texto igual. Las siete variantes de auditoria.mjs corrieron con estos valores
+   mientras el informe decía cuál era cada una. Parchear la salida de un
+   compilador con una expresión regular no se sostiene: acá abajo esbuild además
+   escribe "automático" como "autom\xE1tico".
+
+   El bloque EDITMODE se queda igual porque es del fuente, y es lo que reescribe
+   el anfitrión del panel cuando se elige una opción. */
+const TWEAKS = { ...TWEAK_DEFAULTS, ...(window.GEA_TWEAKS || {}) };
 
 const LS = "gea_tienda_v1";
 const cargar = () => { try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch (e) { return {}; } };
@@ -100,8 +120,33 @@ const usarAncho = (consulta) => {
   return coincide;
 };
 
+/* Vivía en tweaks-panel.jsx, y esa era la razón por la que el panel de
+   prototipado no se podía sacar de producción: el archivo era del panel, pero la
+   app dependía de él para arrancar. Acá queda lo único que la tienda necesita
+   —los valores—, sin las 6 KB del panel.
+
+   El aviso al anfitrión, que es lo que persiste la elección reescribiendo el
+   bloque EDITMODE en disco, solo tiene sentido con el panel abierto: sin panel
+   nadie cambia nada y postMessage a window.parent no tiene a quién hablarle. */
+function useTweaks(defaults) {
+  const [valores, setValores] = React.useState(defaults);
+  /* Acepta setTweak('clave', valor) o setTweak({ clave: valor }), porque una
+     llamada al estilo useState escribía una clave "[object Object]" en el JSON
+     persistido. */
+  const setTweak = React.useCallback((claveOEdiciones, val) => {
+    const ediciones = typeof claveOEdiciones === "object" && claveOEdiciones !== null
+      ? claveOEdiciones : { [claveOEdiciones]: val };
+    setValores((prev) => ({ ...prev, ...ediciones }));
+    if (window.TweaksPanel) {
+      window.parent.postMessage({ type: "__edit_mode_set_keys", edits: ediciones }, "*");
+      window.dispatchEvent(new CustomEvent("tweakchange", { detail: ediciones }));
+    }
+  }, []);
+  return [valores, setTweak];
+}
+
 function App() {
-  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [t, setTweak] = useTweaks(TWEAKS);
   const angosto = usarAncho("(max-width: 820px)");
   const guardado = React.useRef(cargar());
   const [ruta, setRuta] = React.useState(rutaInicial);
@@ -440,9 +485,11 @@ function App() {
   const nav = [["inicio", "Inicio"], ["catalogo", "Catálogo"], ["ayuda", "Cómo comprar"], ["contacto", "Contacto"]];
   const conAtras = ["ficha", "checkout", "ok"].includes(ruta.v);
   /* angosto = celular de verdad: layout móvil y sin marco de teléfono.
-     enmarcado = previsualización del prototipo en una pantalla grande. */
+     enmarcado = previsualización del prototipo en una pantalla grande, y para eso
+     hace falta el marco, que ya no se publica. Sin él la tienda se dibuja
+     entera, que es lo correcto: la alternativa era un hueco. */
   const esc = !angosto && t.vista === "escritorio";
-  const enmarcado = !angosto && t.vista === "movil";
+  const enmarcado = !angosto && t.vista === "movil" && !!window.IOSDevice;
   const expr = t.movimiento === "expresivo";
   const entra = expr ? "animate__animated animate__fadeInUp" : "animate__animated animate__fadeIn";
 
@@ -515,15 +562,18 @@ function App() {
 
   return (
     <>
-      {esc || angosto ? app : (
+      {/* La condición se dice por lo positivo a propósito: era "esc || angosto ?
+          app : marco", así que cualquier tercer valor de vista —o el marco sin
+          cargar— caía en la rama del marco y dejaba la pantalla vacía. */}
+      {enmarcado ? (
         <div className="escenario">
           <div className="enmarcado" style={{ position: "relative" }}>
             <window.IOSDevice width={402} height={860}>{app}</window.IOSDevice>
             <div className="capa" ref={capaRef}></div>
           </div>
         </div>
-      )}
-      <TweaksPanel>
+      ) : app}
+      {TweaksPanel && <TweaksPanel>
         <TweakSection label="Dirección de diseño" />
         <TweakRadio label="Inicio y ficha" value={t.direccion} options={["editorial", "reposición"]}
           onChange={(v) => setTweak("direccion", v)} />
@@ -533,7 +583,7 @@ function App() {
         <TweakSection label="Movimiento y materia" />
         <TweakRadio label="Transiciones" value={t.movimiento} options={["sobrio", "expresivo"]} onChange={(v) => setTweak("movimiento", v)} />
         <TweakRadio label="Barras" value={t.barras} options={["opaco", "vidrio"]} onChange={(v) => setTweak("barras", v)} />
-      </TweaksPanel>
+      </TweaksPanel>}
     </>
   );
 }
