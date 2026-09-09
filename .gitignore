@@ -13,3 +13,14 @@ skills-lock.json
 
 # Secretos locales del Worker. Nunca al repositorio.
 .dev.vars
+
+# Generados por herramientas/compilar.mjs desde el .jsx de al lado. Van uno por
+# uno y no como public/**/*.js: datos.js y tienda/img/medidas.js viven en la
+# misma carpeta, no salen de un .jsx, y sí tienen que estar en el repo.
+public/app.js
+public/tweaks-panel.js
+public/ios-frame.js
+public/tienda/ui.js
+public/tienda/pantallas-tienda.js
+public/tienda/pantallas-pedido.js
+public/admin/panel.js

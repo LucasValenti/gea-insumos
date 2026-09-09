@@ -1,8 +1,10 @@
 # Tienda GEA Insumos
 
-Tienda de insumos de manicuría. HTML + CSS + JavaScript, sin build: se abre
-y se edita en VS Code. El catálogo vive en una base (Cloudflare D1) y lo sirve
-un Worker en `/api/catalogo`.
+Tienda de insumos de manicuría. HTML + CSS + JavaScript, sin empaquetador ni
+framework de proyecto: React entra por CDN y cada archivo se cuelga de `window`.
+Lo único que se compila es el JSX, y de eso se encarga `npm run dev` mientras
+trabajás. El catálogo vive en una base (Cloudflare D1) y lo sirve un Worker en
+`/api/catalogo`.
 
 Publicada en https://gea-insumos.lucas-valenti00.workers.dev
 
@@ -16,9 +18,15 @@ npm install     # la primera vez
 npm run dev     # levanta el sitio igual que en producción, en el 8787
 ```
 
-`npm run dev` es `wrangler dev`: levanta el Worker con su base local. Desde que
-el catálogo se sirve por API, abrir el HTML suelto o con *Live Server* ya no
+`npm run dev` hace tres cosas en una terminal: compila el JSX, se queda mirando
+los archivos para recompilar al guardar, y levanta `wrangler dev` con la base
+local. Se edita y se refresca el navegador, igual que siempre. Desde que el
+catálogo se sirve por API, abrir el HTML suelto o con *Live Server* ya no
 alcanza, porque la tienda se queda esperando datos que nadie le manda.
+
+Si preferís las dos cosas por separado: `npm run mirar` deja el compilador
+mirando, y `npx wrangler dev` levanta el sitio. `npm run build` compila una vez
+y se va.
 
 La primera vez hay que llenar la base local:
 
@@ -34,8 +42,9 @@ npx wrangler d1 execute gea-catalogo --local --file=db/semilla.sql
 npm run deploy
 ```
 
-Sube el contenido de `public/` a Cloudflare. La primera vez pide autorizar la
-cuenta con `npx wrangler login`.
+Compila el JSX y sube el contenido de `public/` a Cloudflare. La primera vez pide
+autorizar la cuenta con `npx wrangler login`. Los `.jsx` no se publican: los
+excluye `public/.assetsignore`, porque lo que el navegador lee es el `.js`.
 
 ## Archivos
 
@@ -146,9 +155,19 @@ comprarlo suelto sale más caro).
 - `public/tweaks-panel.jsx`, `public/ios-frame.jsx` — panel de opciones de
   diseño y marco de celular. Son de prototipado: se sacan en producción.
 
-Los `.jsx` son JavaScript con sintaxis JSX (marcado dentro del JS), traducido
-en el navegador por Babel. Podés escribir JS normal adentro: funciones,
-`fetch`, `localStorage`, etc.
+- `public/app.jsx` — la aplicación: estado general (ruta, carrito, búsqueda,
+  datos del checkout, tema) y el armado de cada pantalla. Vivía adentro de
+  `index.html`; salió de ahí cuando el JSX pasó a compilarse.
+
+Los `.jsx` son JavaScript con sintaxis JSX (marcado dentro del JS). Podés
+escribir JS normal adentro: funciones, `fetch`, `localStorage`, etc.
+
+Cada uno deja su `.js` hermano, que es lo que carga el navegador y **no se
+edita**: lo sobrescribe el build. Están en `.gitignore`. Hasta acá el JSX lo
+traducía `@babel/standalone` en el teléfono de cada visitante, en cada visita:
+3 MB —el 91 % de todo el JavaScript de la página— para traducir 113 KB, y todo
+en el hilo principal antes de que se viera un producto. Ahora lo traduce
+`herramientas/compilar.mjs` una vez, acá.
 
 ### Imágenes
 - `public/tienda/img/` — fotos de producto y de las secciones. Se publican en
@@ -206,6 +225,8 @@ que `npm run` a secas lista todo lo que hay:
 
 | Comando | Qué hace |
 | --- | --- |
+| `npm run build` | Compila el JSX una vez |
+| `npm run mirar` | Lo mismo, pero se queda mirando los archivos |
 | `npm run servidor` | Sirve `public/` en el 8788, para lo que no necesita la API |
 | `npm run semilla` | Genera `db/semilla.sql` a partir de `datos.js` |
 | `npm run imagenes` | Convierte las fotos a WebP y regenera `medidas.js` |
@@ -216,6 +237,7 @@ que `npm run` a secas lista todo lo que hay:
 | `npm run audita:rendimiento` | Tiempos de montaje y peso de cada recurso |
 | `npm run audita:revelado` | Que nada quede invisible después de pasarle por encima |
 | `npm run audita:jsx` | Que el JSX del sitio compile |
+| `npm run audita:lighthouse` | LCP, TBT y CLS con freno de CPU y de red, como los mide Google |
 | `npm run flujo` | Recorre la compra entera y audita cada pantalla |
 | `npm run flujo:movil` | Lo mismo en un viewport de celular con táctil |
 | `npm run flujo:recorrido` | Baja por toda la página y deja capturas |

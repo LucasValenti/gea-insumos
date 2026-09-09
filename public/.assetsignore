@@ -3,3 +3,8 @@
 # que publicarlos: el sitio solo pide .webp y subirlos era 1,6 MB al pedo.
 tienda/img/*.jpg
 tienda/img/*.png
+
+# El JSX es el fuente; lo que se publica es el .js que genera
+# herramientas/compilar.mjs. Publicarlos sería mandar dos veces el mismo código,
+# y uno de los dos el navegador no lo sabe leer.
+*.jsx

@@ -4,17 +4,70 @@
 # Cloudflare lo sirve directo desde el borde. Por eso las cabeceras que
 # src/index.js le pone a /api/* no llegan acá, y van declaradas de este lado.
 #
-# No hay Content-Security-Policy: el sitio traduce el JSX en el navegador, así
-# que Babel necesita eval y los scripts van en línea. Una CSP que permita
-# 'unsafe-eval' y 'unsafe-inline' no protege de nada y da la impresión
-# contraria. Si algún día hay paso de build, ahí sí corresponde.
-#
 # Una sola regla y no dos: las reglas de _headers se acumulan, así que una
 # general con SAMEORIGIN más una de /admin/* con DENY dejaba las dos cabeceras
 # puestas, en conflicto, y el navegador elige por su cuenta. DENY para todo es
 # lo que se puede sostener: nada de esto necesita verse dentro de otro sitio.
+# Ese mismo cuidado vale para el Cache-Control de más abajo, donde los patrones
+# están elegidos para no pisarse entre sí.
 
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://unpkg.com 'sha256-Wq9ymUCEuqKrKZ0KtESmxENcYNyHLjrnKnTFCQVT6CE=' 'sha256-SqzUQOWLIxFSmtP/GnZsGMmuTPRRBRMnxy9CbVsfZxo=' 'sha256-f3IColzFaI8v1iUu7Dv2EbTO5YRLzy2nCHQkViKJXa4='; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+
+# Sobre la Content-Security-Policy de arriba.
+#
+# Antes no había, y estaba bien no tenerla: el sitio traducía el JSX en el
+# navegador, Babel necesita eval, y una CSP con 'unsafe-eval' y 'unsafe-inline'
+# no protege de nada y da la impresión contraria. Desde que el JSX se compila
+# antes de publicar (herramientas/compilar.mjs) no hay eval en ningún lado, así
+# que corresponde.
+#
+# Qué permite cada cosa, y por qué:
+#   script-src   los .js propios, React y ReactDOM de unpkg, y por hash los tres
+#                bloques en línea: el que estampa el tema antes de pintar, el
+#                mismo del panel, y el JSON-LD. Con hashes presentes el
+#                navegador ignora 'unsafe-inline' aunque estuviera: cualquier
+#                otro script inyectado no corre.
+#   style-src    'unsafe-inline' es inevitable hoy: las pantallas usan style={{}}
+#                de React, que termina en atributos style. Sacarlo pide mover
+#                todo eso a clases, y es un trabajo aparte.
+#   font-src     solo gstatic, que es de donde salen los .woff2.
+#   img-src      data: por el SVG de fondo del selector en tweaks-panel.
+#   connect-src  el fetch propio va todo a /api/* del mismo origen, pero acá
+#                además están los cuatro orígenes de los <link rel="preconnect">
+#                del <head>. Está medido: Chrome aplica connect-src también a
+#                las preconexiones, así que con 'self' solo quedaban bloqueadas
+#                —la página andaba igual, pero la optimización no surtía efecto
+#                y la consola se llenaba de violaciones. Lo encontró npm run
+#                flujo; no lo agrega permiso nuevo de verdad: a esos orígenes ya
+#                se les permite servir scripts, estilos y fuentes.
+#
+# IMPORTANTE: los hashes se comprueban en cada build. Si se toca un <script> en
+# línea sin actualizar el hash de acá, herramientas/compilar.mjs falla y dice
+# cuál es el nuevo. Sin esa comprobación, editar el script del tema lo dejaría
+# bloqueado en silencio y volvería el destello blanco al abrir la página.
+
+# Caché. Los patrones no se superponen a propósito: dos reglas que matchean el
+# mismo archivo dejan dos Cache-Control puestos y el navegador elige.
+#
+# Los archivos no llevan hash en el nombre, así que 'immutable' no se puede usar
+# en lo que cambia: si se publica una corrección, el navegador tiene que poder
+# enterarse. stale-while-revalidate da el efecto —sirve lo viejo al instante y
+# revalida por atrás— sin dejar a nadie clavado con una versión vieja.
+#
+# El html no lleva regla y revalida siempre: es lo que apunta a todo lo demás.
+
+/*.webp
+  Cache-Control: public, max-age=2592000
+
+/assets/*
+  Cache-Control: public, max-age=2592000
+
+/*.css
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+
+/*.js
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400

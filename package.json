@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "dev": "node herramientas/dev.mjs",
+    "build": "node herramientas/compilar.mjs",
+    "mirar": "node herramientas/compilar.mjs --mirar",
+    "deploy": "node herramientas/compilar.mjs && wrangler deploy",
     "servidor": "node herramientas/servidor.mjs",
     "semilla": "node herramientas/semilla.mjs",
     "imagenes": "node herramientas/imagenes.mjs",
@@ -15,6 +17,7 @@
     "audita:rendimiento": "node herramientas/rendimiento.mjs",
     "audita:revelado": "node herramientas/revelado.mjs",
     "audita:jsx": "node herramientas/jsx-valido.mjs",
+    "audita:lighthouse": "node herramientas/lighthouse.mjs",
     "flujo": "node herramientas/flujo.mjs",
     "flujo:movil": "node herramientas/flujo-movil.mjs",
     "flujo:recorrido": "node herramientas/recorrido.mjs",
@@ -27,6 +30,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "esbuild": "^0.28.2",
     "lighthouse": "^13.4.1",
     "playwright": "^1.62.1",
     "sharp": "^0.35.4",

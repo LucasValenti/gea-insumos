@@ -1,4 +1,9 @@
-/* Las dos familias del sistema. El sitio original las carga desde Google Fonts
-   (link en src/layouts/Base.astro) — no hay binarios de fuente en el repo,
-   así que acá se mantiene la misma fuente de origen. */
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap");
+/* Las dos familias del sistema se cargan desde Google Fonts — no hay binarios de
+   fuente en el repo.
+
+   El <link> vive en el <head> de public/index.html y no acá. Un @import en este
+   archivo se descubría recién después de bajar styles.css y este mismo archivo,
+   y desde ahí todavía faltaba pedirle a googleapis la hoja y a gstatic los
+   .woff2: cinco viajes en serie, todos bloqueando el pintado, para poner la
+   primera letra en pantalla. Este archivo queda solo con lo que define el
+   sistema, en public/tokens/typography.css. */
