@@ -6,7 +6,7 @@ Lo único que se compila es el JSX, y de eso se encarga `npm run dev` mientras
 trabajás. El catálogo vive en una base (Cloudflare D1) y lo sirve un Worker en
 `/api/catalogo`.
 
-Publicada en https://gea-insumos.lucas-valenti00.workers.dev
+Publicada en https://gea-insumos.kusak.workers.dev
 
 ## Cómo levantarlo
 
@@ -265,8 +265,8 @@ no abren el navegador, y `servidor`, que es el servidor de pruebas.
 Para auditar producción hay dos formas, según el script:
 
 ```
-GEA_URL=https://gea-insumos.lucas-valenti00.workers.dev/ npm run audita
-npm run api:comparar -- https://gea-insumos.lucas-valenti00.workers.dev/
+GEA_URL=https://gea-insumos.kusak.workers.dev/ npm run audita
+npm run api:comparar -- https://gea-insumos.kusak.workers.dev/
 ```
 
 El `--` es de npm: separa los argumentos del script de los suyos propios.
