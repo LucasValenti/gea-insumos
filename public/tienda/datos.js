@@ -27,10 +27,28 @@ const rellenar = (destino, origen) => { destino.length = 0; destino.push(...(ori
 let cargado = false;
 const estaCargado = () => cargado;
 
+/* El pedido del catálogo sale apenas se carga este archivo, no cuando React
+   monta. Hasta acá se pedía adentro de un efecto, o sea después de bajar React,
+   montar y renderizar: medido, el fetch salía a los 2,9 s cuando este archivo ya
+   estaba en el navegador a los 75 ms. Nada de lo que se ve en pantalla existe
+   antes de que llegue esta respuesta, así que arrancarla tarde retrasa todo.
+   Si falla, se olvida, y el botón de reintentar vuelve a pedirla de cero. */
+let enVuelo = null;
+const pedir = () => {
+  if (!enVuelo) {
+    enVuelo = fetch("/api/catalogo", { headers: { accept: "application/json" } })
+      .then((r) => {
+        if (!r.ok) throw new Error("El catálogo respondió " + r.status);
+        return r.json();
+      })
+      .catch((e) => { enVuelo = null; throw e; });
+  }
+  return enVuelo;
+};
+pedir();
+
 const cargar = async () => {
-  const r = await fetch("/api/catalogo", { headers: { accept: "application/json" } });
-  if (!r.ok) throw new Error("El catálogo respondió " + r.status);
-  const d = await r.json();
+  const d = await pedir();
   if (!d || !Array.isArray(d.PRODUCTOS)) throw new Error("El catálogo vino incompleto");
 
   Object.assign(NEGOCIO, d.NEGOCIO);
@@ -73,11 +91,28 @@ const habitualesDe = () => {
   return lista.filter((id) => prod(id));
 };
 
+/* La dirección de un producto, en un solo lugar: la usan los enlaces de las
+   pantallas, el historial de la app y el sitemap del servidor tiene que coincidir
+   con ella. El servidor arma el <head> de esta dirección en src/paginas.js. */
+const urlProducto = (id) => "/p/" + encodeURIComponent(id);
+
+/* Un clic con Ctrl, Cmd, Shift o con la rueda tiene que abrir la dirección de
+   verdad en otra pestaña, no navegar en esta. Los enlaces que llaman a esto
+   antes hacían preventDefault siempre, y como el href era "#" abrir en otra
+   pestaña llevaba a una página rota. */
+const clicPropio = (e) => !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button);
+
 const precio = (n) => (typeof n === "number" && isFinite(n) ? "$ " + n.toLocaleString("es-AR") : "");
 const cat = (id) => CATEGORIAS.find((c) => c.id === id) || {};
 const prod = (id) => PRODUCTOS.find((p) => p.id === id);
 const nombreSub = (c, s) => ((cat(c).subs || []).find((x) => x.id === s) || {}).nombre || "";
 const stockDe = (p, tono) => (tono ? (p.tonos.find((x) => x.nombre === tono) || {}).stock ?? 0 : p.stock);
+/* El subtotal del carrito, en un solo lugar. Estaba escrito igual en cuatro
+   pantallas, y de ahí salía que el mensaje de WhatsApp pudiera sumar distinto
+   que el resumen de al lado. Sin guarda contra el producto que no existe a
+   propósito: saneaCarrito ya los sacó, y valuar en 0 lo que no encuentra sería
+   convertir un error en un importe equivocado. */
+const subtotalDe = (carrito) => (carrito || []).reduce((a, it) => a + prod(it.id).precio * it.n, 0);
 const familiasDe = (p) => [...new Set((p.tonos || []).map((x) => x.fam))];
 const porFamilia = (fam) => PRODUCTOS.filter((p) => familiasDe(p).includes(fam));
 /* En el celular casi nadie escribe "acrílico" ni "uñas" con tilde, y el includes
@@ -101,5 +136,6 @@ const buscar = (q) => {
 };
 return { NEGOCIO, CATEGORIAS, FAMILIAS, PRODUCTOS, DESTACADOS, HABITUALES, ENVIO, cargar, estaCargado,
   guardarHabituales, habitualesDe,
-  zonaDe, costoEnvio, precio, cat, prod, nombreSub, stockDe, familiasDe, porFamilia, buscar };
+  zonaDe, costoEnvio, precio, cat, prod, nombreSub, stockDe, subtotalDe, familiasDe, porFamilia, buscar,
+  urlProducto, clicPropio };
 })();

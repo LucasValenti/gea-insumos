@@ -1,6 +1,6 @@
 (() => {
 /* Primitivos compartidos de la tienda. Todo apoyado en tokens del sistema. */
-const { PRODUCTOS, CATEGORIAS, NEGOCIO, precio, cat, stockDe } = window.T;
+const { PRODUCTOS, CATEGORIAS, NEGOCIO, precio, cat, stockDe, urlProducto, clicPropio } = window.T;
 
 /* Pedido de aviso de reposición, con el producto ya escrito en el mensaje. */
 const avisoWhatsapp = (p) => "https://wa.me/" + NEGOCIO.whatsapp + "?text="
@@ -137,6 +137,9 @@ function Tarjeta({ p, ir, onAgregar }) {
   const agot = p.stock === 0;
   const t0 = p.tonos && p.tonos.find((x) => x.stock > 0);
   const abrir = (e) => { e.preventDefault(); ir({ v: "ficha", id: p.id }); };
+  /* En un enlace, el clic con Ctrl/Cmd o con la rueda se deja pasar: ahora el
+     href es la dirección real del producto y abre bien en otra pestaña. */
+  const abrirLink = (e) => { if (clicPropio(e)) abrir(e); };
   /* La acción pasó de una barra negra al ancho de la tarjeta a un botón redondo
      sobre la foto: con ocho tarjetas en pantalla, ocho barras negras pesaban
      más que los productos. Cada caso lleva al mismo lugar que antes, y
@@ -150,12 +153,12 @@ function Tarjeta({ p, ir, onAgregar }) {
     <div className="card">
       {p.precioAntes && <span className="cinta">Ahorrás {Math.round((1 - p.precio / p.precioAntes) * 100)}%</span>}
       {agot && <span className="cinta gris">Sin stock</span>}
-      <a href="#" onClick={abrir} className="card-media" aria-label={p.nombre}>
+      <a href={urlProducto(p.id)} onClick={abrirLink} className="card-media" aria-label={p.nombre}>
         <Foto p={p} tono={t0} />
       </a>
       <div className="card-body">
         <span className="eyebrow">{p.marca}</span>
-        <a href="#" className="card-nom" onClick={abrir}>{p.nombre}</a>
+        <a href={urlProducto(p.id)} className="card-nom" onClick={abrirLink}>{p.nombre}</a>
         {/* El renglón de tonos ocupa lugar aunque el producto no tenga tonos,
             así las tarjetas de una misma fila terminan alineadas abajo. */}
         <span className="tonos-mini">
@@ -184,14 +187,50 @@ function Tarjeta({ p, ir, onAgregar }) {
 }
 
 function Hoja({ titulo, onCerrar, children, destino }) {
+  const caja = React.useRef(null);
   React.useEffect(() => {
     const k = (e) => e.key === "Escape" && onCerrar();
     window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k);
   }, [onCerrar]);
+
+  /* El foco entra al abrir, se queda adentro mientras está abierta y vuelve a
+     donde estaba al cerrar. Sin esto, aria-modal anunciaba "esto es un diálogo"
+     y el foco seguía tabulando por detrás del velo: con teclado o con lector de
+     pantalla el selector de tono —que es el camino de compra de todo esmalte—
+     no se podía usar. */
+  React.useEffect(() => {
+    const antes = document.activeElement;
+    /* getClientRects y no offsetParent: la hoja está posicionada, y para lo que
+       vive adentro offsetParent no dice si se ve. */
+    const focosables = () => Array.from(caja.current.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'))
+      .filter((n) => n.getClientRects().length > 0);
+
+    const primeros = focosables();
+    (primeros[0] || caja.current).focus();
+
+    const alTab = (e) => {
+      if (e.key !== "Tab" || !caja.current) return;
+      const f = focosables();
+      if (!f.length) { e.preventDefault(); return; }
+      const primero = f[0], ultimo = f[f.length - 1];
+      if (!caja.current.contains(document.activeElement)) { e.preventDefault(); primero.focus(); return; }
+      if (e.shiftKey && document.activeElement === primero) { e.preventDefault(); ultimo.focus(); }
+      else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primero.focus(); }
+    };
+    document.addEventListener("keydown", alTab, true);
+    return () => {
+      document.removeEventListener("keydown", alTab, true);
+      /* Volver a donde estaba: si no, cerrar la hoja deja el foco en el body y
+         el siguiente Tab arranca desde arriba de todo. */
+      if (antes && antes.focus) antes.focus();
+    };
+  }, []);
+
   const cuerpo = (
     <>
       <div className="velo" onClick={onCerrar}></div>
-      <div className="hoja" role="dialog" aria-modal="true" aria-label={titulo}>
+      <div className="hoja" ref={caja} tabIndex={-1} role="dialog" aria-modal="true" aria-label={titulo}>
         <div className="hoja-h"><b>{titulo}</b><button className="ico-btn" onClick={onCerrar} aria-label="Cerrar"><I n="cerrar" /></button></div>
         <div style={{ padding: "0 1rem 1.25rem" }}>{children}</div>
       </div>
@@ -269,11 +308,11 @@ function Pie({ ir }) {
   return (
     <footer className="pie">
       <div><Marca colorInsumos="var(--nude-600)" /><p style={{ margin: ".9rem 0 0", fontSize: ".84rem", color: "var(--ink-soft)", maxWidth: "22rem" }}>Insumos de manicuría para profesionales. Armás el pedido acá y lo cerramos por WhatsApp.</p></div>
-      <div><h2>Catálogo</h2><div style={{ display: "grid", gap: ".35rem" }}>{CATEGORIAS.slice(0, 5).map((c) => <a key={c.id} href="#" onClick={(e) => { e.preventDefault(); ir({ v: "catalogo", cat: c.id }); }}>{c.nombre}</a>)}</div></div>
+      <div><h2>Catálogo</h2><div style={{ display: "grid", gap: ".35rem", justifyItems: "start" }}>{CATEGORIAS.slice(0, 5).map((c) => <button type="button" key={c.id} onClick={() => ir({ v: "catalogo", cat: c.id })}>{c.nombre}</button>)}</div></div>
       <div><h2>Ayuda</h2><div style={{ display: "grid", gap: ".35rem" }}>
-        <a href="#" onClick={(e) => { e.preventDefault(); ir({ v: "ayuda" }); }}>Cómo comprar</a>
-        <a href="#" onClick={(e) => { e.preventDefault(); ir({ v: "ayuda" }); }}>Envíos y pagos</a>
-        <a href="#" onClick={(e) => { e.preventDefault(); ir({ v: "contacto" }); }}>Contacto</a>
+        <button type="button" onClick={() => ir({ v: "ayuda" })}>Cómo comprar</button>
+        <button type="button" onClick={() => ir({ v: "ayuda" })}>Envíos y pagos</button>
+        <button type="button" onClick={() => ir({ v: "contacto" })}>Contacto</button>
       </div></div>
       <div><h2>Escribinos</h2><div style={{ display: "grid", gap: ".35rem" }}>
         <a href={`https://wa.me/${NEGOCIO.whatsapp}`} target="_blank" rel="noopener" style={{ display: "flex", gap: ".4rem", alignItems: "center" }}><I n="wa" size="15px" /> WhatsApp</a>

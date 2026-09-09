@@ -217,6 +217,14 @@ button{color:inherit}
 .pie{background:var(--surface);border-top:1px solid var(--hairline);padding:2rem 1rem 2.5rem;display:grid;gap:1.25rem;margin-top:2.5rem}
 .pie a{color:var(--ink-soft);font-size:.86rem}
 .pie h2{margin:0 0 .5rem;font-size:var(--fs-label);letter-spacing:var(--track-label);text-transform:uppercase;color:var(--ink-faint);font-weight:400}
+/* Lo que no lleva a una dirección es un botón, no un enlace: un <a href="#"> se
+   anuncia como enlace al lector de pantalla, y con Cmd o con la rueda abría una
+   pestaña rota. Acá se les saca la pinta de botón para que se vean igual que
+   antes; lo único que cambia es qué son. */
+.miga button,.pie button{background:none;border:0;padding:0;font:inherit;cursor:pointer;text-align:left}
+.miga button{color:var(--nude-600)}
+.pie button{color:var(--ink-soft);font-size:.86rem}
+.miga button:hover,.pie button:hover{color:var(--nude-600);text-decoration:underline}
 
 /* ---- tonos: grilla visual ---- */
 .tonos-gr{display:grid;grid-template-columns:repeat(auto-fill,minmax(4.4rem,1fr));gap:.55rem}

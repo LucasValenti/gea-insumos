@@ -1,10 +1,26 @@
 (() => {
   /* Pantallas de tienda: inicio (dos direcciones), catálogo, búsqueda y ficha. */
   const { PRODUCTOS: PR, CATEGORIAS: CATS, FAMILIAS, DESTACADOS, HABITUALES, NEGOCIO,
-    precio: $, cat: catDe, prod, nombreSub, stockDe, familiasDe, buscar, habitualesDe } = window.T;
+    precio: $, cat: catDe, prod, nombreSub, stockDe, familiasDe, buscar, habitualesDe,
+    urlProducto, clicPropio } = window.T;
+
+/* Un enlace a una ficha lleva la dirección real del producto y solo intercepta
+   el clic común: con Ctrl, Cmd o rueda abre en otra pestaña, como cualquier
+   enlace. Antes el href era "#" y esa pestaña se abría rota. */
+  const irFicha = (ir, id) => (e) => {
+    if (!clicPropio(e)) return;
+    e.preventDefault();
+    ir({ v: "ficha", id });
+  };
   const { I, Img, Marca, Boton, Foto, Stock, Tarjeta, Paso, Acordeon, GrillaTonos, Pie } = window;
 
-  const conteo = Object.fromEntries(CATS.map((c) => [c.id, PR.filter((p) => p.cat === c.id).length]));
+  /* Función y no un objeto armado acá arriba: esto corre cuando Babel evalúa el
+     archivo, mucho antes de que llegue el catálogo, así que CATS y PR estaban
+     vacíos y el conteo quedaba en {} para siempre. Los chips del catálogo
+     mostraban un número en blanco y las cartas del inicio decían solo
+     "productos". Es la trampa del window.T capturado, en su forma menos
+     visible: no se reemplaza un contenedor, se deriva un valor de uno vacío. */
+  const conteo = (id) => PR.filter((p) => p.cat === id).length;
 
   function Rail({ children }) {return <div className="rail">{children}</div>;}
 
@@ -17,11 +33,11 @@
           {/* Misma imagen que en las tarjetas. Antes acá había un puntito de
               color o un ícono de foto genérico, así que la misma tienda usaba
               dos lenguajes distintos para lo mismo. */}
-          <a href="#" className="mini" onClick={(e) => {e.preventDefault();ir({ v: "ficha", id: p.id });}} aria-label={p.nombre}>
+          <a href={urlProducto(p.id)} className="mini" onClick={irFicha(ir, p.id)} aria-label={p.nombre}>
             <Foto p={p} className="foto mini-foto" />
           </a>
           <span>
-            <a href="#" className="repo-nom" style={{ display: "block" }} onClick={(e) => {e.preventDefault();ir({ v: "ficha", id: p.id });}}>{p.nombre}</a>
+            <a href={urlProducto(p.id)} className="repo-nom" style={{ display: "block" }} onClick={irFicha(ir, p.id)}>{p.nombre}</a>
             <span className="repo-meta num">{$(p.precio)} · {p.stock <= 5 ? `últimas ${p.stock}` : "en stock"}</span>
           </span>
           <button className="mas" data-en={enPedido(p.id)} onClick={() => agregar(p, null, 1)} aria-label={`Agregar ${p.nombre}`}>
@@ -35,7 +51,7 @@
 
   /* Repedido: patrón de recompra B2B — el set entero en una carta, cantidades
      editables, faltantes marcados y un solo botón que lo suma completo. */
-  function Repedido({ ir, agregar, enPedido }) {
+  function Repedido({ ir, agregar, agregarVarios, enPedido }) {
     const items = habitualesDe().map(prod);
     const [cant, setCant] = React.useState(() => Object.fromEntries(items.map((p) => [p.id, 1])));
     const hay = items.filter((p) => p.stock > 0);
@@ -59,11 +75,11 @@
               const off = p.stock === 0;
               return (
                 <li key={p.id} className="repedido-fila" data-off={off} data-activo={n > 0 && !off} style={{ "--i": i }}>
-                  <a href="#" className="repedido-mini" onClick={(e) => { e.preventDefault(); ir({ v: "ficha", id: p.id }); }} aria-label={p.nombre}>
+                  <a href={urlProducto(p.id)} className="repedido-mini" onClick={irFicha(ir, p.id)} aria-label={p.nombre}>
                     {p.color || p.tonos ? <s style={{ background: p.color || p.tonos[0].hex }}></s> : <span>GEA</span>}
                   </a>
                   <span className="repedido-txt">
-                    <a href="#" className="repedido-nom" onClick={(e) => { e.preventDefault(); ir({ v: "ficha", id: p.id }); }}>{p.nombre}</a>
+                    <a href={urlProducto(p.id)} className="repedido-nom" onClick={irFicha(ir, p.id)}>{p.nombre}</a>
                     <span className="repedido-sub num">
                       {$(p.precio)}
                       {off ? <em className="repedido-flag">Sin stock · te avisamos</em>
@@ -87,7 +103,7 @@
               <b key={total} className="serif num animate__animated animate__pulse">{$(total)}</b>
             </span>
             <div className="repedido-cta">
-              <Boton variante="primary" disabled={!listos} onClick={() => hay.forEach((p) => cant[p.id] > 0 && agregar(p, null, cant[p.id]))}>
+              <Boton variante="primary" disabled={!listos} onClick={() => agregarVarios(hay.filter((p) => cant[p.id] > 0).map((p) => ({ p, n: cant[p.id] })))}>
                 Sumar {listos} al pedido
               </Boton>
               <button className="ver-mas" onClick={() => ir({ v: "catalogo" })}>Ver todo el catálogo</button>
@@ -121,7 +137,7 @@
           <span className="cat-carta-txt">
             <span className="serif cat-carta-nom">{c.nombre}</span>
             <span className="cat-carta-desc">{c.desc}</span>
-            <span className="cat-carta-conteo">{conteo[c.id]} productos</span>
+            <span className="cat-carta-conteo">{conteo(c.id)} productos</span>
           </span>
         </button>
         )}
@@ -133,7 +149,7 @@
     const ahorro = p.precioAntes ? Math.round((1 - p.precio / p.precioAntes) * 100) : null;
     return (
       <div className="card kit">
-      <a href="#" className="kit-a" onClick={(e) => {e.preventDefault();ir({ v: "ficha", id: p.id });}}>
+      <a href={urlProducto(p.id)} className="kit-a" onClick={irFicha(ir, p.id)}>
         <span className="kit-foto">
           {p.imgKit && <Img src={p.imgKit} />}
           <span className="brillo"></span>
@@ -152,7 +168,7 @@
   }
 
   /* ===================== INICIO ===================== */
-  function Inicio({ ir, agregar, enPedido, direccion }) {
+  function Inicio({ ir, agregar, agregarVarios, enPedido, direccion }) {
     const destacados = DESTACADOS.map(prod);
     const kits = PR.filter((p) => p.cat === "kits");
     const editorial = direccion === "editorial";
@@ -194,7 +210,7 @@
           <div className="pad" style={{ paddingTop: ".8rem" }}>
             {/* El "6" estaba escrito a mano y la lista ahora puede ser la que
                 guardó el cliente, que no tiene por qué tener seis. */}
-            <Boton variante="ghost" ancho onClick={() => habitualesDe().map(prod).forEach((p) => agregar(p, null, 1))}>
+            <Boton variante="ghost" ancho onClick={() => agregarVarios(habitualesDe().map(prod).map((p) => ({ p, n: 1 })))}>
               Sumar {habitualesDe().length} al pedido
             </Boton>
           </div>
@@ -239,7 +255,7 @@
         <>
           <section className="sec">
             <div className="pad sec-h"><h2>Categorías</h2></div>
-            <Rail>{CATS.map((c) => <button key={c.id} className="chip" onClick={() => ir({ v: "catalogo", cat: c.id })}>{c.nombre}<b>{conteo[c.id]}</b></button>)}</Rail>
+            <Rail>{CATS.map((c) => <button key={c.id} className="chip" onClick={() => ir({ v: "catalogo", cat: c.id })}>{c.nombre}<b>{conteo(c.id)}</b></button>)}</Rail>
           </section>
         </>
         }
@@ -275,7 +291,7 @@
       {editorial &&
         <section className="sec">
           <div className="pad sec-h"><h2 className="rev">Volver a pedir</h2><span className="eyebrow">Un toque y va completo</span></div>
-          <Repedido ir={ir} agregar={agregar} enPedido={enPedido} />
+          <Repedido ir={ir} agregar={agregar} agregarVarios={agregarVarios} enPedido={enPedido} />
         </section>
         }
 
@@ -323,7 +339,7 @@
             de la ficha devuelve al catálogo filtrado, y no al catálogo entero.
             El efecto de arriba sincroniza c, sub y fam desde la ruta. */}
         <button className="chip" aria-pressed={c === "todos"} onClick={() => ir({ v: "catalogo" })}>Todo<b>{PR.length}</b></button>
-        {CATS.map((x) => <button key={x.id} className="chip" aria-pressed={c === x.id} onClick={() => ir({ v: "catalogo", cat: x.id })}>{x.nombre}<b>{conteo[x.id]}</b></button>)}
+        {CATS.map((x) => <button key={x.id} className="chip" aria-pressed={c === x.id} onClick={() => ir({ v: "catalogo", cat: x.id })}>{x.nombre}<b>{conteo(x.id)}</b></button>)}
       </Rail>
       {subs.length > 0 &&
         <Rail>
@@ -430,9 +446,9 @@
     return (
       <>
       <nav className="pad miga" aria-label="Estás acá">
-        <a href="#" onClick={(e) => {e.preventDefault();ir({ v: "catalogo" });}}>Catálogo</a>
+        <button type="button" onClick={() => ir({ v: "catalogo" })}>Catálogo</button>
         <span aria-hidden="true">›</span>
-        <a href="#" onClick={(e) => {e.preventDefault();ir({ v: "catalogo", cat: p.cat, k: Date.now() });}}>{catDe(p.cat).nombre}</a>
+        <button type="button" onClick={() => ir({ v: "catalogo", cat: p.cat, k: Date.now() })}>{catDe(p.cat).nombre}</button>
         <span aria-hidden="true">›</span><span aria-current="page">{p.nombre}</span>
       </nav>
 

@@ -11,6 +11,7 @@
 
 import { rutasAdmin } from "./admin.js";
 import { crearPedido } from "./pedidos.js";
+import { paginaProducto, sitemap } from "./paginas.js";
 
 const CACHE = "public, max-age=60, stale-while-revalidate=600";
 
@@ -180,6 +181,34 @@ async function atender(request, env, url) {
   }
 
   if (url.pathname.startsWith("/api/")) return json({ error: "No existe" }, { status: 404 });
+
+  /* Una dirección por producto. Sin esto la tienda es una sola URL y no hay
+     nada que indexar producto por producto, por más que el buscador ejecute el
+     JavaScript. El cuerpo lo sigue dibujando React; lo que agrega el servidor es
+     el <head> y el JSON-LD. */
+  if (url.pathname.startsWith("/p/")) {
+    if (request.method !== "GET" && request.method !== "HEAD")
+      return json({ error: "Método no permitido" }, { status: 405 });
+    let id = null;
+    try { id = decodeURIComponent(url.pathname.slice(3)); } catch (e) { id = null; }
+    try {
+      return await paginaProducto(env, url, id);
+    } catch (e) {
+      /* Si la base falla, mejor la tienda sin metadatos que un error: la
+         dirección igual abre y React la resuelve del lado del cliente. */
+      console.error("ficha:", e && e.stack || e);
+      return env.ASSETS.fetch(new Request(new URL("/index.html", url.origin)));
+    }
+  }
+
+  if (url.pathname === "/sitemap.xml") {
+    try {
+      return await sitemap(env.DB, url.origin);
+    } catch (e) {
+      console.error("sitemap:", e && e.stack || e);
+      return json({ error: "No se pudo armar el sitemap" }, { status: 500 });
+    }
+  }
 
   return env.ASSETS.fetch(request);
 }
