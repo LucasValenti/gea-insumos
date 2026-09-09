@@ -17,24 +17,35 @@ const json = (data, { status = 200, headers = {} } = {}) =>
     headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...headers },
   });
 
+/* Un error que causó quien pidió va marcado, para que el catch del final pueda
+   contestarlo con su mensaje —que le sirve para corregir— y contestar todo lo
+   demás sin detalles. Se marca acá, en el validador, y no en quien lo llama:
+   estos se usan sueltos además de adentro de depurar(), y marcar solo en un
+   camino convertía un precio negativo en un error interno. */
+const deValidacion = (mensaje) => {
+  const e = new Error(mensaje);
+  e.deValidacion = true;
+  return e;
+};
+
 /* Cada campo dice cómo se limpia lo que llega. Lo que no está acá, no se escribe. */
 const texto = (max) => (v) => {
   if (v === null || v === undefined || v === "") return null;
   const s = String(v).trim();
   if (!s) return null;
-  if (s.length > max) throw new Error(`El texto supera los ${max} caracteres`);
+  if (s.length > max) throw deValidacion(`El texto supera los ${max} caracteres`);
   return s;
 };
 const entero = ({ min = 0, max = 100000000 } = {}) => (v) => {
   if (v === null || v === undefined || v === "") return null;
   const n = Number(v);
-  if (!Number.isInteger(n)) throw new Error("Tiene que ser un número entero");
-  if (n < min || n > max) throw new Error(`Tiene que estar entre ${min} y ${max}`);
+  if (!Number.isInteger(n)) throw deValidacion("Tiene que ser un número entero");
+  if (n < min || n > max) throw deValidacion(`Tiene que estar entre ${min} y ${max}`);
   return n;
 };
 const enteroObligatorio = (o) => (v) => {
   const n = entero(o)(v);
-  if (n === null) throw new Error("Falta el número");
+  if (n === null) throw deValidacion("Falta el número");
   return n;
 };
 
@@ -57,9 +68,14 @@ const CAMPOS_ZONA = { nombre: texto(80), costo: entero({ min: 0 }), plazo: texto
 function depurar(cuerpo, campos) {
   const cols = [], vals = [];
   for (const [k, v] of Object.entries(cuerpo || {})) {
-    if (!(k in campos)) continue;
+    /* hasOwn y no "in": con "in" también entran las claves del prototipo. Un
+       cuerpo con {"constructor": 1} armaba UPDATE productos SET constructor = ?
+       y, aunque no es inyección —las claves posibles son las fijas de
+       Object.prototype y ninguna es columna—, SQLite contestaba "no such
+       column" y ese texto salía tal cual al cliente. */
+    if (!Object.hasOwn(campos, k)) continue;
     try { cols.push(k); vals.push(campos[k](v)); }
-    catch (e) { throw new Error(`${k}: ${e.message}`); }
+    catch (e) { throw deValidacion(`${k}: ${e.message}`); }
   }
   return { cols, vals };
 }
@@ -84,7 +100,7 @@ async function idLibre(db, nombre) {
   const tomados = new Set(results.map((r) => r.id));
   if (!tomados.has(base)) return base;
   for (let i = 2; i < 999; i++) if (!tomados.has(`${base}-${i}`)) return `${base}-${i}`;
-  throw new Error("Ya hay demasiados productos con ese nombre");
+  throw deValidacion("Ya hay demasiados productos con ese nombre");
 }
 
 const existe = async (db, tabla, id) =>
@@ -186,7 +202,18 @@ export async function rutasAdmin(request, env, url) {
     /* --- editar un producto --- */
     let m = ruta.match(/^\/producto\/([a-z0-9\-]+)$/i);
     if (m && request.method === "PATCH") {
-      const { cols, vals } = depurar(await request.json(), CAMPOS_PRODUCTO);
+      const cuerpo = (await request.json()) || {};
+      /* El alta comprueba que la categoría exista y la edición no lo hacía, así
+         que un producto podía quedar apuntando a una que no está y desaparecer
+         de la tienda sin dar error. La clave foránea no lo cubre: el Worker
+         nunca ejecuta PRAGMA foreign_keys=ON —solo lo hace la semilla—, así que
+         SQLite no la aplica en esta conexión. */
+      if (cuerpo.categoria_id !== undefined) {
+        const categoria = texto(40)(cuerpo.categoria_id);
+        if (!categoria || !await existe(db, "categorias", categoria))
+          return json({ error: "Esa categoría no existe" }, { status: 400 });
+      }
+      const { cols, vals } = depurar(cuerpo, CAMPOS_PRODUCTO);
       if (!cols.length) return json({ error: "No mandaste nada para cambiar" }, { status: 400 });
       const sql = `UPDATE productos SET ${cols.map((c) => `${c} = ?`).join(", ")} WHERE id = ?`;
       const r = await db.prepare(sql).bind(...vals, m[1]).run();
@@ -301,6 +328,15 @@ export async function rutasAdmin(request, env, url) {
 
     return json({ error: "No existe" }, { status: 404 });
   } catch (e) {
-    return json({ error: String(e.message || e) }, { status: 400 });
+    /* Lo que causó quien pidió vuelve con su mensaje; lo demás, no. El detalle
+       de un error de SQL cuenta nombres de tablas y de columnas, y devolverlo
+       contradecía la política que el propio proyecto aplica en src/index.js
+       para el catálogo. */
+    if (e instanceof SyntaxError)
+      return json({ error: "El cuerpo no es JSON válido" }, { status: 400 });
+    if (e && e.deValidacion)
+      return json({ error: String(e.message) }, { status: 400 });
+    console.error("panel:", e && e.stack || e);
+    return json({ error: "No se pudo completar la operación" }, { status: 500 });
   }
 }
