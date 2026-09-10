@@ -180,6 +180,26 @@ body { background: var(--sunk); margin: 0; }
 .pa-color-fila { display: flex; gap: .5rem; align-items: center; }
 .pa-color-fila input { min-width: 0; }
 
+/* ---- foto del producto ---- */
+.pa-foto { display: flex; gap: .8rem; align-items: center; }
+.pa-foto-mira {
+  flex: none; width: 84px; height: 84px; border-radius: var(--radio);
+  border: 1px solid var(--border); background: var(--paper);
+  display: grid; place-items: center; overflow: hidden;
+}
+.pa-foto-mira img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pa-foto-vacia { font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
+.pa-foto-acciones { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+/* El label hace de botón. El input de archivo queda adentro y sin ver, pero no
+   con display:none: así lo sigue alcanzando el teclado, y el foco se dibuja
+   sobre el label, que es lo que se ve. */
+.pa-foto-acciones .btn { cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; }
+.pa-foto-acciones .btn input[type="file"] {
+  position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;
+}
+.pa-foto-acciones .btn:has(input:focus-visible) { outline: 2px solid var(--ink); outline-offset: 2px; }
+.pa-foto-acciones .btn[aria-disabled="true"] { opacity: .6; cursor: default; }
+
 .pa-nuevo-tono { display: grid; gap: .6rem; border: 1px solid var(--border); border-radius: var(--radio);
   padding: .8rem; background: var(--paper); }
 .pa-sumar { min-height: 44px; }

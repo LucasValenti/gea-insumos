@@ -72,10 +72,16 @@ function Boton({ variante = "primary", tamano = "md", ancho, children, style, hr
 /* Imagen con sus medidas reales declaradas. Sin width y height el navegador no
    sabe cuánto lugar reservar, así que la página salta cuando entra cada foto.
    Las medidas salen de medidas.js, que genera herramientas/imagenes.mjs. */
+/* Las rutas del catálogo vienen sin barra adelante —"tienda/img/x.webp",
+   "img/<clave>.webp"— y el navegador las resuelve contra la dirección que está
+   mirando. En / daba bien; en /p/<producto> pedía /p/tienda/img/x.webp y la
+   foto no aparecía. Se normaliza acá, que es por donde pasan todas. */
+const desdeLaRaiz = (s) => (!s || /^(https?:)?\/\//.test(s) || s[0] === "/" ? s : "/" + s);
+
 function Img({ src, alt = "", className, prioridad = false }) {
   const m = (window.MEDIDAS || {})[(src || "").split("/").pop()];
   return (
-    <img src={src} alt={alt} className={className}
+    <img src={desdeLaRaiz(src)} alt={alt} className={className}
       width={m && m.w} height={m && m.h}
       loading={prioridad ? "eager" : "lazy"}
       fetchPriority={prioridad ? "high" : undefined}

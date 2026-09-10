@@ -1,11 +1,15 @@
 (() => {
 const { useState, useEffect, useCallback } = React;
 
+/* "crudo" manda el cuerpo tal cual —lo usa la subida de fotos, que viaja como
+   WebP y no como JSON—. Sin content-type propio: lo pone el navegador a partir
+   del Blob, y de todos modos el servidor no le cree y mira los bytes. */
 const api = async (ruta, opciones = {}) => {
+  const { cuerpo, crudo, ...resto } = opciones;
   const r = await fetch("/api/admin" + ruta, {
-    headers: { "content-type": "application/json" },
-    ...opciones,
-    body: opciones.cuerpo ? JSON.stringify(opciones.cuerpo) : undefined,
+    headers: crudo ? undefined : { "content-type": "application/json" },
+    ...resto,
+    body: crudo || (cuerpo ? JSON.stringify(cuerpo) : undefined),
   });
   const d = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(d.error || "Falló el pedido (" + r.status + ")");
@@ -221,6 +225,109 @@ const CAMPOS_FICHA = [
   ["envio", "Nota de envío", "Viaja con protección", "text", null],
 ];
 
+/* ---------- foto del producto ----------
+ *
+ * La foto se achica y se convierte a WebP acá, en el navegador, antes de subir.
+ * No es una optimización: un Worker no trae con qué decodificar un JPEG, así
+ * que el servidor no puede achicar nada. Y de paso, una foto de 4 MB sacada con
+ * el celular sube convertida en unos 80 KB en vez de cruzar la red entera para
+ * que el servidor la rechace por grande.
+ *
+ * 1100 px del lado más largo y 80 % de calidad son los mismos números que usa
+ * herramientas/imagenes.mjs para las fotos del repositorio, así que una foto
+ * cargada desde el panel pesa y se ve como las que ya están. El lado más largo
+ * y no el ancho: una foto vertical del celular, limitada solo por el ancho, se
+ * subía con 4000 px de alto. */
+const LADO_MAX = 1100;
+const CALIDAD = 0.8;
+
+async function prepararFoto(archivo) {
+  if (!/^image\//.test(archivo.type)) throw new Error("Eso no es una imagen");
+
+  const bitmap = await createImageBitmap(archivo).catch(() => {
+    throw new Error("No se pudo abrir esa imagen");
+  });
+  const escala = Math.min(1, LADO_MAX / Math.max(bitmap.width, bitmap.height));
+  const ancho = Math.max(1, Math.round(bitmap.width * escala));
+  const alto = Math.max(1, Math.round(bitmap.height * escala));
+
+  const lienzo = document.createElement("canvas");
+  lienzo.width = ancho;
+  lienzo.height = alto;
+  lienzo.getContext("2d").drawImage(bitmap, 0, 0, ancho, alto);
+  bitmap.close();
+
+  const blob = await new Promise((r) => lienzo.toBlob(r, "image/webp", CALIDAD));
+  /* toBlob devuelve null, o un PNG, si el navegador no sabe escribir WebP. El
+     servidor lo rechazaría igual, pero acá se puede decir por qué. */
+  if (!blob || blob.type !== "image/webp")
+    throw new Error("Este navegador no puede convertir a WebP. Probá con Chrome.");
+  return { blob, ancho, alto };
+}
+
+function FotoDeProducto({ p, valor, onCambio, avisar }) {
+  const [yendo, setYendo] = useState(false);
+  const [error, setError] = useState(null);
+
+  /* Se guarda sola, apenas se elige, y a propósito no llama a recargar: eso
+     vuelve a pedir los productos y el efecto de la ficha reescribiría el
+     formulario, borrando lo que estuviera escrito sin guardar. La foto ya quedó
+     en la base; lo único que espera es la miniatura de la lista de atrás. */
+  const aplicar = async (ruta, mensaje) => {
+    await api("/producto/" + p.id, { method: "PATCH", cuerpo: { img: ruta } });
+    onCambio(ruta);
+    avisar(mensaje);
+  };
+
+  const elegir = async (e) => {
+    const archivo = e.target.files && e.target.files[0];
+    /* Se limpia el input para que elegir la MISMA foto otra vez vuelva a
+       disparar el change: si no, después de un error no se puede reintentar. */
+    e.target.value = "";
+    if (!archivo) return;
+
+    setYendo(true); setError(null);
+    try {
+      const { blob, ancho, alto } = await prepararFoto(archivo);
+      const { ruta } = await api(`/imagen?ancho=${ancho}&alto=${alto}`, { method: "POST", crudo: blob });
+      await aplicar(ruta, `Foto guardada (${Math.round(blob.size / 1024)} KB)`);
+    } catch (err) { setError(err.message); }
+    finally { setYendo(false); }
+  };
+
+  const sacar = async () => {
+    setYendo(true); setError(null);
+    try { await aplicar("", "Foto sacada"); }
+    catch (err) { setError(err.message); }
+    finally { setYendo(false); }
+  };
+
+  return (
+    <Campo id="f-foto" etiqueta="Foto"
+      ayuda="Se achica y se guarda sola. Sacala de la galería o con la cámara.">
+      <div className="pa-foto">
+        <div className="pa-foto-mira">
+          {valor
+            ? <img src={"../" + valor} alt={"Foto de " + p.nombre} />
+            : <span className="pa-foto-vacia">Sin foto</span>}
+        </div>
+        <div className="pa-foto-acciones">
+          {/* El label es el botón: un input de archivo no se puede estilar, y
+              esconderlo con display:none lo saca del foco del teclado. */}
+          <label className="btn" aria-disabled={yendo}>
+            {yendo ? "Subiendo…" : valor ? "Cambiar foto" : "Elegir foto"}
+            <input id="f-foto" type="file" accept="image/*" onChange={elegir} disabled={yendo} />
+          </label>
+          {valor && !yendo && (
+            <button type="button" className="pa-cancela" onClick={sacar}>Sacar</button>
+          )}
+        </div>
+      </div>
+      {error && <div className="pa-aviso mal" role="alert">{error}</div>}
+    </Campo>
+  );
+}
+
 function Ficha({ p, productos, categorias, familias, volver, recargar, avisar }) {
   const [v, setV] = useState(() => ({ ...p }));
   const [yendo, setYendo] = useState(false);
@@ -246,7 +353,7 @@ function Ficha({ p, productos, categorias, familias, volver, recargar, avisar })
       const cuerpo = {};
       for (const [k] of CAMPOS_FICHA) cuerpo[k] = v[k] ?? "";
       Object.assign(cuerpo, {
-        descripcion: v.descripcion ?? "", color: v.color ?? "",
+        descripcion: v.descripcion ?? "", color: v.color ?? "", img: v.img ?? "",
         categoria_id: v.categoria_id, sub_id: v.sub_id ?? "",
         destacado: v.destacado ?? null, habitual: v.habitual ?? null,
       });
@@ -298,6 +405,9 @@ function Ficha({ p, productos, categorias, familias, volver, recargar, avisar })
             </select>
           </Campo>
         </div>
+
+        <FotoDeProducto p={p} valor={v.img} avisar={avisar}
+          onCambio={(ruta) => setV((x) => ({ ...x, img: ruta }))} />
 
         <Campo id="f-color" etiqueta="Color de la placa"
           ayuda="Es lo que se ve en la tarjeta mientras el producto no tenga foto.">

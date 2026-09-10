@@ -10,6 +10,7 @@ import {
   epocaSesion, cambiarEpoca,
 } from "./auth.js";
 import { listarPedidos, cerrarPedido } from "./pedidos.js";
+import { guardarImagen } from "./imagenes.js";
 
 const json = (data, { status = 200, headers = {} } = {}) =>
   new Response(JSON.stringify(data), {
@@ -48,12 +49,28 @@ const enteroObligatorio = (o) => (v) => {
   if (n === null) throw deValidacion("Falta el número");
   return n;
 };
+/* Las dos formas de ruta que existen, y ninguna otra: la foto estática de
+   siempre y la que sube la clienta. Vacío borra la foto, que es cómo se saca
+   una que quedó mal. */
+const rutaDeFoto = (v) => {
+  const s = texto(120)(v);
+  if (s === null) return null;
+  if (!/^(tienda\/img\/[\w.-]+\.(webp|jpe?g|png)|img\/[a-f0-9]{6,64}\.webp)$/.test(s))
+    throw deValidacion("Esa no es una ruta de foto válida");
+  return s;
+};
 
 const CAMPOS_PRODUCTO = {
   nombre: texto(120), marca: texto(60), precio: enteroObligatorio({ min: 0 }),
   precio_antes: entero({ min: 0 }), stock: entero({ min: 0, max: 100000 }),
   envio: texto(60), contenido: texto(80), rinde: texto(80), uso: texto(200),
   descripcion: texto(600), color: texto(9), categoria_id: texto(40), sub_id: texto(40),
+  /* La ruta de la foto, no la foto. Entran las dos formas que conviven: las
+     estáticas de siempre (tienda/img/algo.webp) y las que sube la clienta
+     (img/<clave>.webp). El patrón las acota a esas dos para que esto no se
+     convierta en un campo donde escribir cualquier URL: una ruta ajena acá
+     pondría una imagen de otro sitio en el catálogo. */
+  img: rutaDeFoto, img_kit: rutaDeFoto,
   destacado: entero({ min: 0, max: 999 }), habitual: entero({ min: 0, max: 999 }),
 };
 
@@ -144,6 +161,17 @@ export async function rutasAdmin(request, env, url) {
   if (!activa) return json({ error: "Necesitás entrar al panel" }, { status: 401 });
 
   try {
+    /* --- subir una foto ---
+       Llega el WebP crudo en el cuerpo, ya achicado y convertido por el
+       navegador, con las medidas en la query. Devuelve la ruta para guardar en
+       el producto; quién la usa y para qué campo lo decide el PATCH de después,
+       así que la misma foto sirve para el producto y para el kit. */
+    if (ruta === "/imagen" && request.method === "POST") {
+      const r = await guardarImagen(request, db);
+      if (r.error) return json({ error: r.error }, { status: r.estado });
+      return json(r, { status: 201 });
+    }
+
     /* --- listado para el panel: incluye lo que la tienda no muestra --- */
     if (ruta === "/productos" && request.method === "GET") {
       const [prods, tonos] = await db.batch([

@@ -57,6 +57,11 @@ const cargar = async () => {
   rellenar(PRODUCTOS, d.PRODUCTOS);
   rellenar(DESTACADOS, d.DESTACADOS);
   rellenar(HABITUALES, d.HABITUALES);
+  /* Las medidas de las fotos que subió la clienta se suman a las de medidas.js,
+     que trae las estáticas. Se agregan y no se reemplaza el objeto: ui.jsx lee
+     window.MEDIDAS en cada render, pero medidas.js ya lo dejó puesto y pisarlo
+     dejaría a las fotos de siempre sin ancho ni alto. */
+  if (d.MEDIDAS) Object.assign(window.MEDIDAS || (window.MEDIDAS = {}), d.MEDIDAS);
   ENVIO.gratisDesde = d.ENVIO.gratisDesde == null ? Infinity : d.ENVIO.gratisDesde;
   ENVIO.provisorio = d.ENVIO.provisorio;
   rellenar(ENVIO.zonas, d.ENVIO.zonas);

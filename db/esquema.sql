@@ -157,3 +157,27 @@ CREATE TABLE IF NOT EXISTS pedidos_ritmo (
   cuando INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_ritmo_ip ON pedidos_ritmo(ip, cuando);
+
+-- Las fotos que sube la clienta desde el panel.
+--
+-- Viven acá y no en public/ porque public/ es el repositorio: para cambiar una
+-- foto habría que editar el código y volver a publicar, que es justo lo que el
+-- panel viene a evitar. Cloudflare R2 sería el lugar natural, pero la cuenta no
+-- lo tiene habilitado y activarlo pide tarjeta; para un catálogo de este tamaño
+-- —decenas de fotos de ~80 KB— D1 alcanza de sobra y no suma otro servicio.
+--
+-- La clave es el hash del contenido, así que dos fotos iguales ocupan una sola
+-- fila y la dirección de cada una puede cachearse para siempre: si la foto
+-- cambia, cambia la clave, y no hay caché vieja que invalidar.
+--
+-- El ancho y el alto se guardan para poder declararlos en el <img>. Sin eso el
+-- navegador no sabe cuánto lugar reservar y la página salta cuando entra la
+-- foto, que es el mismo motivo por el que existe medidas.js para las estáticas.
+CREATE TABLE IF NOT EXISTS imagenes (
+  clave  TEXT PRIMARY KEY,
+  tipo   TEXT NOT NULL,
+  ancho  INTEGER,
+  alto   INTEGER,
+  bytes  BLOB NOT NULL,
+  creada TEXT NOT NULL DEFAULT (datetime('now'))
+);

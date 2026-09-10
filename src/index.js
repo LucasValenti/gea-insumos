@@ -11,6 +11,7 @@
 
 import { rutasAdmin } from "./admin.js";
 import { crearPedido } from "./pedidos.js";
+import { servirImagen, medidasSubidas } from "./imagenes.js";
 import { paginaProducto, sitemap } from "./paginas.js";
 
 const CACHE = "public, max-age=60, stale-while-revalidate=600";
@@ -53,19 +54,25 @@ const limpio = (o) => {
 };
 
 async function catalogo(db) {
-  const [cats, subs, fams, zonas, cfg, prods, tonos, comps, incluye] = await db.batch([
-    db.prepare("SELECT id, nombre, descripcion, img FROM categorias ORDER BY orden"),
-    db.prepare("SELECT id, categoria_id, nombre FROM subcategorias ORDER BY categoria_id, orden"),
-    db.prepare("SELECT id, nombre, hex FROM familias ORDER BY orden"),
-    db.prepare("SELECT id, nombre, costo, plazo FROM zonas_envio ORDER BY orden"),
-    db.prepare("SELECT clave, valor FROM config"),
-    db.prepare(`SELECT id, categoria_id, sub_id, marca, nombre, precio, precio_antes, stock,
-                       envio, contenido, rinde, uso, descripcion, img, img_kit, color,
-                       destacado, habitual
-                FROM productos ORDER BY orden`),
-    db.prepare("SELECT producto_id, nombre, hex, familia_id, stock FROM tonos ORDER BY producto_id, orden"),
-    db.prepare("SELECT kit_id, producto_id, cantidad FROM kit_componentes ORDER BY kit_id, orden"),
-    db.prepare("SELECT kit_id, texto FROM kit_incluye ORDER BY kit_id, orden"),
+  /* Las medidas van en paralelo al lote y no dentro: el lote arma la respuesta
+     tal cual la conocen las pantallas, y esto es una tabla aparte que no le
+     corresponde a ninguna de esas consultas. */
+  const [[cats, subs, fams, zonas, cfg, prods, tonos, comps, incluye], medidas] = await Promise.all([
+    db.batch([
+      db.prepare("SELECT id, nombre, descripcion, img FROM categorias ORDER BY orden"),
+      db.prepare("SELECT id, categoria_id, nombre FROM subcategorias ORDER BY categoria_id, orden"),
+      db.prepare("SELECT id, nombre, hex FROM familias ORDER BY orden"),
+      db.prepare("SELECT id, nombre, costo, plazo FROM zonas_envio ORDER BY orden"),
+      db.prepare("SELECT clave, valor FROM config"),
+      db.prepare(`SELECT id, categoria_id, sub_id, marca, nombre, precio, precio_antes, stock,
+                         envio, contenido, rinde, uso, descripcion, img, img_kit, color,
+                         destacado, habitual
+                  FROM productos ORDER BY orden`),
+      db.prepare("SELECT producto_id, nombre, hex, familia_id, stock FROM tonos ORDER BY producto_id, orden"),
+      db.prepare("SELECT kit_id, producto_id, cantidad FROM kit_componentes ORDER BY kit_id, orden"),
+      db.prepare("SELECT kit_id, texto FROM kit_incluye ORDER BY kit_id, orden"),
+    ]),
+    medidasSubidas(db),
   ]);
 
   const conf = Object.fromEntries(cfg.results.map((r) => [r.clave, r.valor]));
@@ -136,6 +143,10 @@ async function catalogo(db) {
     PRODUCTOS,
     DESTACADOS: orden("destacado"),
     HABITUALES: orden("habitual"),
+    /* Ancho y alto de las fotos subidas desde el panel, con la misma forma que
+       public/tienda/img/medidas.js: la tienda las junta con las de siempre y el
+       <img> las declara sin enterarse de cuál es cuál. */
+    MEDIDAS: medidas,
     ENVIO: {
       gratisDesde: entero(conf.envioGratisDesde),
       provisorio: conf.envioProvisorio === "1",
@@ -181,6 +192,19 @@ async function atender(request, env, url) {
   }
 
   if (url.pathname.startsWith("/api/")) return json({ error: "No existe" }, { status: 404 });
+
+  /* Las fotos que subió la clienta. Las de public/tienda/img/ no pasan por acá:
+     son archivos y las sirve el borde antes de llegar al Worker. */
+  const foto = url.pathname.match(/^\/img\/([a-f0-9]+)\.webp$/);
+  if (foto) {
+    if (request.method !== "GET" && request.method !== "HEAD")
+      return json({ error: "Método no permitido" }, { status: 405 });
+    try { return await servirImagen(env.DB, foto[1], request); }
+    catch (e) {
+      console.error("imagen:", e && e.stack || e);
+      return new Response("No se pudo leer la foto", { status: 500 });
+    }
+  }
 
   /* Una dirección por producto. Sin esto la tienda es una sola URL y no hay
      nada que indexar producto por producto, por más que el buscador ejecute el

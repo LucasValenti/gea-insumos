@@ -1,9 +1,17 @@
 <!doctype html>
 <html lang="es-AR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Las direcciones de este archivo van desde la raíz, con la barra adelante, y
+     no relativas. Con "app.js" el navegador lo resuelve contra la dirección que
+     está mirando: desde / daba bien, pero src/paginas.js sirve este mismo
+     armazón en /p/<producto>, y ahí pasaba a pedir "/p/app.js". Los nueve
+     scripts daban 404 y la página de cada producto —la que se comparte por
+     WhatsApp y la que el sitemap le declara a Google— salía en blanco.
+     Un <base href="/"> lo arreglaría de una, pero la CSP trae base-uri 'none'
+     a propósito, y aflojar eso para acomodar una ruta sale más caro. -->
 <title>GEA Insumos · Insumos de manicuría por mayor</title>
 <meta name="description" content="Semipermanentes, construcción, decoración y herramientas para manicuría, por mayor. Stock y tiempos de envío a la vista, sin pedir precio por chat. El pedido se cierra por WhatsApp.">
 <link rel="canonical" href="https://gea-insumos.kusak.workers.dev/">
-<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#E2C2B9">
 
 <!-- Vista previa al compartir. Importa más que el buscador: acá los links
@@ -35,19 +43,19 @@
      montaba y llegaba el catálogo: medido, se descubría recién a los 3,1 s
      estando el html en el navegador desde los 40 ms. Acá baja en paralelo con
      todo lo demás. -->
-<link rel="preload" as="image" href="tienda/img/hero.webp" fetchpriority="high">
+<link rel="preload" as="image" href="/tienda/img/hero.webp" fetchpriority="high">
 <!-- Uno solo. Eran diez: styles.css encadenaba ocho @import, que no se descubren
      al leer el html —hay que bajar y parsear styles.css primero— y bloquean el
      pintado los diez. Los fuentes siguen partidos en tokens y base; los junta
      herramientas/compilar.mjs, igual que el JSX. -->
-<link rel="stylesheet" href="estilos.css">
+<link rel="stylesheet" href="/estilos.css">
 <!-- Venía de cdnjs con integrity. Ahora es nuestro: lo baja y lo verifica
      herramientas/vendor.mjs contra el mismo sha384 que tenía el atributo, así
      que la copia está probada byte a byte contra lo que servía el CDN. Sin
      integrity porque ya no aplica: el archivo sale del mismo origen que la
      página. La versión va en el nombre para que actualizar sea una dirección
      nueva y nadie quede servido con una copia vieja. -->
-<link rel="stylesheet" href="vendor/animate-4.1.1.min.css">
+<link rel="stylesheet" href="/vendor/animate-4.1.1.min.css">
 <style>
 /* Animate.css afinado al sistema: duraciones cortas y curva de la marca. */
 :root{--animate-duration:.5s;--animate-delay:.1s}
@@ -124,12 +132,12 @@ a{color:var(--ink)}a:hover{color:var(--nude-600)}
      corren cuando la página terminó de leerse.
      No pongas async: async no respeta el orden y app.js correría antes que
      React. -->
-<script defer src="vendor/react-18.3.1.min.js"></script>
-<script defer src="vendor/react-dom-18.3.1.min.js"></script>
-<script defer src="tienda/datos.js"></script>
+<script defer src="/vendor/react-18.3.1.min.js"></script>
+<script defer src="/vendor/react-dom-18.3.1.min.js"></script>
+<script defer src="/tienda/datos.js"></script>
 <!-- Medidas reales de cada foto, para reservar el lugar antes de que carguen.
      Lo genera herramientas/imagenes.mjs; no se edita a mano. -->
-<script defer src="tienda/img/medidas.js"></script>
+<script defer src="/tienda/img/medidas.js"></script>
 <!-- Estos cuatro los genera herramientas/compilar.mjs desde los .jsx de al lado.
      Antes venían como type="text/babel" y los iba a buscar Babel por XHR
      después de bajarse él mismo, así que el navegador no podía adelantarlos: la
@@ -143,8 +151,8 @@ a{color:var(--ink)}a:hover{color:var(--nude-600)}
      Lighthouse los midió bloqueando el pintado 622 ms y 468 ms. Los archivos
      siguen publicados: las herramientas de auditoría los inyectan cuando el
      caso los necesita, y así lo que se audita es lo que se sirve. -->
-<script defer src="tienda/ui.js"></script>
-<script defer src="tienda/pantallas-tienda.js"></script>
-<script defer src="tienda/pantallas-pedido.js"></script>
-<script defer src="app.js"></script>
+<script defer src="/tienda/ui.js"></script>
+<script defer src="/tienda/pantallas-tienda.js"></script>
+<script defer src="/tienda/pantallas-pedido.js"></script>
+<script defer src="/app.js"></script>
 </body></html>
