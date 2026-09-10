@@ -142,6 +142,10 @@ export async function compilarTodo({ callado = false } = {}) {
    arranca. Se comprueba acá para que falle antes de publicar y no después. */
 export const HTML_CON_CSP = ["public/index.html", "public/admin/index.html"];
 
+/* Los tipos que el navegador corre como script. Cualquier otro es un bloque de
+   datos y script-src no lo mira. */
+const EJECUTABLE = new Set(["text/javascript", "application/javascript", "module"]);
+
 export async function revisarCSP() {
   const headers = await readFile(path.join(RAIZ, "public/_headers"), "utf8");
   const faltan = [];
@@ -149,6 +153,16 @@ export async function revisarCSP() {
     const html = await readFile(path.join(RAIZ, rel), "utf8");
     /* Solo los que traen el código adentro: los que tienen src los cubre 'self'. */
     for (const m of html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)) {
+      /* Solo los que el navegador ejecuta. Un <script type="application/ld+json">
+         no lo ejecuta nadie y script-src no lo alcanza: está medido en un
+         navegador de verdad, con un script sin hash al lado como control —ese sí
+         se bloqueó, el JSON-LD no—, y la misma razón está escrita en
+         src/paginas.js. Pedirle un hash no protegía nada y frenaba el build cada
+         vez que cambiaba el texto de los datos estructurados, que es justo lo que
+         pasó al corregir el dominio. */
+      const tipo = (m[0].match(/type=["']([^"']+)["']/) || [, ""])[1].trim().toLowerCase();
+      if (tipo && !EJECUTABLE.has(tipo)) continue;
+
       /* Con los saltos normalizados: el parser de HTML convierte cada \r\n en
          \n antes de que el contenido llegue a ser texto del script, así que el
          navegador hashea la versión con \n. Calcularlo sobre el archivo crudo

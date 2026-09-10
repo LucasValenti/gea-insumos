@@ -15,7 +15,7 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-Wq9ymUCEuqKrKZ0KtESmxENcYNyHLjrnKnTFCQVT6CE=' 'sha256-SqzUQOWLIxFSmtP/GnZsGMmuTPRRBRMnxy9CbVsfZxo=' 'sha256-f3IColzFaI8v1iUu7Dv2EbTO5YRLzy2nCHQkViKJXa4='; style-src 'self' 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-Wq9ymUCEuqKrKZ0KtESmxENcYNyHLjrnKnTFCQVT6CE=' 'sha256-SqzUQOWLIxFSmtP/GnZsGMmuTPRRBRMnxy9CbVsfZxo='; style-src 'self' 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
 
 # Sobre la Content-Security-Policy de arriba.
 #
@@ -27,8 +27,14 @@
 #
 # Qué permite cada cosa, y por qué:
 #   script-src   los .js propios —React incluido, que ahora sale de /vendor/— y
-#                por hash los tres bloques en línea: el que estampa el tema antes
-#                de pintar, el mismo del panel, y el JSON-LD. Con hashes
+#                por hash los dos bloques en línea que el navegador ejecuta: el
+#                que estampa el tema antes de pintar y el mismo del panel. El
+#                JSON-LD tenía un hash y se lo sacó: no lo ejecuta nadie, así que
+#                script-src no lo alcanza —medido en un navegador de verdad, con
+#                un script sin hash al lado como control: ese sí se bloqueó, el
+#                JSON-LD no—, y la misma razón está escrita en src/paginas.js.
+#                Cubrirlo no protegía nada y frenaba el build cada vez que
+#                cambiaba el texto de los datos estructurados. Con hashes
 #                presentes el navegador ignora 'unsafe-inline' aunque estuviera:
 #                cualquier otro script inyectado no corre. Acá estaba unpkg y ya
 #                no hace falta: no queda un solo script de un origen ajeno.
