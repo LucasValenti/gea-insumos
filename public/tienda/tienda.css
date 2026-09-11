@@ -114,6 +114,10 @@ button{color:inherit}
 .tonos-mini u{font-size:.6rem;color:var(--ink-faint);text-decoration:none;align-self:center;margin-left:2px}
 
 /* ---- chips / filtros ---- */
+.rail-caja{position:relative}
+/* Sobre el papel el degradado es invisible: solo se nota cuando hay un chip
+   abajo, que es exactamente cuando hace falta avisar que el riel sigue. */
+.rail-caja::after{content:"";position:absolute;top:0;bottom:.2rem;right:0;width:2.25rem;pointer-events:none;background:linear-gradient(to right,transparent,var(--surface-page))}
 .rail{display:flex;gap:.45rem;overflow-x:auto;padding:0 1rem .2rem;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .rail::-webkit-scrollbar{display:none}
 .chip{flex:none;border:1px solid var(--border);background:var(--surface);border-radius:var(--radio-boton);padding:.5rem .85rem;font-size:.74rem;color:var(--ink-soft);cursor:pointer;white-space:nowrap;transition:all var(--dur) var(--ease);min-height:36px}
@@ -172,7 +176,14 @@ button{color:inherit}
    que además es más fácil de tocar. */
 .accion .fila{display:flex;align-items:center;gap:.6rem .75rem;flex-wrap:wrap}
 .accion .fila>.step{flex:none}
-.accion .fila>.btn{flex:1}
+/* Sin min-width:0 un hijo de flex no baja de su contenido: el botón se pasaba
+   de largo y el overflow:hidden del .btn le cortaba el precio. */
+.accion .fila>.btn{flex:1;min-width:0}
+/* 420px no alcanzaba: con el rótulo largo el botón todavía se cortaba 15px a
+   430. Y por debajo de 360 no entra ni el corto al lado del stepper, así que
+   ahí se lleva la fila entera, que es lo que un pulgar quiere igual. */
+@media (max-width:460px){.solo-ancho{display:none}}
+@media (max-width:360px){.accion .fila>.btn{flex:1 1 100%}}
 
 /* ---- stepper ---- */
 .step{display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:var(--radio-boton);background:var(--surface)}
@@ -661,7 +672,11 @@ button{color:inherit}
   .ap.esc .nav-esc button::after{content:"";position:absolute;inset:-6px 0}
   /* Faltaban en la lista. La X de la búsqueda es la más chica de todas con
      34px, y el "+" de la tarjeta y el de reposición se quedan a 2 y 4px. */
-  .busca-x,.card-accion,.mas,.chip{position:relative}
+  /* .busca-x salía de acá: ya es position:absolute, que también le sirve de
+     ancla al ::after, y ponerle relative se lo cancelaba. El botón caía al
+     flujo y right:1.5rem lo corría 24px a la izquierda del campo, hasta x=-8:
+     con una mano, la búsqueda no se podía limpiar. */
+  .card-accion,.mas,.chip{position:relative}
   .busca-x::after{content:"";position:absolute;inset:-5px}
   .card-accion::after,.mas::after{content:"";position:absolute;inset:-2px}
   .chip::after{content:"";position:absolute;inset:-4px 0}

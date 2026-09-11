@@ -22,7 +22,10 @@
      visible: no se reemplaza un contenedor, se deriva un valor de uno vacío. */
   const conteo = (id) => PR.filter((p) => p.cat === id).length;
 
-  function Rail({ children }) {return <div className="rail">{children}</div>;}
+  /* La caja existe para el degradado del borde: el riel scrollea y no tenía
+     forma de avisarlo. A 390px entran dos chips y medio de siete, y el tercero
+     se corta a mitad de palabra sin que nada indique que hay más. */
+  function Rail({ children }) {return <div className="rail-caja"><div className="rail">{children}</div></div>;}
 
   function Reposicion({ ir, agregar, enPedido, compacto }) {
     const items = habitualesDe().map(prod);
@@ -530,7 +533,10 @@
                   Avisame cuando entre
                 </Boton>
               : <Boton variante="primary" tamano="lg" onClick={() => agregar(p, tono, n)}>
-                  Agregar al pedido · {$(p.precio * n)}
+                  {/* "al pedido" se va por debajo de 420px. Ya estás en la ficha:
+                      lo que no puede faltar es el precio, y era justo lo que se
+                      cortaba —a 320px se comía 64px y el precio salía partido. */}
+                  Agregar<span className="solo-ancho"> al pedido</span> · {$(p.precio * n)}
                 </Boton>}
           </div>
         </div>
