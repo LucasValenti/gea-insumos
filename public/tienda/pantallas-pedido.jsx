@@ -387,6 +387,7 @@
     const caja = React.useRef(null);
     const mapa = React.useRef(null);
     const marca = React.useRef(null);
+    const limpiar = React.useRef(null);
     const [estado, setEstado] = React.useState("cargando");
     const [cotizacion, setCotizacion] = React.useState(null);
     const [cotizando, setCotizando] = React.useState(false);
@@ -410,8 +411,20 @@
         m.on("click", (e) => onPunto({ lat: e.latlng.lat, lng: e.latlng.lng }));
         mapa.current = m;
         setEstado("listo");
+
+        /* Leaflet mide el contenedor una sola vez, al crearse. Si después cambia
+           de tamaño —girar el teléfono, o abrir el teclado, que en varios
+           navegadores móviles achica el viewport— sigue dibujando con la medida
+           vieja: quedan franjas grises donde deberían ir mosaicos y los toques
+           caen en coordenadas corridas. Eso último importa: un toque mal
+           interpretado es un pin en otro lado, o sea un envío mal cobrado. */
+        const remedir = () => m.invalidateSize();
+        remedir();
+        const obs = new ResizeObserver(remedir);
+        obs.observe(caja.current);
+        limpiar.current = () => { obs.disconnect(); m.remove(); };
       }).catch(() => vivo && setEstado("error"));
-      return () => { vivo = false; };
+      return () => { vivo = false; if (limpiar.current) limpiar.current(); };
     }, []);
 
     /* El pin se dibuja como círculo y no con el marcador por defecto de
