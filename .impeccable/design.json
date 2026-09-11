@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-11T00:00:00.000Z",
+  "title": "Design System: GEA Insumos",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "primary",
+        "displayName": "Tinta",
+        "canonical": "#111111",
+        "tonalRamp": ["#0B0A0A", "#111111", "#2E2A28", "#4A4442", "#6E6663", "#9A918C", "#D6CBC6", "#FAF8F7"]
+      },
+      "nude-200": {
+        "role": "primary",
+        "displayName": "Nude de Marca",
+        "canonical": "#E2C2B9",
+        "tonalRamp": ["#3A211A", "#5C3529", "#8A5C4E", "#B8887B", "#CFA79C", "#E2C2B9", "#F4E7E3", "#FAF3F1"]
+      },
+      "nude-600": {
+        "role": "secondary",
+        "displayName": "Nude Legible",
+        "canonical": "#8A5C4E",
+        "tonalRamp": ["#3A211A", "#5C3529", "#8A5C4E", "#B8887B", "#CFA79C", "#E2C2B9", "#F4E7E3", "#FAF3F1"]
+      },
+      "nude-300": { "role": "secondary", "displayName": "Nude Filete", "canonical": "#CFA79C" },
+      "nude-400": { "role": "secondary", "displayName": "Nude Trazo", "canonical": "#B8887B" },
+      "nude-100": { "role": "secondary", "displayName": "Nude Papel", "canonical": "#F4E7E3" },
+      "nude-50": { "role": "secondary", "displayName": "Nude Lavado", "canonical": "#FAF3F1" },
+      "vino-600": {
+        "role": "tertiary",
+        "displayName": "Vino",
+        "canonical": "#8A1B2E",
+        "tonalRamp": ["#3A0A13", "#55101C", "#6E1524", "#8A1B2E", "#A8404F", "#C4757F", "#E2AEB4", "#FBF1F2"]
+      },
+      "vino-700": { "role": "tertiary", "displayName": "Vino Fuerte", "canonical": "#6E1524" },
+      "ok": {
+        "role": "tertiary",
+        "displayName": "Verde de Confirmado",
+        "canonical": "#2F6B4F",
+        "tonalRamp": ["#0E2318", "#163825", "#224F37", "#2F6B4F", "#48896A", "#6FAC8B", "#A6CDB8", "#DCEDE4"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Papel",
+        "canonical": "#FAF8F7",
+        "tonalRamp": ["#121110", "#221F1E", "#3A3533", "#6E6663", "#A79E9A", "#D6CBC6", "#F3EEEC", "#FAF8F7"]
+      },
+      "surface": { "role": "neutral", "displayName": "Superficie", "canonical": "#FFFFFF" },
+      "sunk": { "role": "neutral", "displayName": "Hundido", "canonical": "#F3EEEC" },
+      "hairline": { "role": "neutral", "displayName": "Filete", "canonical": "#E4DBD7" },
+      "border": { "role": "neutral", "displayName": "Borde", "canonical": "#D6CBC6" },
+      "ink-soft": { "role": "neutral", "displayName": "Tinta Suave", "canonical": "#6E6663" },
+      "ink-faint": { "role": "neutral", "displayName": "Tinta Tenue", "canonical": "#766D69" },
+      "scrim": { "role": "neutral", "displayName": "Velo", "canonical": "rgba(17,17,17,.32)" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Solo el titulo del hero. Entra animado palabra por palabra." },
+      "headline": { "displayName": "Headline", "purpose": "Encabezados de seccion. Clase canonica .titulo-seccion." },
+      "title": { "displayName": "Title", "purpose": "Nombre de producto en la tarjeta, cortado a dos lineas." },
+      "price": { "displayName": "Price", "purpose": "El precio se compone como titulo, no como dato. Serif siempre." },
+      "body": { "displayName": "Body", "purpose": "Texto corrido y valores de formulario." },
+      "label": { "displayName": "Label", "purpose": "Etiquetas de campo, encabezados del pie, cuenta de resultados." },
+      "eyebrow": { "displayName": "Eyebrow", "purpose": "Categoria sobre el nombre en la tarjeta, ver mas, avisos." }
+    },
+    "shadows": [
+      { "name": "sombra", "value": "0 1px 2px rgba(17,17,17,.04), 0 10px 30px -18px rgba(17,17,17,.22)", "purpose": "La unica sombra de proposito general. Aparece por reaccion (hover), nunca en reposo. En oscuro: 0 1px 2px rgba(0,0,0,.5), 0 14px 34px -18px rgba(0,0,0,.8)." },
+      { "name": "sombra-flotante", "value": "0 6px 20px -6px rgba(0,0,0,.45)", "purpose": "Exclusiva de la hoja inferior de celular, que si esta despegada de la pagina." },
+      { "name": "sombra-tono", "value": "inset 0 -8px 18px -8px rgba(0,0,0,.35)", "purpose": "Interior, sobre la muestra de color, para que el circulo se lea como esmalte." },
+      { "name": "ring-input", "value": "0 0 0 3px var(--nude-100)", "purpose": "Foco de los campos de texto. Es un anillo, no una sombra: no simula altura." }
+    ],
+    "motion": [
+      { "name": "sal", "value": "cubic-bezier(.22,.72,.24,1)", "purpose": "La curva de la casa. Todo lo que se toca, se hunde o se desliza la usa. Hoy vive en .ap dentro de tienda.css y deberia subir a tokens." },
+      { "name": "dur", "value": ".18s", "purpose": "Duracion base de cambios de color, borde y fondo." },
+      { "name": "ease", "value": "ease", "purpose": "Curva de los cambios de color, sin desplazamiento." },
+      { "name": "hundido-boton", "value": "transform .2s var(--sal) -> scale(.92)", "purpose": "Respuesta tactil de todo control circular (accion de tarjeta, stepper, mas)." },
+      { "name": "hundido-chip", "value": "transform .2s var(--sal) -> scale(.96)", "purpose": "Respuesta tactil de chips y controles anchos." },
+      { "name": "cortina-boton", "value": "transform .32s var(--sal), translateY(101%) -> 0", "purpose": "El hover del boton primario sube desde abajo en vez de cambiar de color de golpe." },
+      { "name": "zoom-foto", "value": "transform .5s var(--sal) -> scale(1.07)", "purpose": "La foto de producto se acerca cuando el mouse entra a la tarjeta." },
+      { "name": "revelado", "value": "opacity .6s var(--sal), transform .6s var(--sal), delay calc(var(--i,0)*70ms)", "purpose": "Entrada escalonada al scroll. Solo bajo .rev-on; sin esa clase todo se ve." }
+    ],
+    "breakpoints": [
+      { "name": "minimo", "value": "339px" },
+      { "name": "nav-apretada", "value": "479px" },
+      { "name": "celular", "value": "560px" },
+      { "name": "panel", "value": "640px" },
+      { "name": "mosaico", "value": "720px" },
+      { "name": "header-dos-filas", "value": "820px" },
+      { "name": "hero-partido", "value": "900px" },
+      { "name": "escritorio", "value": "980px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Tarjeta de producto",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "La unidad del catalogo: foto cuadrada, categoria, nombre en serif, precio protagonista, stock y accion circular.",
+      "html": "<article class=\"ds-card\"><div class=\"ds-card-foto\"><svg viewBox=\"0 0 100 100\" aria-hidden=\"true\"><defs><linearGradient id=\"dsg\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#F4E7E3\"/><stop offset=\"1\" stop-color=\"#E2C2B9\"/></linearGradient></defs><rect width=\"100\" height=\"100\" fill=\"url(#dsg)\"/></svg></div><div class=\"ds-card-body\"><span class=\"ds-card-eyebrow\">Esmaltes semis</span><h3 class=\"ds-card-nom\">Semipermanente nude rosado 15 ml</h3><div class=\"ds-card-pie\"><p class=\"ds-card-precio\">$14.900</p><div class=\"ds-card-pie-b\"><span class=\"ds-stock ds-stock-ok\"><i></i>Hay stock</span><button class=\"ds-card-accion\" aria-label=\"Agregar al pedido\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\"><path d=\"M12 5v14M5 12h14\"/></svg></button></div></div></div></article>",
+      "css": ".ds-card{background:var(--surface,#fff);border:1px solid var(--hairline,#E4DBD7);border-radius:var(--radio,2px);overflow:hidden;display:flex;flex-direction:column;position:relative;text-align:left;transition:border-color .18s ease,box-shadow .18s ease,transform .28s cubic-bezier(.22,.72,.24,1)}.ds-card:hover{border-color:var(--nude-300,#CFA79C);box-shadow:var(--shadow,0 1px 2px rgba(17,17,17,.04),0 10px 30px -18px rgba(17,17,17,.22));transform:translateY(-3px)}.ds-card-foto{aspect-ratio:1;background:var(--nude-50,#FAF3F1);border-bottom:1px solid var(--hairline,#E4DBD7);overflow:hidden}.ds-card-foto svg{width:100%;height:100%;display:block;transition:transform .5s cubic-bezier(.22,.72,.24,1)}.ds-card:hover .ds-card-foto svg{transform:scale(1.07)}.ds-card-body{padding:.7rem .75rem .8rem;display:flex;flex-direction:column;gap:.22rem;flex:1}.ds-card-eyebrow{font-family:Inter,system-ui,sans-serif;font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint,#766D69)}.ds-card-nom{font-family:\"Playfair Display\",Georgia,serif;font-weight:500;font-size:.9rem;line-height:1.3;color:var(--ink,#111);margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.ds-card-pie{display:flex;flex-direction:column;gap:.3rem;margin-top:auto;padding-top:.5rem}.ds-card-precio{font-family:\"Playfair Display\",Georgia,serif;font-size:1.22rem;letter-spacing:-.01em;line-height:1.15;color:var(--ink,#111);margin:0}.ds-card-pie-b{display:flex;align-items:center;justify-content:space-between;gap:.5rem;min-width:0}.ds-card-accion{flex:none;width:42px;height:42px;border-radius:var(--radio-boton,999px);border:1px solid var(--border,#D6CBC6);background:var(--surface,#fff);color:var(--ink,#111);display:grid;place-items:center;cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s cubic-bezier(.22,.72,.24,1)}.ds-card-accion svg{width:20px;height:20px}.ds-card-accion:hover{background:var(--ink,#111);border-color:var(--ink,#111);color:var(--paper,#FAF8F7)}.ds-card-accion:focus-visible{outline:2px solid var(--nude-400,#B8887B);outline-offset:3px}.ds-card-accion:active{transform:scale(.92)}"
+    },
+    {
+      "name": "Boton primario",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Capsula de tinta. El hover no cambia de color: sube una cortina nude desde abajo.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Agregar al pedido</button>",
+      "css": ".ds-btn{position:relative;overflow:hidden;isolation:isolate;font-family:Inter,system-ui,sans-serif;font-size:.74rem;font-weight:500;letter-spacing:.13em;text-transform:uppercase;padding:.8rem 1.5rem;border-radius:var(--radio-boton,999px);border:1px solid transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:.55rem;white-space:nowrap;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .2s cubic-bezier(.22,.72,.24,1),box-shadow .25s cubic-bezier(.22,.72,.24,1)}.ds-btn::after{content:\"\";position:absolute;inset:0;z-index:-1;background:var(--nude-600,#8A5C4E);transform:translateY(101%);transition:transform .32s cubic-bezier(.22,.72,.24,1)}.ds-btn:hover::after{transform:translateY(0)}.ds-btn-primary{background:var(--ink,#111);color:var(--paper,#FAF8F7)}.ds-btn-primary:hover{transform:translateY(-1px);box-shadow:var(--shadow,0 1px 2px rgba(17,17,17,.04),0 10px 30px -18px rgba(17,17,17,.22))}.ds-btn-primary:focus-visible{outline:2px solid var(--nude-400,#B8887B);outline-offset:3px}.ds-btn-primary:active{transform:translateY(1px) scale(.99);box-shadow:none}.ds-btn-primary:disabled{opacity:.45;cursor:not-allowed}.ds-btn-primary:disabled:hover{transform:none}@media (prefers-reduced-motion:reduce){.ds-btn::after{display:none}.ds-btn-primary:hover{transform:none;background:var(--nude-600,#8A5C4E)}}"
+    },
+    {
+      "name": "Chip de categoria",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Filtro en capsula dentro de un riel horizontal. Seleccionado invierte entero y el contador se apaga sin salirse del tema.",
+      "html": "<div class=\"ds-rail\"><button class=\"ds-chip\" aria-pressed=\"true\">Todo<b>34</b></button><button class=\"ds-chip\" aria-pressed=\"false\">Esmaltes semis<b>12</b></button><button class=\"ds-chip\" aria-pressed=\"false\">Decoracion<b>7</b></button></div>",
+      "css": ".ds-rail{display:flex;gap:.45rem;overflow-x:auto;padding:0 0 .2rem;scrollbar-width:none}.ds-rail::-webkit-scrollbar{display:none}.ds-chip{position:relative;flex:none;border:1px solid var(--border,#D6CBC6);background:var(--surface,#fff);border-radius:var(--radio-boton,999px);padding:.5rem .85rem;font-family:Inter,system-ui,sans-serif;font-size:.74rem;color:var(--ink-soft,#6E6663);cursor:pointer;white-space:nowrap;min-height:36px;transition:background .18s ease,border-color .18s ease,color .18s ease,transform .2s cubic-bezier(.22,.72,.24,1)}.ds-chip:hover{border-color:var(--ink,#111);color:var(--ink,#111)}.ds-chip:focus-visible{outline:2px solid var(--nude-400,#B8887B);outline-offset:3px}.ds-chip:active{transform:scale(.96)}.ds-chip[aria-pressed=\"true\"]{background:var(--ink,#111);border-color:var(--ink,#111);color:var(--paper,#FAF8F7)}.ds-chip b{font-weight:400;color:var(--ink-faint,#766D69);margin-left:.3rem;font-size:.68rem}.ds-chip[aria-pressed=\"true\"] b{color:color-mix(in oklab,var(--paper,#FAF8F7) 74%,var(--ink,#111))}@media (pointer:coarse){.ds-chip::after{content:\"\";position:absolute;inset:-4px 0}}"
+    },
+    {
+      "name": "Buscador",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo de 2px con lupa a la izquierda y limpiador circular a la derecha. El foco enciende el anillo nude.",
+      "html": "<div class=\"ds-busca\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m20 20-3.2-3.2\"/></svg><input id=\"ds-busca-input\" type=\"search\" value=\"esmalte nude\" aria-label=\"Buscar productos\"><button class=\"ds-busca-x\" aria-label=\"Limpiar busqueda\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M6 6l12 12M18 6L6 18\"/></svg></button></div>",
+      "css": ".ds-busca{position:relative;display:block}.ds-busca>svg{position:absolute;left:.85rem;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--ink-faint,#766D69);pointer-events:none}.ds-busca input{width:100%;font-family:Inter,system-ui,sans-serif;font-size:.95rem;padding:.75rem 2.8rem .75rem 2.5rem;border:1px solid var(--border,#D6CBC6);border-radius:var(--radio,2px);background:var(--surface,#fff);color:var(--ink,#111);outline:none;min-height:46px;-webkit-appearance:none}.ds-busca input::-webkit-search-cancel-button{display:none}.ds-busca input:focus{border-color:var(--ink,#111);box-shadow:0 0 0 3px var(--nude-100,#F4E7E3)}.ds-busca-x{position:absolute;right:.4rem;top:50%;transform:translateY(-50%);width:34px;height:34px;display:grid;place-items:center;border:0;background:transparent;color:var(--ink-faint,#766D69);cursor:pointer;border-radius:var(--radio-boton,999px)}.ds-busca-x svg{width:16px;height:16px}.ds-busca-x:hover{color:var(--ink,#111);background:var(--nude-100,#F4E7E3)}.ds-busca-x:focus-visible{outline:2px solid var(--nude-400,#B8887B);outline-offset:2px}"
+    },
+    {
+      "name": "Barra de tabs de celular",
+      "kind": "nav",
+      "refersTo": "tab",
+      "description": "Cinco columnas, 56px de alto, safe-area abajo. La activa se pinta tinta y le crece un filete nude arriba.",
+      "html": "<nav class=\"ds-tabs\" aria-label=\"Principal\"><button class=\"ds-tab\" aria-current=\"true\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z\"/></svg><span>Inicio</span></button><button class=\"ds-tab\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M4 6h16M4 12h16M4 18h10\"/></svg><span>Catalogo</span></button><button class=\"ds-tab\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m20 20-3.2-3.2\"/></svg><span>Buscar</span></button><button class=\"ds-tab\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 7h12l-1 12H7z\"/><path d=\"M9 7a3 3 0 0 1 6 0\"/></svg><span>Pedido</span></button><button class=\"ds-tab\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M12 21s-7-4.6-7-9.5A3.5 3.5 0 0 1 12 8a3.5 3.5 0 0 1 7 3.5C19 16.4 12 21 12 21z\"/></svg><span>Ayuda</span></button></nav>",
+      "css": ".ds-tabs{background:var(--surface,#fff);border-top:1px solid var(--hairline,#E4DBD7);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom)}.ds-tab{border:0;background:transparent;cursor:pointer;padding:.5rem .2rem .6rem;display:grid;justify-items:center;gap:.2rem;color:var(--ink-soft,#6E6663);min-height:56px;position:relative;font-family:Inter,system-ui,sans-serif}.ds-tab svg{width:21px;height:21px}.ds-tab span{font-size:.58rem;letter-spacing:.09em;text-transform:uppercase}.ds-tab:focus-visible{outline:2px solid var(--nude-400,#B8887B);outline-offset:-3px}.ds-tab[aria-current=\"true\"]{color:var(--ink,#111)}.ds-tab[aria-current=\"true\"]::before{content:\"\";position:absolute;top:0;left:22%;right:22%;height:2px;background:var(--nude-300,#CFA79C)}"
+    },
+    {
+      "name": "Indicador de stock",
+      "kind": "custom",
+      "description": "El componente mas chico y el que mas trabaja: es la mitad de la promesa de la tienda. El punto toma currentColor, asi que nunca se desincroniza de su etiqueta.",
+      "html": "<div class=\"ds-stocks\"><span class=\"ds-stock ds-stock-ok\"><i></i>Hay stock</span><span class=\"ds-stock ds-stock-bajo\"><i></i>Quedan pocas</span><span class=\"ds-stock ds-stock-no\"><i></i>Sin stock</span></div>",
+      "css": ".ds-stocks{display:flex;flex-wrap:wrap;gap:1rem}.ds-stock{font-family:Inter,system-ui,sans-serif;font-size:.68rem;display:flex;align-items:center;gap:.35rem;color:var(--ink-soft,#6E6663)}.ds-stock i{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}.ds-stock-ok{color:var(--ok,#2F6B4F)}.ds-stock-bajo{color:var(--acento,#8A1B2E)}.ds-stock-no{color:var(--ink-faint,#766D69)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Papel nude, tinta negra",
+    "overview": "Hay un papel y hay una tinta, y no se intercambian nunca. El nude #E2C2B9 es la superficie sobre la que se apoya el producto -una franja, el fondo de una foto que todavia no existe, el filete que separa dos palabras de la marca-; el negro #111111 es lo que se lee. De esa sola frase se deduce el resto del sistema: por que el fondo de la pagina es un blanco con una pizca de nude adentro (#FAF8F7), por que el unico rosa que puede ser texto es un derivado oscuro (#8A5C4E), y por que el modo oscuro cambia todo menos el nude de marca, que es la constante.\n\nEl caracter es calido y cercano antes que frio y exacto. La calidez no esta en el color saturado sino en la temperatura de los neutros: todos los grises tienen nude adentro, los hover se resuelven con un lavado de --nude-50 en vez de un gris, y Playfair aparece en los nombres de producto y en los precios, donde otra tienda pondria una sans condensada. La densidad es alta y sin miedo: cuatro columnas en escritorio, dos en celular, el precio siempre visible en la tarjeta.\n\nLos controles son tactiles y seguros. Todo lo que se toca se hunde apenas al tocarlo (scale(.92) o scale(.96), siempre con la misma curva), mide entre 40 y 56 pixeles de lado, y lo que quedo chico tiene la zona tactil agrandada con un ::after invisible bajo @media (pointer:coarse), sin mover el layout. Esta tienda se compra con el pulgar, en la calle, con una mano.",
+    "keyCharacteristics": [
+      "Papel nude y tinta negra, nunca al reves.",
+      "Dos familias tipograficas y ninguna tercera: Playfair para lo que se mira, Inter para lo que se lee.",
+      "Una sola sombra en todo el sistema, y casi nunca en reposo.",
+      "Dos radios con trabajos distintos: 2px para lo que se mira, capsula para lo que se toca.",
+      "Un solo acento fuera del nude -el vino- con tres usos contados.",
+      "Densidad alta sin ruido: el aire esta entre las secciones, no adentro de las tarjetas.",
+      "El modo oscuro no invierte: recalcula todo alrededor de un nude que no se mueve."
+    ],
+    "rules": [
+      { "name": "La Regla del Papel", "body": "El nude #E2C2B9 es fondo, nunca tinta. Sobre blanco da 1,7:1 y es ilegible; negro sobre nude da 11,4:1. Cuando algo rosado tiene que leerse, se usa #8A5C4E. La unica excepcion es el INSUMOS blanco sobre nude adentro del logo.", "section": "colors" },
+      { "name": "La Regla de los Tres Gritos", "body": "El vino aparece en exactamente tres lugares: precio rebajado, cinta de descuento y stock al limite. Si aparece en un cuarto, deja de gritar, y hay que sacarlo de alguno de los otros tres.", "section": "colors" },
+      { "name": "La Regla del Contraste Medido", "body": "Ningun color de texto entra al sistema sin su razon de contraste anotada al lado. Los tres que ya se corrigieron dejaron su numero en el comentario del token; los que entren despues hacen lo mismo.", "section": "colors" },
+      { "name": "La Regla de las Dos Familias", "body": "Playfair en titulos, nombres de producto y precios. Inter en todo lo demas. No hay una tercera familia y no hay un caso que la justifique.", "section": "typography" },
+      { "name": "La Regla del Tracking Inverso", "body": "Cuanto mas chica la tipografia, mas suelta: la marca respira a .18em y .42em, las etiquetas gritan bajito a .18em, los botones van a .13em. Un texto de .6rem con tracking normal es un error de sistema.", "section": "typography" },
+      { "name": "La Regla de la Sombra Unica", "body": "Hay una sombra en el sistema. Si un componente necesita otra, primero se prueba con tono y con filete; si igual la necesita, se justifica por escrito al lado del valor. Las dos sombras escritas a mano que hoy existen (tienda.css:167 y tienda.css:625) son deuda, no precedente.", "section": "elevation" },
+      { "name": "La Regla del Plano en Reposo", "body": "Nada esta levantado sin que lo hayan tocado. El reposo es plano; la sombra es una respuesta.", "section": "elevation" },
+      { "name": "La Regla del Mirar y el Tocar", "body": "2px para lo que se mira, capsula para lo que se toca. Un boton con esquinas rectas no es una variante: es el sintoma de que alguien escribio el radio a mano en vez de usar el token.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do usar --nude-200 solo como fondo, filete o parada de degradado. Prueba de auditoria: buscar color: seguido de --nude-200 tiene que dar cero resultados.",
+      "Do poner el precio en Playfair. Es el dato que la tienda promete mostrar: se compone como titulo.",
+      "Do dar scale(.92)-.96 al tocar cualquier control, con var(--sal) (cubic-bezier(.22,.72,.24,1)). La respuesta tactil es parte de la identidad.",
+      "Do agrandar zonas tactiles chicas con un ::after de inset negativo bajo @media (pointer:coarse), nunca cambiando el tamano visible.",
+      "Do anotar la razon de contraste al lado de cualquier color de texto nuevo.",
+      "Do apagar todo el movimiento bajo prefers-reduced-motion: reduce, incluidos los hover con transform y los revelados por scroll.",
+      "Do usar --ok para estado positivo y --acento para alarma, en la tienda y en el panel por igual."
+    ],
+    "donts": [
+      "Don't usar el nude de marca como color de texto, ni --nude-300 o --nude-400 para tinta. Para rosa legible existe --nude-600, y solo ese.",
+      "Don't agregar una sombra nueva. Hay una sola, y aparece por reaccion.",
+      "Don't escribir un border-radius a mano. Si no es --radio ni --radio-boton, esta mal.",
+      "Don't inventar un tamano de tipografia micro nuevo. Ya hay catorce escritos a mano en la tienda: esa es la deuda mas grande del sistema, no un precedente.",
+      "Don't usar el vino en un cuarto lugar.",
+      "Don't mostrar cuentas regresivas, precios tachados que no correspondan a un precio anterior real, ni avisos de unidades restantes inventados. La honestidad del precio y del stock es el producto.",
+      "Don't dejar una foto ausente como un rectangulo gris: el sistema ya tiene dos respuestas para eso, el campo de color y la placa de marca.",
+      "Don't dar por hecho que hay cuatro columnas. La grilla es 4 / 3 / 2, y el catalogo puede estar casi vacio."
+    ]
+  }
+}
