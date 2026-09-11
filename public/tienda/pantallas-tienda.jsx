@@ -195,7 +195,8 @@
             </p>
             <div className="hero-cta">
               <Boton variante="primary" onClick={() => ir({ v: "catalogo" })}>Ver el catálogo</Boton>
-              <Boton variante="ghost" onClick={() => ir({ v: "catalogo", cat: "kits" })}>Kits por servicio</Boton>
+              {/* Sin kits cargados, este botón llevaba a una pantalla vacía. */}
+              {kits.length > 0 && <Boton variante="ghost" onClick={() => ir({ v: "catalogo", cat: "kits" })}>Kits por servicio</Boton>}
             </div>
           </div>
         </section> :
@@ -261,7 +262,9 @@
         }
 
       <section className="sec">
-        {editorial &&
+        {/* Anunciaba "Un servicio entero cubierto" y "Ver los 0 kits" aunque no
+            hubiera un solo kit cargado. */}
+        {editorial && kits.length > 0 &&
         <div className="pad">
           <div className="banda-mod rev">
             <div className="banda-mod-txt">
