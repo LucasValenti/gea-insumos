@@ -32,8 +32,14 @@ await fs.mkdir(OUT, { recursive: true });
 /* El marco se inyecta justo antes de app.js, y con defer como los demás: así
    entra en la misma cola y corre después de React y antes de la app, que es el
    orden que necesita. */
-const TAG_APP = '<script defer src="app.js"></script>';
-const TAG_MARCO = '<script defer src="ios-frame.js"></script>';
+/* La ruta de app.js pasó de relativa a absoluta —public/index.html explica por
+   qué: con "app.js", el armazón servido en /p/<producto> pedía "/p/app.js"— y
+   este marco se quedó con la vieja. Desde entonces la auditoría no encontraba el
+   tag, movil-preview reventaba y la variante de reposición ni siquiera llegaba a
+   correr. Se busca con expresión, y no con el texto exacto, para que el próximo
+   cambio de ruta no la vuelva a romper en silencio. */
+const RE_APP = /<script defer src="\/?app\.js"><\/script>/;
+const TAG_MARCO = '<script defer src="/ios-frame.js"></script>';
 
 function tweaks(o) {
   return JSON.stringify({
@@ -83,8 +89,8 @@ for (const c of CASOS) {
     await page.route(BASE, async (route) => {
       const res = await route.fetch();
       const body = await res.text();
-      marco = body.includes(TAG_APP);
-      await route.fulfill({ response: res, body: body.replace(TAG_APP, TAG_MARCO + TAG_APP) });
+      marco = RE_APP.test(body);
+      await route.fulfill({ response: res, body: body.replace(RE_APP, (tag) => TAG_MARCO + tag) });
     });
   }
 
@@ -94,7 +100,7 @@ for (const c of CASOS) {
      prueba que la variante llegó, se parseó y es la que se está mirando. */
   const aplicada = await page.evaluate(() => (window.GEA_TWEAKS ? JSON.stringify(window.GEA_TWEAKS, null, 2) : null));
   if (aplicada !== esperado) throw new Error(`${c.id}: la variante no llegó a la página — se pidió ${JSON.stringify(c.tw)} y la página tiene ${aplicada}`);
-  if (!marco) throw new Error(`${c.id}: no encontré ${TAG_APP} en el html — no pude inyectar el marco`);
+  if (!marco) throw new Error(`${c.id}: no encontré el <script> de app.js en el html — no pude inyectar el marco`);
   await page.waitForSelector('.ap', { timeout: 20000 }).catch(() => {});
   await page.waitForTimeout(1200);
   const mount = Date.now() - t0;
