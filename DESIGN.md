@@ -442,6 +442,40 @@ alguien escribió el radio a mano en vez de usar el token.
 - **Vidrio:** las barras se vuelven translúcidas solo cuando el scroll las
   despega, y solo si el navegador soporta `backdrop-filter` y `color-mix`.
 
+### Panel de administración
+
+El panel es el mismo sistema con otra densidad, no otro sistema. Lo que cambia
+está justificado por el uso: la dueña carga stock y precios con el teléfono en
+una mano, muchas veces seguidas.
+
+- **Superficie:** una sola columna de `780px` máximo sobre el fondo hundido
+  (`--sunk`), no sobre el papel. Las barras pegajosas —la de navegación y la de
+  guardar— van en `--paper`, que invierte la relación de la tienda, donde las
+  barras son `--surface` sobre `--paper`.
+- **Blanco táctil:** 44px es el número del panel —stepper, casilla, editar,
+  sumar, acciones de foto— contra los 40–42 de la tienda. Objetivo más grande y
+  más uniforme, porque acá se toca mucho más seguido.
+- **Campos:** `46px` de alto y `.7rem .8rem` de padding, un escalón más bajos
+  que los `48px` de la tienda.
+- **Sin display serif:** el `h1` del panel mide 1rem. Playfair queda reservado a
+  los datos que se valúan —nombre, precio, y el número del stepper a 1.1rem—. En
+  el panel el serif informa; no titula.
+- **Stepper de stock:** dos botones circulares de 44px con el número entre
+  ellos, en cápsula y en Playfair. El número toma la forma de los botones que
+  tiene al lado y no la de los campos del formulario: es parte del control, no un
+  campo suelto.
+- **Destructivo:** `.pa-borrar` es el único control del sistema que se rellena de
+  vino (`--vino-700`) en hover. Es deliberado y no se repite en la tienda.
+- **Estado:** confirmado en `--ok`; cancelado y agotado en vino. Los mismos dos
+  colores de estado que la tienda, con el mismo significado.
+
+**Lo que hoy se desvía y no es doctrina.** El panel no usa ninguno de los tokens
+tipográficos (`--fs-label`, `--track-label` y compañía) y escribe cinco trackings
+distintos a mano; no usa `--dur`; consume `var(--sal)` sin declararlo, así que
+depende de que lo cargue el CSS de la tienda; y sus campos no tienen estado de
+foco, mientras la tienda tiene el anillo `--ring-input`. Lo último es lo más
+serio: es accesibilidad, no estilo.
+
 ### Indicador de stock
 
 Un punto de 6px del color del texto, y el texto al lado en .68rem: verde para

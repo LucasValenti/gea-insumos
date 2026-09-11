@@ -8,85 +8,280 @@
         "role": "primary",
         "displayName": "Tinta",
         "canonical": "#111111",
-        "tonalRamp": ["#0B0A0A", "#111111", "#2E2A28", "#4A4442", "#6E6663", "#9A918C", "#D6CBC6", "#FAF8F7"]
+        "tonalRamp": [
+          "#0B0A0A",
+          "#111111",
+          "#2E2A28",
+          "#4A4442",
+          "#6E6663",
+          "#9A918C",
+          "#D6CBC6",
+          "#FAF8F7"
+        ]
       },
       "nude-200": {
         "role": "primary",
         "displayName": "Nude de Marca",
         "canonical": "#E2C2B9",
-        "tonalRamp": ["#3A211A", "#5C3529", "#8A5C4E", "#B8887B", "#CFA79C", "#E2C2B9", "#F4E7E3", "#FAF3F1"]
+        "tonalRamp": [
+          "#3A211A",
+          "#5C3529",
+          "#8A5C4E",
+          "#B8887B",
+          "#CFA79C",
+          "#E2C2B9",
+          "#F4E7E3",
+          "#FAF3F1"
+        ]
       },
       "nude-600": {
         "role": "secondary",
         "displayName": "Nude Legible",
         "canonical": "#8A5C4E",
-        "tonalRamp": ["#3A211A", "#5C3529", "#8A5C4E", "#B8887B", "#CFA79C", "#E2C2B9", "#F4E7E3", "#FAF3F1"]
+        "tonalRamp": [
+          "#3A211A",
+          "#5C3529",
+          "#8A5C4E",
+          "#B8887B",
+          "#CFA79C",
+          "#E2C2B9",
+          "#F4E7E3",
+          "#FAF3F1"
+        ]
       },
-      "nude-300": { "role": "secondary", "displayName": "Nude Filete", "canonical": "#CFA79C" },
-      "nude-400": { "role": "secondary", "displayName": "Nude Trazo", "canonical": "#B8887B" },
-      "nude-100": { "role": "secondary", "displayName": "Nude Papel", "canonical": "#F4E7E3" },
-      "nude-50": { "role": "secondary", "displayName": "Nude Lavado", "canonical": "#FAF3F1" },
+      "nude-300": {
+        "role": "secondary",
+        "displayName": "Nude Filete",
+        "canonical": "#CFA79C"
+      },
+      "nude-400": {
+        "role": "secondary",
+        "displayName": "Nude Trazo",
+        "canonical": "#B8887B"
+      },
+      "nude-100": {
+        "role": "secondary",
+        "displayName": "Nude Papel",
+        "canonical": "#F4E7E3"
+      },
+      "nude-50": {
+        "role": "secondary",
+        "displayName": "Nude Lavado",
+        "canonical": "#FAF3F1"
+      },
       "vino-600": {
         "role": "tertiary",
         "displayName": "Vino",
         "canonical": "#8A1B2E",
-        "tonalRamp": ["#3A0A13", "#55101C", "#6E1524", "#8A1B2E", "#A8404F", "#C4757F", "#E2AEB4", "#FBF1F2"]
+        "tonalRamp": [
+          "#3A0A13",
+          "#55101C",
+          "#6E1524",
+          "#8A1B2E",
+          "#A8404F",
+          "#C4757F",
+          "#E2AEB4",
+          "#FBF1F2"
+        ]
       },
-      "vino-700": { "role": "tertiary", "displayName": "Vino Fuerte", "canonical": "#6E1524" },
+      "vino-700": {
+        "role": "tertiary",
+        "displayName": "Vino Fuerte",
+        "canonical": "#6E1524"
+      },
       "ok": {
         "role": "tertiary",
         "displayName": "Verde de Confirmado",
         "canonical": "#2F6B4F",
-        "tonalRamp": ["#0E2318", "#163825", "#224F37", "#2F6B4F", "#48896A", "#6FAC8B", "#A6CDB8", "#DCEDE4"]
+        "tonalRamp": [
+          "#0E2318",
+          "#163825",
+          "#224F37",
+          "#2F6B4F",
+          "#48896A",
+          "#6FAC8B",
+          "#A6CDB8",
+          "#DCEDE4"
+        ]
       },
       "paper": {
         "role": "neutral",
         "displayName": "Papel",
         "canonical": "#FAF8F7",
-        "tonalRamp": ["#121110", "#221F1E", "#3A3533", "#6E6663", "#A79E9A", "#D6CBC6", "#F3EEEC", "#FAF8F7"]
+        "tonalRamp": [
+          "#121110",
+          "#221F1E",
+          "#3A3533",
+          "#6E6663",
+          "#A79E9A",
+          "#D6CBC6",
+          "#F3EEEC",
+          "#FAF8F7"
+        ]
       },
-      "surface": { "role": "neutral", "displayName": "Superficie", "canonical": "#FFFFFF" },
-      "sunk": { "role": "neutral", "displayName": "Hundido", "canonical": "#F3EEEC" },
-      "hairline": { "role": "neutral", "displayName": "Filete", "canonical": "#E4DBD7" },
-      "border": { "role": "neutral", "displayName": "Borde", "canonical": "#D6CBC6" },
-      "ink-soft": { "role": "neutral", "displayName": "Tinta Suave", "canonical": "#6E6663" },
-      "ink-faint": { "role": "neutral", "displayName": "Tinta Tenue", "canonical": "#766D69" },
-      "scrim": { "role": "neutral", "displayName": "Velo", "canonical": "rgba(17,17,17,.32)" }
+      "surface": {
+        "role": "neutral",
+        "displayName": "Superficie",
+        "canonical": "#FFFFFF"
+      },
+      "sunk": {
+        "role": "neutral",
+        "displayName": "Hundido",
+        "canonical": "#F3EEEC"
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Filete",
+        "canonical": "#E4DBD7"
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Borde",
+        "canonical": "#D6CBC6"
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Tinta Suave",
+        "canonical": "#6E6663"
+      },
+      "ink-faint": {
+        "role": "neutral",
+        "displayName": "Tinta Tenue",
+        "canonical": "#766D69"
+      },
+      "scrim": {
+        "role": "neutral",
+        "displayName": "Velo",
+        "canonical": "rgba(17,17,17,.32)"
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Solo el titulo del hero. Entra animado palabra por palabra." },
-      "headline": { "displayName": "Headline", "purpose": "Encabezados de seccion. Clase canonica .titulo-seccion." },
-      "title": { "displayName": "Title", "purpose": "Nombre de producto en la tarjeta, cortado a dos lineas." },
-      "price": { "displayName": "Price", "purpose": "El precio se compone como titulo, no como dato. Serif siempre." },
-      "body": { "displayName": "Body", "purpose": "Texto corrido y valores de formulario." },
-      "label": { "displayName": "Label", "purpose": "Etiquetas de campo, encabezados del pie, cuenta de resultados." },
-      "eyebrow": { "displayName": "Eyebrow", "purpose": "Categoria sobre el nombre en la tarjeta, ver mas, avisos." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "Solo el titulo del hero. Entra animado palabra por palabra."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Encabezados de seccion. Clase canonica .titulo-seccion."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Nombre de producto en la tarjeta, cortado a dos lineas."
+      },
+      "price": {
+        "displayName": "Price",
+        "purpose": "El precio se compone como titulo, no como dato. Serif siempre."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texto corrido y valores de formulario."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Etiquetas de campo, encabezados del pie, cuenta de resultados."
+      },
+      "eyebrow": {
+        "displayName": "Eyebrow",
+        "purpose": "Categoria sobre el nombre en la tarjeta, ver mas, avisos."
+      }
     },
     "shadows": [
-      { "name": "sombra", "value": "0 1px 2px rgba(17,17,17,.04), 0 10px 30px -18px rgba(17,17,17,.22)", "purpose": "La unica sombra de proposito general. Aparece por reaccion (hover), nunca en reposo. En oscuro: 0 1px 2px rgba(0,0,0,.5), 0 14px 34px -18px rgba(0,0,0,.8)." },
-      { "name": "sombra-flotante", "value": "0 6px 20px -6px rgba(0,0,0,.45)", "purpose": "Exclusiva de la hoja inferior de celular, que si esta despegada de la pagina." },
-      { "name": "sombra-tono", "value": "inset 0 -8px 18px -8px rgba(0,0,0,.35)", "purpose": "Interior, sobre la muestra de color, para que el circulo se lea como esmalte." },
-      { "name": "ring-input", "value": "0 0 0 3px var(--nude-100)", "purpose": "Foco de los campos de texto. Es un anillo, no una sombra: no simula altura." }
+      {
+        "name": "sombra",
+        "value": "0 1px 2px rgba(17,17,17,.04), 0 10px 30px -18px rgba(17,17,17,.22)",
+        "purpose": "La unica sombra de proposito general. Aparece por reaccion (hover), nunca en reposo. En oscuro: 0 1px 2px rgba(0,0,0,.5), 0 14px 34px -18px rgba(0,0,0,.8)."
+      },
+      {
+        "name": "sombra-flotante",
+        "value": "0 6px 20px -6px rgba(0,0,0,.45)",
+        "purpose": "Exclusiva de la hoja inferior de celular, que si esta despegada de la pagina."
+      },
+      {
+        "name": "sombra-tono",
+        "value": "inset 0 -8px 18px -8px rgba(0,0,0,.35)",
+        "purpose": "Interior, sobre la muestra de color, para que el circulo se lea como esmalte."
+      },
+      {
+        "name": "ring-input",
+        "value": "0 0 0 3px var(--nude-100)",
+        "purpose": "Foco de los campos de texto. Es un anillo, no una sombra: no simula altura."
+      }
     ],
     "motion": [
-      { "name": "sal", "value": "cubic-bezier(.22,.72,.24,1)", "purpose": "La curva de la casa. Todo lo que se toca, se hunde o se desliza la usa. Hoy vive en .ap dentro de tienda.css y deberia subir a tokens." },
-      { "name": "dur", "value": ".18s", "purpose": "Duracion base de cambios de color, borde y fondo." },
-      { "name": "ease", "value": "ease", "purpose": "Curva de los cambios de color, sin desplazamiento." },
-      { "name": "hundido-boton", "value": "transform .2s var(--sal) -> scale(.92)", "purpose": "Respuesta tactil de todo control circular (accion de tarjeta, stepper, mas)." },
-      { "name": "hundido-chip", "value": "transform .2s var(--sal) -> scale(.96)", "purpose": "Respuesta tactil de chips y controles anchos." },
-      { "name": "cortina-boton", "value": "transform .32s var(--sal), translateY(101%) -> 0", "purpose": "El hover del boton primario sube desde abajo en vez de cambiar de color de golpe." },
-      { "name": "zoom-foto", "value": "transform .5s var(--sal) -> scale(1.07)", "purpose": "La foto de producto se acerca cuando el mouse entra a la tarjeta." },
-      { "name": "revelado", "value": "opacity .6s var(--sal), transform .6s var(--sal), delay calc(var(--i,0)*70ms)", "purpose": "Entrada escalonada al scroll. Solo bajo .rev-on; sin esa clase todo se ve." }
+      {
+        "name": "sal",
+        "value": "cubic-bezier(.22,.72,.24,1)",
+        "purpose": "La curva de la casa. Todo lo que se toca, se hunde o se desliza la usa. Hoy vive en .ap dentro de tienda.css y deberia subir a tokens."
+      },
+      {
+        "name": "dur",
+        "value": ".18s",
+        "purpose": "Duracion base de cambios de color, borde y fondo."
+      },
+      {
+        "name": "ease",
+        "value": "ease",
+        "purpose": "Curva de los cambios de color, sin desplazamiento."
+      },
+      {
+        "name": "hundido-boton",
+        "value": "transform .2s var(--sal) -> scale(.92)",
+        "purpose": "Respuesta tactil de todo control circular (accion de tarjeta, stepper, mas)."
+      },
+      {
+        "name": "hundido-chip",
+        "value": "transform .2s var(--sal) -> scale(.96)",
+        "purpose": "Respuesta tactil de chips y controles anchos."
+      },
+      {
+        "name": "cortina-boton",
+        "value": "transform .32s var(--sal), translateY(101%) -> 0",
+        "purpose": "El hover del boton primario sube desde abajo en vez de cambiar de color de golpe."
+      },
+      {
+        "name": "zoom-foto",
+        "value": "transform .5s var(--sal) -> scale(1.07)",
+        "purpose": "La foto de producto se acerca cuando el mouse entra a la tarjeta."
+      },
+      {
+        "name": "revelado",
+        "value": "opacity .6s var(--sal), transform .6s var(--sal), delay calc(var(--i,0)*70ms)",
+        "purpose": "Entrada escalonada al scroll. Solo bajo .rev-on; sin esa clase todo se ve."
+      }
     ],
     "breakpoints": [
-      { "name": "minimo", "value": "339px" },
-      { "name": "nav-apretada", "value": "479px" },
-      { "name": "celular", "value": "560px" },
-      { "name": "panel", "value": "640px" },
-      { "name": "mosaico", "value": "720px" },
-      { "name": "header-dos-filas", "value": "820px" },
-      { "name": "hero-partido", "value": "900px" },
-      { "name": "escritorio", "value": "980px" }
+      {
+        "name": "minimo",
+        "value": "339px"
+      },
+      {
+        "name": "nav-apretada",
+        "value": "479px"
+      },
+      {
+        "name": "celular",
+        "value": "560px"
+      },
+      {
+        "name": "panel",
+        "value": "640px"
+      },
+      {
+        "name": "mosaico",
+        "value": "720px"
+      },
+      {
+        "name": "header-dos-filas",
+        "value": "820px"
+      },
+      {
+        "name": "hero-partido",
+        "value": "900px"
+      },
+      {
+        "name": "escritorio",
+        "value": "980px"
+      }
     ]
   },
   "components": [
@@ -131,6 +326,14 @@
       "css": ".ds-tabs{background:var(--surface,#fff);border-top:1px solid var(--hairline,#E4DBD7);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom)}.ds-tab{border:0;background:transparent;cursor:pointer;padding:.5rem .2rem .6rem;display:grid;justify-items:center;gap:.2rem;color:var(--ink-soft,#6E6663);min-height:56px;position:relative;font-family:Inter,system-ui,sans-serif}.ds-tab svg{width:21px;height:21px}.ds-tab span{font-size:.58rem;letter-spacing:.09em;text-transform:uppercase}.ds-tab:focus-visible{outline:2px solid var(--nude-400,#B8887B);outline-offset:-3px}.ds-tab[aria-current=\"true\"]{color:var(--ink,#111)}.ds-tab[aria-current=\"true\"]::before{content:\"\";position:absolute;top:0;left:22%;right:22%;height:2px;background:var(--nude-300,#CFA79C)}"
     },
     {
+      "name": "Stepper de stock del panel",
+      "kind": "custom",
+      "refersTo": "stepper-button",
+      "description": "El control que mas usa la duena. Dos botones circulares de 44px con el numero entre ellos, en capsula y en serif: el numero toma la forma de los botones que tiene al lado, no la de los campos del formulario.",
+      "html": "<div class=\"ds-pa-stock\"><span class=\"ds-pa-lbl\">Stock</span><div class=\"ds-pa-paso\"><button aria-label=\"Restar uno\">−</button><input id=\"ds-pa-stock-input\" type=\"text\" inputmode=\"numeric\" value=\"12\" aria-label=\"Unidades en stock\"><button aria-label=\"Sumar uno\">+</button></div></div>",
+      "css": ".ds-pa-stock{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}.ds-pa-lbl{font-family:Inter,system-ui,sans-serif;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft,#6E6663)}.ds-pa-paso{display:flex;align-items:center;gap:.2rem;margin-left:auto}.ds-pa-paso button{width:44px;height:44px;border-radius:var(--radio-boton,999px);border:1px solid var(--border,#D6CBC6);background:var(--surface,#fff);color:var(--ink,#111);font-size:1.2rem;cursor:pointer;display:grid;place-items:center;font-family:inherit;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .15s cubic-bezier(.22,.72,.24,1)}.ds-pa-paso button:hover:not(:disabled){background:var(--ink,#111);color:var(--paper,#FAF8F7);border-color:var(--ink,#111)}.ds-pa-paso button:focus-visible{outline:2px solid var(--nude-400,#B8887B);outline-offset:3px}.ds-pa-paso button:active:not(:disabled){transform:scale(.92)}.ds-pa-paso button:disabled{opacity:.35;cursor:not-allowed}.ds-pa-paso input{width:68px;height:44px;text-align:center;font-family:\"Playfair Display\",Georgia,serif;font-size:1.1rem;border:1px solid var(--border,#D6CBC6);border-radius:var(--radio-boton,999px);background:var(--surface,#fff);color:var(--ink,#111)}.ds-pa-paso input:focus{outline:none;border-color:var(--ink,#111);box-shadow:0 0 0 3px var(--nude-100,#F4E7E3)}"
+    },
+    {
       "name": "Indicador de stock",
       "kind": "custom",
       "description": "El componente mas chico y el que mas trabaja: es la mitad de la promesa de la tienda. El punto toma currentColor, asi que nunca se desincroniza de su etiqueta.",
@@ -151,14 +354,46 @@
       "El modo oscuro no invierte: recalcula todo alrededor de un nude que no se mueve."
     ],
     "rules": [
-      { "name": "La Regla del Papel", "body": "El nude #E2C2B9 es fondo, nunca tinta. Sobre blanco da 1,7:1 y es ilegible; negro sobre nude da 11,4:1. Cuando algo rosado tiene que leerse, se usa #8A5C4E. La unica excepcion es el INSUMOS blanco sobre nude adentro del logo.", "section": "colors" },
-      { "name": "La Regla de los Tres Gritos", "body": "El vino aparece en exactamente tres lugares: precio rebajado, cinta de descuento y stock al limite. Si aparece en un cuarto, deja de gritar, y hay que sacarlo de alguno de los otros tres.", "section": "colors" },
-      { "name": "La Regla del Contraste Medido", "body": "Ningun color de texto entra al sistema sin su razon de contraste anotada al lado. Los tres que ya se corrigieron dejaron su numero en el comentario del token; los que entren despues hacen lo mismo.", "section": "colors" },
-      { "name": "La Regla de las Dos Familias", "body": "Playfair en titulos, nombres de producto y precios. Inter en todo lo demas. No hay una tercera familia y no hay un caso que la justifique.", "section": "typography" },
-      { "name": "La Regla del Tracking Inverso", "body": "Cuanto mas chica la tipografia, mas suelta: la marca respira a .18em y .42em, las etiquetas gritan bajito a .18em, los botones van a .13em. Un texto de .6rem con tracking normal es un error de sistema.", "section": "typography" },
-      { "name": "La Regla de la Sombra Unica", "body": "Hay una sombra en el sistema. Si un componente necesita otra, primero se prueba con tono y con filete; si igual la necesita, se justifica por escrito al lado del valor. Las dos sombras escritas a mano que hoy existen (tienda.css:167 y tienda.css:625) son deuda, no precedente.", "section": "elevation" },
-      { "name": "La Regla del Plano en Reposo", "body": "Nada esta levantado sin que lo hayan tocado. El reposo es plano; la sombra es una respuesta.", "section": "elevation" },
-      { "name": "La Regla del Mirar y el Tocar", "body": "2px para lo que se mira, capsula para lo que se toca. Un boton con esquinas rectas no es una variante: es el sintoma de que alguien escribio el radio a mano en vez de usar el token.", "section": "shapes" }
+      {
+        "name": "La Regla del Papel",
+        "body": "El nude #E2C2B9 es fondo, nunca tinta. Sobre blanco da 1,7:1 y es ilegible; negro sobre nude da 11,4:1. Cuando algo rosado tiene que leerse, se usa #8A5C4E. La unica excepcion es el INSUMOS blanco sobre nude adentro del logo.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla de los Tres Gritos",
+        "body": "El vino aparece en exactamente tres lugares: precio rebajado, cinta de descuento y stock al limite. Si aparece en un cuarto, deja de gritar, y hay que sacarlo de alguno de los otros tres.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla del Contraste Medido",
+        "body": "Ningun color de texto entra al sistema sin su razon de contraste anotada al lado. Los tres que ya se corrigieron dejaron su numero en el comentario del token; los que entren despues hacen lo mismo.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla de las Dos Familias",
+        "body": "Playfair en titulos, nombres de producto y precios. Inter en todo lo demas. No hay una tercera familia y no hay un caso que la justifique.",
+        "section": "typography"
+      },
+      {
+        "name": "La Regla del Tracking Inverso",
+        "body": "Cuanto mas chica la tipografia, mas suelta: la marca respira a .18em y .42em, las etiquetas gritan bajito a .18em, los botones van a .13em. Un texto de .6rem con tracking normal es un error de sistema.",
+        "section": "typography"
+      },
+      {
+        "name": "La Regla de la Sombra Unica",
+        "body": "Hay una sombra en el sistema. Si un componente necesita otra, primero se prueba con tono y con filete; si igual la necesita, se justifica por escrito al lado del valor. Las dos sombras escritas a mano que hoy existen (tienda.css:167 y tienda.css:625) son deuda, no precedente.",
+        "section": "elevation"
+      },
+      {
+        "name": "La Regla del Plano en Reposo",
+        "body": "Nada esta levantado sin que lo hayan tocado. El reposo es plano; la sombra es una respuesta.",
+        "section": "elevation"
+      },
+      {
+        "name": "La Regla del Mirar y el Tocar",
+        "body": "2px para lo que se mira, capsula para lo que se toca. Un boton con esquinas rectas no es una variante: es el sintoma de que alguien escribio el radio a mano en vez de usar el token.",
+        "section": "shapes"
+      }
     ],
     "dos": [
       "Do usar --nude-200 solo como fondo, filete o parada de degradado. Prueba de auditoria: buscar color: seguido de --nude-200 tiene que dar cero resultados.",
