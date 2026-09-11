@@ -313,8 +313,8 @@ function Pie({ ir }) {
   const { NEGOCIO } = window.T;
   return (
     <footer className="pie">
-      <div><Marca colorInsumos="var(--nude-600)" /><p style={{ margin: ".9rem 0 0", fontSize: ".84rem", color: "var(--ink-soft)", maxWidth: "22rem" }}>Insumos de manicuría para profesionales. Armás el pedido acá y lo cerramos por WhatsApp.</p></div>
-      <div><h2>Catálogo</h2><div style={{ display: "grid", gap: ".35rem", justifyItems: "start" }}>{CATEGORIAS.slice(0, 5).map((c) => <button type="button" key={c.id} onClick={() => ir({ v: "catalogo", cat: c.id })}>{c.nombre}</button>)}</div></div>
+      <div><Marca colorInsumos="var(--nude-600)" /><p style={{ margin: ".9rem 0 0", fontSize: ".84rem", color: "var(--ink-soft)", maxWidth: "22rem" }}>Insumos de belleza para profesionales. Armás el pedido acá y lo cerramos por WhatsApp.</p></div>
+      <div><h2>Catálogo</h2><div style={{ display: "grid", gap: ".35rem", justifyItems: "start" }}>{window.T.catsVisibles().slice(0, 5).map((c) => <button type="button" key={c.id} onClick={() => ir({ v: "catalogo", cat: c.id })}>{c.nombre}</button>)}</div></div>
       <div><h2>Ayuda</h2><div style={{ display: "grid", gap: ".35rem" }}>
         <button type="button" onClick={() => ir({ v: "ayuda" })}>Cómo comprar</button>
         <button type="button" onClick={() => ir({ v: "ayuda" })}>Envíos y pagos</button>

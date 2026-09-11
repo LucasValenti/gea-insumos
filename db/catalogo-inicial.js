@@ -2,7 +2,7 @@
    inspirada en un distribuidor de insumos de estética; precios en ARS. */
 window.T = (() => {
 const NEGOCIO = {
-  nombre: "GEA Insumos", rubro: "Insumos de manicuría",
+  nombre: "GEA Insumos", rubro: "Insumos de belleza",
   whatsapp: "5490000000000", instagram: "https://instagram.com/", instagramUsuario: "@geainsumos",
   saludo: "Hola GEA, quiero hacer este pedido:",
   minimo: 25000, ciudad: null, horarios: null,

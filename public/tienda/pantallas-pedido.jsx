@@ -52,7 +52,10 @@
         </div>
         <div className="total"><dt>Total del pedido</dt><dd key={t} className="num animate__animated animate__pulse">{$$(t)}</dd></div>
       </dl>
-      {sub < NEG.minimo && <p style={{ margin: ".8rem 0 0", fontSize: ".78rem", color: "var(--nude-600)" }}>Faltan {$$(NEG.minimo - sub)} para el pedido mínimo mayorista de {$$(NEG.minimo)}.</p>}
+      {/* El mínimo es opcional: hoy no hay, y si algún día vuelve se carga desde
+          el panel y este aviso reaparece solo. Sin la guarda, con el mínimo en
+          cero la cuenta daba "Faltan $ 0" en todos los pedidos. */}
+      {NEG.minimo > 0 && sub < NEG.minimo && <p style={{ margin: ".8rem 0 0", fontSize: ".78rem", color: "var(--nude-600)" }}>Faltan {$$(NEG.minimo - sub)} para el pedido mínimo mayorista de {$$(NEG.minimo)}.</p>}
     </div>);
 
   }
@@ -176,7 +179,7 @@
       datos.envio === "domicilio" && !datos.zona && "la zona de envío",
       datos.envio === "domicilio" && !datos.direccion.trim() && "la dirección",
       datos.envio === "transporte" && !(datos.transporte || "").trim() && "el transporte",
-      sub < NEG.minimo && `llegar al mínimo mayorista de ${$$(NEG.minimo)} (faltan ${$$(NEG.minimo - sub)})`,
+      NEG.minimo > 0 && sub < NEG.minimo && `llegar al mínimo mayorista de ${$$(NEG.minimo)} (faltan ${$$(NEG.minimo - sub)})`,
     ].filter(Boolean);
     const falta = faltan.length > 0;
     const aviso = "Falta " + (faltan.length > 1 ? faltan.slice(0, -1).join(", ") + " y " + faltan[faltan.length - 1] : faltan[0]) + ".";
@@ -328,9 +331,12 @@
   }
 
   /* ===================== AYUDA ===================== */
+  /* Los textos hablaban de tonos de esmalte, que es lo que el catálogo vendía
+     antes. Hoy vende insumos de belleza y las variantes que quedan son colores
+     de guantes y apoyamanos, así que la palabra pasa a ser "producto". */
   const PASOS = [
-  ["Armá el pedido", "Buscá por nombre, por categoría o por tono. Cada producto muestra el stock real y en cuántos días llega."],
-  ["Elegí tonos y cantidades", "En los esmaltes elegís el tono exacto; si un tono está agotado te lo marcamos tachado."],
+  ["Armá el pedido", "Buscá por nombre o por categoría. Cada producto muestra el stock real y en cuántos días llega."],
+  ["Elegí productos y cantidades", "Si un producto viene en varios colores, elegís el que quieras; si está agotado te lo marcamos tachado."],
   ["Completá tus datos", "Nombre, WhatsApp y cómo querés recibirlo. Nada de crear cuenta."],
   ["Cerramos por WhatsApp", "El pedido llega escrito al chat. Confirmamos stock, envío y forma de pago."]];
 
@@ -357,12 +363,13 @@
         </div>
 
         <h2 className="serif" style={{ margin: "2.4rem 0 .6rem", fontSize: "1.3rem" }}>Preguntas frecuentes</h2>
-        <Acordeon titulo="¿Hay pedido mínimo?" abierto>Sí, {$$(NEG.minimo)} por ser precio mayorista. El carrito te avisa cuánto falta.</Acordeon>
-        <Acordeon titulo="¿Cómo pago?">Efectivo al retirar o contra entrega, y Mercado Pago con link que te enviamos por WhatsApp. Vamos a sumar más medios.</Acordeon>
+        {/* Quedan las dos que hoy tienen una respuesta cierta. Se sacaron el
+            pedido mínimo (ya no hay), el precio por cantidad (no se maneja por
+            ahora), qué pasa con un tono agotado (el catálogo dejó de vender
+            esmaltes) y el cambio de pedido después de enviarlo. Una pregunta
+            frecuente que contesta algo que no rige confunde más que no estar. */}
+        <Acordeon titulo="¿Cómo pago?" abierto>Efectivo, transferencia bancaria o Mercado Pago. Te pasamos los datos por WhatsApp al cerrar el pedido.</Acordeon>
         <Acordeon titulo="¿Cuánto sale el envío?">Depende de la zona: {ENV.zonas.filter((z) => z.costo != null).map((z) => `${z.nombre} ${$$(z.costo)}`).join(", ")}. {Number.isFinite(ENV.gratisDesde) ? ` Sin cargo desde ${$$(ENV.gratisDesde)}.` : ""} Si no sabés en qué zona entrás, lo cotizamos por chat.</Acordeon>
-        <Acordeon titulo="¿Hacen precio por cantidad?">Sí, desde 6 unidades del mismo producto. Preguntá en el chat antes de cerrar.</Acordeon>
-        <Acordeon titulo="¿Qué pasa si un tono está sin stock?">Te aparece tachado y no se puede agregar. Si lo querés igual, te avisamos cuando repone.</Acordeon>
-        <Acordeon titulo="¿Puedo cambiar el pedido después de enviarlo?">Sí, mientras no lo hayamos despachado. Se ajusta por el mismo chat.</Acordeon>
 
         <div style={{ display: "grid", gap: ".6rem", marginTop: "2rem" }}>
           <Boton variante="primary" tamano="lg" href={`https://wa.me/${NEG.whatsapp}`} target="_blank" rel="noopener"><I n="wa" size="16px" /> Escribinos por WhatsApp</Boton>
@@ -396,7 +403,13 @@
           </a>
         </div>
         <dl className="ficha-tabla" style={{ marginTop: "1.6rem" }}>
-          {[["Ciudad", pend], ["Local", pend], ["Horarios", pend], ["Mínimo mayorista", $$(NEG.minimo)]].map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}
+          {/* Se sacó "Local" —no hay salón a la calle— y el mínimo mayorista,
+              que ya no rige. Y la ciudad y los horarios dejan de decir "A
+              confirmar" a la fuerza: hace rato están cargados desde el panel y
+              la pantalla los ignoraba. "A confirmar" queda solo para el dato
+              que de verdad esté vacío. */}
+          {[["Ciudad", NEG.ciudad], ["Horarios", NEG.horarios]]
+            .map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v || pend}</dd></div>)}
         </dl>
       </div>
       <Pie ir={ir} />

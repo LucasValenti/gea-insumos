@@ -56,7 +56,7 @@ async function traerProducto(db, id) {
 function cabezaProducto(p, origen) {
   const url = `${origen}/p/${encodeURIComponent(p.id)}`;
   const titulo = `${p.nombre}${p.marca ? ` · ${p.marca}` : ""} · GEA Insumos`;
-  const desc = recorte(p.descripcion || p.contenido || `${p.nombre} para manicuría, por mayor.`, 155);
+  const desc = recorte(p.descripcion || p.contenido || `${p.nombre} por mayor.`, 155);
   const imagen = p.img ? `${origen}/${String(p.img).replace(/^\//, "")}` : `${origen}/assets/og-gea.jpg`;
 
   const producto = {

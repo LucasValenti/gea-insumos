@@ -2,7 +2,7 @@
   /* Pantallas de tienda: inicio (dos direcciones), catálogo, búsqueda y ficha. */
   const { PRODUCTOS: PR, CATEGORIAS: CATS, FAMILIAS, DESTACADOS, HABITUALES, NEGOCIO,
     precio: $, cat: catDe, prod, nombreSub, stockDe, familiasDe, buscar, habitualesDe,
-    urlProducto, clicPropio } = window.T;
+    urlProducto, clicPropio, catsVisibles, famsVisibles } = window.T;
 
 /* Un enlace a una ficha lleva la dirección real del producto y solo intercepta
    el clic común: con Ctrl, Cmd o rueda abre en otra pestaña, como cualquier
@@ -123,7 +123,7 @@
     };
     return (
       <div className="pad cats-gr">
-        {CATS.map((c, i) =>
+        {catsVisibles().map((c, i) =>
         <button key={c.id} className="cat-carta rev-esc" style={{ "--i": i }} onMouseMove={mover} onClick={() => ir({ v: "catalogo", cat: c.id })}>
           <span className="cat-carta-foto">
             <Img src={c.img} />
@@ -183,7 +183,7 @@
             <span className="hero-cue" aria-hidden="true"><i></i></span>
           </div>
           <div className="pad hero-txt">
-            <span className="lbl hero-lbl">Insumos de manicuría · Mayorista</span>
+            <span className="lbl hero-lbl">Insumos de belleza · Mayorista</span>
             <span className="filete" style={{ maxWidth: "3.5rem" }}></span>
             <h1 className="serif h1-hero">
               {"El gabinete completo, en un solo pedido.".split(" ").map((w, i) =>
@@ -255,7 +255,7 @@
         <>
           <section className="sec">
             <div className="pad sec-h"><h2>Categorías</h2></div>
-            <Rail>{CATS.map((c) => <button key={c.id} className="chip" onClick={() => ir({ v: "catalogo", cat: c.id })}>{c.nombre}<b>{conteo(c.id)}</b></button>)}</Rail>
+            <Rail>{catsVisibles().map((c) => <button key={c.id} className="chip" onClick={() => ir({ v: "catalogo", cat: c.id })}>{c.nombre}<b>{conteo(c.id)}</b></button>)}</Rail>
           </section>
         </>
         }
@@ -330,7 +330,7 @@
        mismo modo de falla que ya había dejado la tienda muerta con un precio
        indefinido. */
     const famNom = ((FAMILIAS.find((f) => f.id === fam) || {}).nombre || "").toLowerCase();
-    const titulo = fam ? (famNom ? `Tonos ${famNom}` : "Tonos") : c === "todos" ? "Catálogo completo" : catDe(c).nombre;
+    const titulo = fam ? (famNom ? `Colores ${famNom}` : "Colores") : c === "todos" ? "Catálogo completo" : catDe(c).nombre;
 
     return (
       <>
@@ -339,7 +339,7 @@
             de la ficha devuelve al catálogo filtrado, y no al catálogo entero.
             El efecto de arriba sincroniza c, sub y fam desde la ruta. */}
         <button className="chip" aria-pressed={c === "todos"} onClick={() => ir({ v: "catalogo" })}>Todo<b>{PR.length}</b></button>
-        {CATS.map((x) => <button key={x.id} className="chip" aria-pressed={c === x.id} onClick={() => ir({ v: "catalogo", cat: x.id })}>{x.nombre}<b>{conteo(x.id)}</b></button>)}
+        {catsVisibles().map((x) => <button key={x.id} className="chip" aria-pressed={c === x.id} onClick={() => ir({ v: "catalogo", cat: x.id })}>{x.nombre}<b>{conteo(x.id)}</b></button>)}
       </Rail>
       {subs.length > 0 &&
         <Rail>
@@ -351,7 +351,7 @@
       <div className="pad" style={{ paddingTop: "1.4rem" }}>
         <h1 className="serif" style={{ margin: 0, fontSize: "1.6rem", lineHeight: 1.15 }}>{titulo}</h1>
         {!fam && c !== "todos" && <p style={{ margin: ".35rem 0 0", color: "var(--ink-soft)", fontSize: ".9rem" }}>{catDe(c).desc}</p>}
-        {fam && <p style={{ margin: ".35rem 0 0", color: "var(--ink-soft)", fontSize: ".9rem" }}>Productos que tienen tonos de esta familia. Elegís el tono exacto al agregar.</p>}
+        {fam && <p style={{ margin: ".35rem 0 0", color: "var(--ink-soft)", fontSize: ".9rem" }}>Productos disponibles en estos colores. Elegís el color exacto al agregar.</p>}
       </div>
 
       <div className="pad" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", padding: ".9rem 1rem .8rem" }}>
@@ -383,7 +383,7 @@
           <span className="lbl">Familia de tono</span>
           <div style={{ display: "flex", gap: ".45rem", flexWrap: "wrap", margin: ".6rem 0 1.4rem" }}>
             <button className="chip" aria-pressed={!fam} onClick={() => setFam(null)}>Todas</button>
-            {FAMILIAS.map((f) => <button key={f.id} className="chip" aria-pressed={fam === f.id} onClick={() => setFam(f.id)}>{f.nombre}</button>)}
+            {famsVisibles().map((f) => <button key={f.id} className="chip" aria-pressed={fam === f.id} onClick={() => setFam(f.id)}>{f.nombre}</button>)}
           </div>
           <Boton variante="primary" tamano="lg" ancho onClick={() => setFiltros(false)}>Ver {lista.length} productos</Boton>
         </window.Hoja>
@@ -473,7 +473,7 @@
               }
               {p.tonos &&
               <div style={{ marginTop: "1.5rem" }}>
-                  <div className="tono-head"><span className="lbl">Tono</span><span style={{ fontSize: ".84rem" }}>{tono}</span></div>
+                  <div className="tono-head"><span className="lbl">Color</span><span style={{ fontSize: ".84rem" }}>{tono}</span></div>
                   <GrillaTonos tonos={p.tonos} valor={tono} onElegir={setTono} />
                 </div>
               }
@@ -493,7 +493,7 @@
             </div>
             {p.tonos &&
             <div style={{ marginTop: "1.2rem" }}>
-                <div className="tono-head"><span className="lbl">Tono · {p.tonos.length} disponibles</span><span style={{ fontSize: ".84rem" }}>{tono}</span></div>
+                <div className="tono-head"><span className="lbl">Color · {p.tonos.length} disponibles</span><span style={{ fontSize: ".84rem" }}>{tono}</span></div>
                 <GrillaTonos tonos={p.tonos} valor={tono} onElegir={setTono} />
               </div>
             }

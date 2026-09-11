@@ -508,11 +508,19 @@ function App() {
       {/* La franja anunciaba "Prototipo con catálogo de ejemplo" al cliente. Ese
           lugar vale para las dos condiciones que el mayorista necesita saber
           antes de armar el pedido. */}
-      {catalogo.estado === "listo" && (
-        <aside className="aviso" aria-label="Condiciones de compra">
-          Pedido mínimo {precio(NEGOCIO.minimo)} · Envío sin cargo desde {precio(window.T.ENVIO.gratisDesde)}
-        </aside>
-      )}
+      {/* Solo las condiciones que existen de verdad. El mínimo se sacó —se
+          compra desde una unidad— y la franja no tiene por qué anunciar un
+          "Pedido mínimo $ 0". Si vuelve a cargarse desde el panel, vuelve a
+          aparecer sin tocar código. */}
+      {catalogo.estado === "listo" && (() => {
+        const cond = [
+          NEGOCIO.minimo > 0 && `Pedido mínimo ${precio(NEGOCIO.minimo)}`,
+          Number.isFinite(window.T.ENVIO.gratisDesde) && `Envío sin cargo desde ${precio(window.T.ENVIO.gratisDesde)}`,
+        ].filter(Boolean);
+        return cond.length ? (
+          <aside className="aviso" aria-label="Condiciones de compra">{cond.join(" · ")}</aside>
+        ) : null;
+      })()}
       <div ref={sent} className="sentinela" aria-hidden="true"></div>
       <header className="barra-top">
         <div className="barra-top-in">

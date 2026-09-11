@@ -69,6 +69,21 @@ const cargar = async () => {
   return d;
 };
 
+/* Las categorías que hoy tienen algo adentro.
+   El catálogo dejó de vender esmaltes y esas dos categorías quedaron vacías,
+   pero seguían en la portada, en el menú y en el pie, y llevaban a una pantalla
+   sin un solo producto. No se borran a propósito: si mañana vuelve a cargarse
+   un esmalte desde el panel, la categoría reaparece sola, sin tocar código.
+   El filtro va acá y no en /api/catalogo porque el panel lee esa misma
+   respuesta, y si le escondiéramos las categorías vacías no habría forma de
+   elegirlas al dar de alta un producto —quedarían vacías para siempre—.
+   Son funciones y no listas porque las pantallas capturan las referencias una
+   sola vez al cargarse: una lista calculada ahora saldría siempre vacía. */
+const catsVisibles = () => CATEGORIAS.filter((c) => PRODUCTOS.some((p) => p.cat === c.id));
+/* Lo mismo con las familias de color: sin un producto que las use, el filtro
+   ofrecía un recorte que devolvía una pantalla vacía. */
+const famsVisibles = () => FAMILIAS.filter((f) => PRODUCTOS.some((p) => (p.tonos || []).some((t) => t.fam === f.id)));
+
 const zonaDe = (id) => ENVIO.zonas.find((z) => z.id === id) || null;
 /* Devuelve el costo, 0 si no corresponde cobrar, o null si todavía no se puede calcular. */
 const costoEnvio = (datos, sub) => {
@@ -141,6 +156,7 @@ const buscar = (q) => {
 };
 return { NEGOCIO, CATEGORIAS, FAMILIAS, PRODUCTOS, DESTACADOS, HABITUALES, ENVIO, cargar, estaCargado,
   guardarHabituales, habitualesDe,
+  catsVisibles, famsVisibles,
   zonaDe, costoEnvio, precio, cat, prod, nombreSub, stockDe, subtotalDe, familiasDe, porFamilia, buscar,
   urlProducto, clicPropio };
 })();

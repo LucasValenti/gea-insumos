@@ -4,7 +4,7 @@ DELETE FROM kit_incluye; DELETE FROM kit_componentes; DELETE FROM tonos;
 DELETE FROM productos; DELETE FROM subcategorias; DELETE FROM categorias;
 DELETE FROM familias; DELETE FROM zonas_envio; DELETE FROM config;
 INSERT INTO config (clave, valor) VALUES ('nombre', 'GEA Insumos');
-INSERT INTO config (clave, valor) VALUES ('rubro', 'Insumos de manicuría');
+INSERT INTO config (clave, valor) VALUES ('rubro', 'Insumos de belleza');
 INSERT INTO config (clave, valor) VALUES ('whatsapp', '5490000000000');
 INSERT INTO config (clave, valor) VALUES ('instagram', 'https://instagram.com/');
 INSERT INTO config (clave, valor) VALUES ('instagramUsuario', '@geainsumos');
