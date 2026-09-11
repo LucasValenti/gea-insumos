@@ -289,7 +289,12 @@ button{color:inherit}
 .ap.esc .pad,.ap.esc .rail,.ap.esc .rail-prod{padding-inline:var(--marg)}
 .ap.esc .barra-bot{display:none}
 .ap.esc .barra-top-in{grid-template-columns:auto 1fr auto auto auto;gap:clamp(.75rem,2.5vw,2rem);padding:.85rem var(--marg)}
-.ap.esc .gr{grid-template-columns:repeat(auto-fill,minmax(13.5rem,1fr));gap:clamp(.7rem,1.5vw,1.15rem)}
+/* Cuatro, no "las que entren". Con auto-fill salían cinco a 1440 y el número
+   dependía del ancho de la ventana, así que la densidad de la grilla —que es una
+   decisión tomada con el cliente, no un efecto— la decidía el monitor. Con
+   cuatro, además, la tarjeta pasa de 216 a 281px: la foto se ve. */
+.ap.esc .gr{grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(.7rem,1.5vw,1.15rem)}
+@media (max-width:1000px){.ap.esc .gr{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .ap.esc .rail-prod>*{width:clamp(10rem,17vw,14rem)}
 .ap.esc .sec-h h2{font-size:var(--fs-section)}
 .ap.esc .card-nom{font-size:var(--fs-8)}
@@ -297,7 +302,11 @@ button{color:inherit}
 .ap.esc .compacta{max-width:44rem}
 .ap.esc .dos{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:2.5rem;align-items:start}
 .ap.esc .checkout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:2.5rem;align-items:start}
-.ap.esc .accion{position:static;bottom:auto;border:0;box-shadow:none;padding:0}
+/* En escritorio esta barra va en el flujo, y se estiraba a la ventana entera
+   mientras el resto de la página vive dentro de los 78rem: su botón arrancaba en
+   x=0 y el texto de al lado en x=128. --marg es el mismo que usa .pad, así que
+   ahora arrancan los dos en la misma línea. */
+.ap.esc .accion{position:static;bottom:auto;border:0;box-shadow:none;padding:0;padding-inline:var(--marg)}
 .ap.esc .hoja{left:50%;right:auto;bottom:auto;top:50%;transform:translate(-50%,-50%);width:min(30rem,92vw);border-radius:var(--radio);border:1px solid var(--border);animation:fade .18s ease}
 .ap.esc .nav-esc{display:flex;gap:1.4rem;justify-self:center}
 .ap.esc .busca-inline{padding:0;width:100%;max-width:34rem;justify-self:center}
@@ -351,7 +360,12 @@ button{color:inherit}
 /* hero partido en pantallas anchas */
 @media (min-width:900px){
   .ap.esc .hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.02fr);align-items:stretch;padding-left:var(--marg)}
-  .ap.esc .hero .hero-foto{grid-column:2;grid-row:1;aspect-ratio:auto;min-height:min(clamp(24rem,38vw,32rem),calc(100svh - 12rem));max-height:calc(100svh - 8rem)}
+  /* La foto marcaba el alto de la fila y se iba a 772px, así que el texto
+     —301px de contenido— quedaba flotando con 236 de aire arriba y otros 236
+     abajo: 61% de la columna vacía. No era respiración, era que nada anclaba el
+     bloque. Con el techo en 34rem la foto sigue siendo grande y el aire baja a
+     algo compuesto. */
+  .ap.esc .hero .hero-foto{grid-column:2;grid-row:1;aspect-ratio:auto;min-height:min(clamp(24rem,38vw,32rem),calc(100svh - 12rem));max-height:min(34rem,calc(100svh - 10rem))}
   .ap.esc .hero .hero-foto::after{inset:0 auto 0 -1px;width:30%;height:auto;background:linear-gradient(to right,var(--surface),transparent)}
   .ap.esc .hero .franja{grid-column:1/-1;grid-row:2;margin-left:calc(var(--marg)*-1)}
   .ap.esc .hero .hero-txt{grid-column:1;grid-row:1;align-content:center;padding-block:clamp(2rem,4vw,3.5rem);padding-inline:0 clamp(1.5rem,4vw,3rem);gap:1.1rem}

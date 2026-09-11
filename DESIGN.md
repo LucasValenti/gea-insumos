@@ -311,10 +311,12 @@ Contenedor de `78rem` máximo (`--maxw`), centrado, con `1.25rem` de padding
 lateral. El ritmo vertical sale de una escala de once pasos (`--space-1` a
 `--space-16`, de `.25rem` a `4rem`).
 
-La grilla del catálogo es el esqueleto del sitio: **4 columnas en escritorio, 3
-por debajo de 1000px y 2 por debajo de 720px**, con `1.15rem` de gap que baja a
-`.8rem` en celular. Dos columnas en el teléfono es una decisión, no una
-concesión: la densidad es parte de la promesa.
+La grilla del catálogo (`.gr`) es el esqueleto del sitio: **2 columnas en
+celular, 3 por debajo de 1000px y 4 en escritorio**, con `.7rem` de gap que crece
+hasta `1.15rem` con el ancho. Dos columnas en el teléfono es una decisión, no una
+concesión: la densidad es parte de la promesa. Y cuatro en escritorio es un
+número, no un resultado: con `auto-fill` la cantidad de columnas la decidía el
+monitor, y salían cinco.
 
 La navegación tiene dos formas completas, no una adaptada. En escritorio, barra
 superior con nav centrada y buscador en línea. En celular, barra superior

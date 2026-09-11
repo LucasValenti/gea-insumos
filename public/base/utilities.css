@@ -16,10 +16,5 @@
 .btn-ghost{background:transparent;color:var(--ink);border-color:var(--border)}
 .btn-ghost:hover{border-color:var(--ink);background:var(--nude-50);color:var(--ink)}
 
-/* grilla del catálogo: 4 columnas, 2 en celular */
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.15rem}
-@media (max-width:1000px){.grid{grid-template-columns:repeat(3,1fr)}}
-@media (max-width:720px){.grid{grid-template-columns:repeat(2,1fr);gap:.8rem}}
-
 .listhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.5rem 1rem;padding:2rem 0 1rem}
 .listhead .count{font-size:.82rem;color:var(--ink-faint);font-variant-numeric:tabular-nums}
