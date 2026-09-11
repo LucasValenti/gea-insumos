@@ -183,15 +183,14 @@
             <span className="hero-cue" aria-hidden="true"><i></i></span>
           </div>
           <div className="pad hero-txt">
-            <span className="lbl hero-lbl">Insumos de belleza · Mayorista</span>
             <span className="filete" style={{ maxWidth: "3.5rem" }}></span>
             <h1 className="serif h1-hero">
-              {"El gabinete completo, en un solo pedido.".split(" ").map((w, i) =>
+              {"El precio está puesto. El stock también.".split(" ").map((w, i) =>
               <span className="w" key={i}><i style={{ animationDelay: 0.34 + i * 0.075 + "s" }}>{w}</i></span>
               )}
             </h1>
             <p className="hero-p">
-              {PR.length} productos con stock y tiempos de envío a la vista. Armás el pedido y lo cerramos por WhatsApp.
+              Armás el pedido y lo cerramos por WhatsApp. Sin preguntar cuánto sale, sin enterarte tarde de que no había.
             </p>
             <div className="hero-cta">
               <Boton variante="primary" onClick={() => ir({ v: "catalogo" })}>Ver el catálogo</Boton>
@@ -235,9 +234,9 @@
               <span className="gab-d"><Img src="tienda/img/gab-herramienta.webp" alt="Tijera de cutícula en mano enguantada" /></span>
             </div>
             <div className="banda-mod-txt">
-              <span className="lbl">Todo el gabinete</span>
+              <span className="lbl">Todo el catálogo</span>
               <span className="filete" style={{ maxWidth: "3.5rem" }}></span>
-              <p className="serif banda-mod-t">Lo que usás en cada servicio, en un solo proveedor.</p>
+              <p className="serif banda-mod-t">Lo que buscás, en un solo lugar.</p>
               <p className="banda-mod-p">Preparación, color, construcción y herramientas. Stock real y tiempos de envío a la vista, sin pedir precio por chat.</p>
               <button className="ver-mas" onClick={() => ir({ v: "catalogo" })}>Ver los {PR.length} productos</button>
             </div>
@@ -271,7 +270,7 @@
               <span className="lbl">Kits por servicio</span>
               <span className="filete" style={{ maxWidth: "3.5rem" }}></span>
               <p className="serif banda-mod-t">Un servicio entero cubierto, a precio cerrado.</p>
-              <p className="banda-mod-p">Preparación, color y sellado en un solo código. Sin faltantes a mitad de la jornada.</p>
+              <p className="banda-mod-p">Preparación, color y sellado en un solo código. Todo lo que hace falta para terminarlo.</p>
               <button className="ver-mas" onClick={() => ir({ v: "catalogo", cat: "kits" })}>Ver los {kits.length} kits</button>
             </div>
             <div className="banda-mod-pila" aria-hidden="true">
@@ -301,7 +300,7 @@
       <section className="sec pad" style={{ paddingBottom: ".5rem" }}>
         <div className="nota rev" style={{ display: "grid", gap: ".5rem" }}>
           <b style={{ fontWeight: 500, color: "var(--ink)" }}>¿Cómo se cierra la compra?</b>
-          Armás el carrito, completás tus datos y el pedido se envía por WhatsApp con todo escrito. Confirmamos stock y te pasamos los datos de pago.
+          Armás el carrito, completás tus datos y el pedido se envía por WhatsApp con todo escrito. Coordinamos la entrega y te pasamos los datos de pago.
           <button className="ver-mas" style={{ justifySelf: "start" }} onClick={() => ir({ v: "ayuda" })}>Cómo comprar paso a paso</button>
         </div>
       </section>
@@ -463,7 +462,7 @@
               <span className="lbl">{p.marca} · {catDe(p.cat).nombre}{p.sub ? ` · ${nombreSub(p.cat, p.sub)}` : ""}</span>
               <h1 className="serif h1-ficha" style={{ margin: ".45rem 0 0" }}>{p.nombre}</h1>
               <p className={"serif num" + (p.precioAntes ? " precio-oferta" : "")} style={{ fontSize: "1.9rem", margin: "1rem 0 .2rem" }}>{$(p.precio)}{p.precioAntes && <span className="antes" style={{ fontSize: ".9rem" }}>{$(p.precioAntes)}</span>}</p>
-              <p style={{ margin: 0, fontSize: ".78rem", color: "var(--ink-faint)" }}>Precio por unidad · consultá bonificación por cantidad</p>
+              <p style={{ margin: 0, fontSize: ".78rem", color: "var(--ink-faint)" }}>Precio por unidad</p>
               <div style={{ margin: "1rem 0 0" }}><Stock p={p} tono={tono} /></div>
               {p.desc && <p style={{ margin: "1.2rem 0 0", color: "var(--ink-soft)" }}>{p.desc}</p>}
               {p.incluye &&

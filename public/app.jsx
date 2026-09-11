@@ -506,7 +506,7 @@ function App() {
       data-mov={expr ? "expresivo" : "sobrio"} data-barras={t.barras === "vidrio" ? "vidrio" : "opaco"} data-pegado={pegado}>
       {enmarcado && <div className="tapa"></div>}
       {/* La franja anunciaba "Prototipo con catálogo de ejemplo" al cliente. Ese
-          lugar vale para las dos condiciones que el mayorista necesita saber
+          lugar vale para las dos condiciones que quien compra necesita saber
           antes de armar el pedido. */}
       {/* Solo las condiciones que existen de verdad. El mínimo se sacó —se
           compra desde una unidad— y la franja no tiene por qué anunciar un

@@ -56,7 +56,7 @@
       {/* El mínimo es opcional: hoy no hay, y si algún día vuelve se carga desde
           el panel y este aviso reaparece solo. Sin la guarda, con el mínimo en
           cero la cuenta daba "Faltan $ 0" en todos los pedidos. */}
-      {NEG.minimo > 0 && sub < NEG.minimo && <p style={{ margin: ".8rem 0 0", fontSize: ".78rem", color: "var(--nude-600)" }}>Faltan {$$(NEG.minimo - sub)} para el pedido mínimo mayorista de {$$(NEG.minimo)}.</p>}
+      {NEG.minimo > 0 && sub < NEG.minimo && <p style={{ margin: ".8rem 0 0", fontSize: ".78rem", color: "var(--nude-600)" }}>Faltan {$$(NEG.minimo - sub)} para el pedido mínimo de {$$(NEG.minimo)}.</p>}
     </div>);
 
   }
@@ -111,7 +111,7 @@
 
           <div className="nota" style={{ marginTop: "1rem", display: "flex", gap: ".6rem", alignItems: "flex-start" }}>
             <span style={{ color: "var(--nude-400)", flex: "none", marginTop: 2 }}><I n="reloj" size="15px" /></span>
-            <span>Confirmamos stock por WhatsApp antes de que pagues. Si algo no está, te ofrecemos el reemplazo.</span>
+            <span>El stock que ves se reserva cuando confirmamos el pedido. Si algo falla, te avisamos antes de cobrarte.</span>
           </div>
           <div className="sec">
             <div className="sec-h"><h2>¿Te falta algo?</h2></div>
@@ -126,9 +126,9 @@
             <MetaEnvio sub={sub} />
             <Boton variante="primary" tamano="lg" style={{ width: "100%" }} onClick={() => ir({ v: "checkout" })}>Continuar<I n="flecha" size="15px" /></Boton>
             <ul className="carro-garantias">
-              <li><I n="check" size="14px" /> Stock confirmado por WhatsApp antes de pagar</li>
-              <li><I n="check" size="14px" /> Pagás recién cuando está todo chequeado</li>
-              <li><I n="check" size="14px" /> Si falta un tono, te ofrecemos el reemplazo</li>
+              <li><I n="check" size="14px" /> El precio que ves es el que pagás</li>
+              <li><I n="check" size="14px" /> Pagás cuando coordinamos la entrega</li>
+              <li><I n="check" size="14px" /> Te escribimos por WhatsApp con todo escrito</li>
             </ul>
           </div>
         </aside>
@@ -172,7 +172,7 @@
     const env = costoEnvio(datos, sub);
     const digitos = (s) => (String(s || "").match(/[0-9]/g) || []).length;
     /* Una lista en vez de un booleano: el aviso nombra lo que falta de verdad,
-       en vez de repetir siempre los cuatro campos. Y el mínimo mayorista, que
+       en vez de repetir siempre los cuatro campos. Y el pedido mínimo, que
        se anunciaba en tres pantallas, por fin frena el pedido. */
     const faltan = [
       !datos.nombre.trim() && "tu nombre",
@@ -181,19 +181,17 @@
         && (ENV.mapa ? "marcar el mapa o elegir tu zona" : "la zona de envío"),
       datos.envio === "domicilio" && !datos.direccion.trim() && "la dirección",
       datos.envio === "transporte" && !(datos.transporte || "").trim() && "el transporte",
-      NEG.minimo > 0 && sub < NEG.minimo && `llegar al mínimo mayorista de ${$$(NEG.minimo)} (faltan ${$$(NEG.minimo - sub)})`,
+      NEG.minimo > 0 && sub < NEG.minimo && `llegar al pedido mínimo de ${$$(NEG.minimo)} (faltan ${$$(NEG.minimo - sub)})`,
     ].filter(Boolean);
     const falta = faltan.length > 0;
     const aviso = "Falta " + (faltan.length > 1 ? faltan.slice(0, -1).join(", ") + " y " + faltan[faltan.length - 1] : faltan[0]) + ".";
     return (
       <>
-      <div className="pasos"><b>1 · Datos</b><i></i>2 · Envío<i></i>3 · Pago</div>
       <div className="pad checkout" style={{ paddingTop: "1.3rem" }}>
         <div>
           <h1 className="serif" style={{ margin: "0 0 1.1rem", fontSize: "1.5rem" }}>Tus datos</h1>
           <Campo label="Nombre y apellido"><input value={datos.nombre} onChange={set("nombre")} placeholder="Ana Gómez" autoComplete="name" /></Campo>
           <Campo label="WhatsApp" ayuda="Ahí te confirmamos stock y te pasamos los datos de pago."><input value={datos.tel} onChange={set("tel")} placeholder="11 5555 5555" inputMode="tel" autoComplete="tel" /></Campo>
-          <Campo label="Nombre del gabinete o marca" ayuda="Opcional. Sirve para el remito."><input value={datos.gabinete} onChange={set("gabinete")} placeholder="Estudio Ana Nails" /></Campo>
 
           <h2 className="serif" style={{ margin: "1.8rem 0 .9rem", fontSize: "1.25rem" }}>Entrega</h2>
           <div role="radiogroup" style={{ display: "grid", gap: ".55rem" }}>
@@ -245,7 +243,7 @@
           </div>
           <p style={{ margin: ".8rem 0 0", fontSize: ".78rem", color: "var(--ink-faint)" }}>Todavía no hay pago en línea en el sitio: el cobro se hace por el canal que elijas.</p>
 
-          <div style={{ marginTop: "1.6rem" }}><Campo label="Nota para el pedido" ayuda="Opcional: cambios de tono, urgencias, aclaraciones."><textarea rows="3" value={datos.nota} onChange={set("nota")} placeholder="Si no hay Rojo Clásico, mandá Rojo Cereza."></textarea></Campo></div>
+          <div style={{ marginTop: "1.6rem" }}><Campo label="Nota para el pedido" ayuda="Opcional: cambios de tono, urgencias, aclaraciones."><textarea rows="3" value={datos.nota} onChange={set("nota")} placeholder="Tocá el timbre del 4º B."></textarea></Campo></div>
         </div>
 
         <aside className="carro-lado" aria-label="Resumen del pedido">
@@ -309,7 +307,7 @@
       const unit = it.precio != null ? it.precio : prodP(it.id).precio;
       return `• ${it.n} × ${nom}${it.tono ? ` (${it.tono})` : ""} — ${$$(unit * it.n)}`;
     };
-    const texto = `${NEG.saludo}\n\n${pedido.items.map(renglon).join("\n")}\n\nSubtotal: ${$$(pedido.sub != null ? pedido.sub : pedido.total)}\n${lineaEnvio}\nTotal: ${$$(pedido.total)}${pedido.envio == null ? " + envío a cotizar" : ""}\nEntrega: ${entrega}${entregaDetalle}\nPago: ${d.pago === "mp" ? "Mercado Pago" : "efectivo"}\n\nNombre: ${d.nombre}${d.gabinete ? ` · ${d.gabinete}` : ""}\nWhatsApp: ${d.tel}${d.nota ? `\nNota: ${d.nota}` : ""}\nPedido ${pedido.nro}`;
+    const texto = `${NEG.saludo}\n\n${pedido.items.map(renglon).join("\n")}\n\nSubtotal: ${$$(pedido.sub != null ? pedido.sub : pedido.total)}\n${lineaEnvio}\nTotal: ${$$(pedido.total)}${pedido.envio == null ? " + envío a cotizar" : ""}\nEntrega: ${entrega}${entregaDetalle}\nPago: ${d.pago === "mp" ? "Mercado Pago" : "efectivo"}\n\nNombre: ${d.nombre}\nWhatsApp: ${d.tel}${d.nota ? `\nNota: ${d.nota}` : ""}\nPedido ${pedido.nro}`;
     return (
       <>
       <div className="pad" style={{ paddingTop: "2rem", maxWidth: "34rem", marginInline: "auto" }}>
@@ -340,7 +338,7 @@
 
         <div className="nota" style={{ marginTop: "1.2rem" }}>
           <b style={{ fontWeight: 500, color: "var(--ink)", display: "block", marginBottom: ".3rem" }}>Qué sigue</b>
-          Confirmamos stock y el costo final de envío, y te pasamos los datos para pagar{pedido.datos.pago === "mp" ? " por Mercado Pago" : " en efectivo"}. Despachamos apenas se acredita.
+          Confirmamos el costo final del envío y te pasamos los datos para pagar{pedido.datos.pago === "mp" ? " por Mercado Pago" : " en efectivo"}. Despachamos apenas se acredita.
         </div>
 
         <div style={{ marginTop: "1.6rem", display: "grid", gap: ".6rem" }}>
@@ -561,7 +559,7 @@
   ["Armá el pedido", "Buscá por nombre o por categoría. Cada producto muestra el stock real y en cuántos días llega."],
   ["Elegí productos y cantidades", "Si un producto viene en varios colores, elegís el que quieras; si está agotado te lo marcamos tachado."],
   ["Completá tus datos", "Nombre, WhatsApp y cómo querés recibirlo. Nada de crear cuenta."],
-  ["Cerramos por WhatsApp", "El pedido llega escrito al chat. Confirmamos stock, envío y forma de pago."]];
+  ["Cerramos por WhatsApp", "El pedido llega escrito al chat. Coordinamos envío y forma de pago."]];
 
   function Ayuda({ ir }) {
     return (
@@ -626,7 +624,7 @@
           </a>
         </div>
         <dl className="ficha-tabla" style={{ marginTop: "1.6rem" }}>
-          {/* Se sacó "Local" —no hay salón a la calle— y el mínimo mayorista,
+          {/* Se sacó "Local" —no hay salón a la calle— y el pedido mínimo,
               que ya no rige. Y la ciudad y los horarios dejan de decir "A
               confirmar" a la fuerza: hace rato están cargados desde el panel y
               la pantalla los ignoraba. "A confirmar" queda solo para el dato
