@@ -133,6 +133,11 @@ CREATE TABLE IF NOT EXISTS pedidos (
   pago        TEXT,
   nota        TEXT,
   subtotal    INTEGER NOT NULL,
+  -- Dónde puso el pin quien compró, cuando el envío se calculó por mapa.
+  -- Sirve para dos cosas: saber a dónde llevarlo, y poder revisar después por
+  -- qué se cobró lo que se cobró. NULL cuando se eligió zona de la lista.
+  envio_lat   REAL,
+  envio_lng   REAL,
   -- NULL significa "a cotizar", que no es lo mismo que 0 (sin cargo).
   envio_costo INTEGER,
   total       INTEGER NOT NULL

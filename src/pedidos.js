@@ -9,6 +9,17 @@
  * cien mil pesos por dos mil cambiando un número en la consola.
  */
 
+import { leerMapaEnvio, costoPorMapa } from "./envio.js";
+
+/* Las coordenadas del pin, o null. Se valida el rango acá y no se confía en
+   que lleguen bien: una coordenada fuera de rango haría que el punto caiga
+   siempre afuera de la zona y se cobre un envío que no corresponde. */
+const puntoDe = (d) => {
+  const lat = Number(d && d.lat), lng = Number(d && d.lng);
+  return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180
+    ? { lat, lng } : null;
+};
+
 const MAX_LINEAS = 60;
 const MAX_UNIDADES = 500;
 const MAX_POR_IP_HORA = 12;
@@ -58,7 +69,7 @@ export async function crearPedido(request, env) {
     db.prepare(`SELECT id, nombre, precio, stock FROM productos WHERE id IN (${marcas})`).bind(...ids),
     db.prepare(`SELECT producto_id, nombre, stock FROM tonos WHERE producto_id IN (${marcas})`).bind(...ids),
     db.prepare("SELECT id, costo FROM zonas_envio"),
-    db.prepare("SELECT clave, valor FROM config WHERE clave IN ('envioGratisDesde', 'minimo')"),
+    db.prepare("SELECT clave, valor FROM config WHERE clave LIKE 'envio%' OR clave = 'minimo'"),
   ]);
   const porId = new Map(prods.results.map((p) => [p.id, p]));
   /* Nombre del tono -> stock. Que el producto esté en este mapa es además la
@@ -74,7 +85,13 @@ export async function crearPedido(request, env) {
      el envío salía gratis siempre. Vacío tiene que significar "no hay envío
      gratis", no "gratis desde cero". */
   const aNumero = (v) => (v === null || v === undefined || v === "" ? null : Number(v));
-  const conf = Object.fromEntries(cfgR.results.map((r) => [r.clave, aNumero(r.valor)]));
+  /* Dos vistas de la misma config, y hacen falta las dos. La consulta ahora
+     trae también envioZonaGratis, envioOrigen y envioTramos, que son texto —un
+     polígono en JSON y un par de coordenadas—: pasarlos por Number() los
+     convertía en NaN y el mapa nunca se leía. Así que los números se convierten
+     por separado y el resto queda como vino. */
+  const crudo = Object.fromEntries(cfgR.results.map((r) => [r.clave, r.valor]));
+  const conf = { ...crudo, envioGratisDesde: aNumero(crudo.envioGratisDesde), minimo: aNumero(crudo.minimo) };
 
   /* El stock se comprueba acá y no solo al confirmar. El freno que hay en el
      navegador no cuenta: un POST armado a mano no lo ejecuta, y un pedido que
@@ -129,11 +146,26 @@ export async function crearPedido(request, env) {
     return json({ error: "Elegí cómo querés recibir el pedido" }, { status: 400 });
   if (!PAGOS.includes(d.pago))
     return json({ error: "Elegí cómo vas a pagar" }, { status: 400 });
-  if (d.envio === "domicilio" && !zonasR.results.some((z) => z.id === d.zona))
+  /* Dos formas de resolver el envío a domicilio, y la que manda es la que esté
+     configurada. Con zona de mapa cargada, el costo sale del pin; sin ella,
+     sigue la lista de zonas con nombre de siempre. Nunca las dos: si hubiera
+     mapa y además pidiéramos elegir zona, el que compra tendría que declarar
+     dos veces lo mismo y las dos respuestas podrían no coincidir. */
+  const mapa = leerMapaEnvio(conf);
+  const pin = puntoDe(d);
+
+  if (d.envio === "domicilio" && mapa && !pin)
+    return json({ error: "Marcá en el mapa dónde te lo llevamos" }, { status: 400 });
+  if (d.envio === "domicilio" && !mapa && !zonasR.results.some((z) => z.id === d.zona))
     return json({ error: "Elegí una zona de envío de la lista" }, { status: 400 });
 
-  const envioCosto = costoEnvio({ modo: d.envio, zona: d.zona }, subtotal,
-    zonasR.results, conf.envioGratisDesde == null ? Infinity : conf.envioGratisDesde);
+  const gratisDesde = conf.envioGratisDesde == null ? Infinity : conf.envioGratisDesde;
+  /* El precio lo pone el servidor, igual que el de cada producto: del navegador
+     llegan las coordenadas, nunca un costo. Mandar el costo desde el navegador
+     sería dejar que cualquiera se ponga el envío en cero. */
+  const envioCosto = d.envio === "domicilio" && mapa && pin
+    ? costoPorMapa(mapa, pin, subtotal, gratisDesde)
+    : costoEnvio({ modo: d.envio, zona: d.zona }, subtotal, zonasR.results, gratisDesde);
   const total = subtotal + (envioCosto || 0);
 
   if (conf.minimo && subtotal < conf.minimo)
@@ -141,12 +173,12 @@ export async function crearPedido(request, env) {
 
   const alta = await db.prepare(
     `INSERT INTO pedidos (creado, estado, nombre, telefono, gabinete, envio_modo, envio_zona,
-       direccion, cp, transporte, pago, nota, subtotal, envio_costo, total)
-     VALUES (?, 'nuevo', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+       direccion, cp, transporte, pago, nota, subtotal, envio_lat, envio_lng, envio_costo, total)
+     VALUES (?, 'nuevo', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
     .bind(Date.now(), recorte(d.nombre, 120), recorte(d.tel, 40), recorte(d.gabinete, 120),
       recorte(d.envio, 20), recorte(d.zona, 40), recorte(d.direccion, 200), recorte(d.cp, 20),
       recorte(d.transporte, 120), recorte(d.pago, 20), recorte(d.nota, 500),
-      subtotal, envioCosto, total).run();
+      subtotal, pin && pin.lat, pin && pin.lng, envioCosto, total).run();
 
   const id = alta.meta.last_row_id;
   await db.batch([

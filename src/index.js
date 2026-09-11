@@ -12,6 +12,7 @@
 import { rutasAdmin } from "./admin.js";
 import { crearPedido } from "./pedidos.js";
 import { servirImagen, medidasSubidas } from "./imagenes.js";
+import { leerMapaEnvio, mapaPublico, costoPorMapa, dentroDeZona } from "./envio.js";
 import { paginaProducto, sitemap } from "./paginas.js";
 
 const CACHE = "public, max-age=60, stale-while-revalidate=600";
@@ -150,6 +151,11 @@ async function catalogo(db) {
     ENVIO: {
       gratisDesde: entero(conf.envioGratisDesde),
       provisorio: conf.envioProvisorio === "1",
+      /* El polígono de la zona sin cargo, para dibujarlo. Va solo el polígono:
+         el punto desde el que se mide la distancia es la casa de la clienta y
+         no sale del servidor. Sin zona cargada esto es null y la tienda sigue
+         mostrando la lista de zonas de siempre. */
+      mapa: mapaPublico(leerMapaEnvio(conf)),
       zonas: zonas.results.map((z) => ({ id: z.id, nombre: z.nombre, costo: z.costo, plazo: z.plazo })),
     },
   };
@@ -174,6 +180,33 @@ async function atender(request, env, url) {
          cuenta nombres de tablas y columnas a cualquiera que pida la ruta. */
       console.error("catálogo:", e && e.stack || e);
       return json({ error: "No se pudo leer el catálogo" }, { status: 500 });
+    }
+  }
+
+  /* Cotiza un punto del mapa. Existe como ruta propia, y no mandando el origen
+     al navegador, porque ese punto es la casa de la clienta: acá entra una
+     coordenada y sale un precio, y la dirección no sale nunca. */
+  if (url.pathname === "/api/envio" && request.method === "POST") {
+    try {
+      const { lat, lng, subtotal } = (await request.json().catch(() => ({}))) || {};
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180)
+        return json({ error: "Coordenada inválida" }, { status: 400 });
+
+      const { results } = await env.DB.prepare(
+        "SELECT clave, valor FROM config WHERE clave LIKE 'envio%'").all();
+      const conf = Object.fromEntries(results.map((r) => [r.clave, r.valor]));
+      const mapa = leerMapaEnvio(conf);
+      if (!mapa) return json({ error: "Todavía no hay zona de envío cargada" }, { status: 409 });
+
+      const sub = Number.isFinite(subtotal) && subtotal >= 0 ? subtotal : 0;
+      const gratisDesde = conf.envioGratisDesde ? Number(conf.envioGratisDesde) : Infinity;
+      const costo = costoPorMapa(mapa, { lat, lng }, sub, gratisDesde);
+      /* costo 0 con el punto afuera significa que lo cubrió el monto, no la
+         zona: son dos motivos distintos y el que compra merece saber cuál. */
+      return json({ costo, enZona: dentroDeZona({ lat, lng }, mapa.zona) });
+    } catch (e) {
+      console.error("envío:", e && e.stack || e);
+      return json({ error: "No se pudo calcular el envío" }, { status: 500 });
     }
   }
 

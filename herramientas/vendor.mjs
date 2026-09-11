@@ -39,6 +39,22 @@ const PAQUETES = [
     archivo: "animate-4.1.1.min.css",
     sha384: "Gu3KVV2H9d+yA4QDpVB7VcOyhJlAVrcXd0thEjr4KznfaFPLe0xQJyonVxONa4ZC",
   },
+  /* El mapa de la zona de envío. Los dos archivos se cargan solo en el paso de
+     envío del checkout, no en la portada: son 158 KB que no tienen por qué
+     costarle nada a quien entra a mirar productos.
+     El .css referencia images/marker-icon.png y images/layers*.png, que no
+     están acá. No hacen falta: el marcador es un div con estilo propio y no hay
+     control de capas, así que ninguna de esas reglas llega a aplicarse. */
+  {
+    url: "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
+    archivo: "leaflet-1.9.4.min.js",
+    sha384: "cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH",
+  },
+  {
+    url: "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
+    archivo: "leaflet-1.9.4.css",
+    sha384: "sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H",
+  },
 ];
 
 /* La hoja de Google Fonts era el mayor bloqueador del pintado que quedaba:

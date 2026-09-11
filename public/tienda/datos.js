@@ -20,7 +20,7 @@ const HABITUALES = [];
 /* Infinity y no 0: sin umbral cargado, nada llega al envío sin cargo. Con 0
    pasaba lo contrario —cualquier subtotal lo superaba— y la tienda anunciaba
    envío gratis en todos los pedidos. */
-const ENVIO = { gratisDesde: Infinity, provisorio: false, zonas: [] };
+const ENVIO = { gratisDesde: Infinity, provisorio: false, zonas: [], mapa: null };
 
 const rellenar = (destino, origen) => { destino.length = 0; destino.push(...(origen || [])); };
 
@@ -64,6 +64,7 @@ const cargar = async () => {
   if (d.MEDIDAS) Object.assign(window.MEDIDAS || (window.MEDIDAS = {}), d.MEDIDAS);
   ENVIO.gratisDesde = d.ENVIO.gratisDesde == null ? Infinity : d.ENVIO.gratisDesde;
   ENVIO.provisorio = d.ENVIO.provisorio;
+  ENVIO.mapa = d.ENVIO.mapa || null;
   rellenar(ENVIO.zonas, d.ENVIO.zonas);
   cargado = true;
   return d;
@@ -84,10 +85,48 @@ const catsVisibles = () => CATEGORIAS.filter((c) => PRODUCTOS.some((p) => p.cat 
    ofrecía un recorte que devolvía una pantalla vacía. */
 const famsVisibles = () => FAMILIAS.filter((f) => PRODUCTOS.some((p) => (p.tonos || []).some((t) => t.fam === f.id)));
 
+/* ---- envío por mapa ----
+   Mismo criterio que src/envio.js, pero el que manda es el servidor: acá esto
+   solo sirve para contestar "entrás / no entrás" en el acto, sin esperar una
+   respuesta, mientras se arrastra el pin. El precio nunca se calcula acá.
+
+   El punto desde el que se mide la distancia no está en esta página a
+   propósito: es la casa de la clienta y no sale del servidor, así que el precio
+   de lo que queda afuera se pide a /api/envio. */
+const dentroDeZona = (punto, zona) => {
+  let dentro = false;
+  for (let i = 0, j = zona.length - 1; i < zona.length; j = i++) {
+    const [yi, xi] = zona[i];
+    const [yj, xj] = zona[j];
+    const cruza = (yi > punto.lat) !== (yj > punto.lat)
+      && punto.lng < ((xj - xi) * (punto.lat - yi)) / (yj - yi) + xi;
+    if (cruza) dentro = !dentro;
+  }
+  return dentro;
+};
+
+/* Le pide el costo al servidor para un punto. Devuelve { costo, enZona }, donde
+   costo null significa "hay que cotizarlo por chat" y 0 "sin cargo". */
+const cotizarEnvio = async (lat, lng, subtotal) => {
+  const r = await fetch("/api/envio", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ lat, lng, subtotal }),
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || "No se pudo calcular el envío");
+  return d;
+};
+
 const zonaDe = (id) => ENVIO.zonas.find((z) => z.id === id) || null;
 /* Devuelve el costo, 0 si no corresponde cobrar, o null si todavía no se puede calcular. */
 const costoEnvio = (datos, sub) => {
   if (!datos || datos.envio !== "domicilio") return 0;
+  /* Con zona de mapa cargada manda el pin, y el número ya lo contestó
+     /api/envio: viaja en datos solo para mostrarlo. El que vale es el que el
+     servidor vuelve a calcular al registrar el pedido, así que tocar este acá
+     no abarata nada. */
+  if (ENVIO.mapa) return datos.lat == null ? null : (datos.envioCosto ?? null);
   const z = zonaDe(datos.zona);
   if (!z || z.costo == null) return null;
   return sub >= ENVIO.gratisDesde ? 0 : z.costo;
@@ -156,7 +195,7 @@ const buscar = (q) => {
 };
 return { NEGOCIO, CATEGORIAS, FAMILIAS, PRODUCTOS, DESTACADOS, HABITUALES, ENVIO, cargar, estaCargado,
   guardarHabituales, habitualesDe,
-  catsVisibles, famsVisibles,
+  catsVisibles, famsVisibles, dentroDeZona, cotizarEnvio,
   zonaDe, costoEnvio, precio, cat, prod, nombreSub, stockDe, subtotalDe, familiasDe, porFamilia, buscar,
   urlProducto, clicPropio };
 })();

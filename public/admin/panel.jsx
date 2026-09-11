@@ -704,6 +704,17 @@ function Pedidos({ avisar }) {
                 {p.envio_costo === null ? " · a cotizar" : p.envio_costo === 0 ? " · sin cargo" : " · " + plata(p.envio_costo)}
                 {p.direccion ? ` · ${p.direccion}` : ""}
               </p>
+              {/* El pin que puso quien compró, cuando el envío salió del mapa.
+                  La dirección escrita sigue siendo la que manda para el reparto;
+                  esto es para abrirla en el navegador del celular y no tener que
+                  interpretar "a la vuelta de la plaza". Se abre en Google Maps
+                  porque es lo que ya tiene instalado cualquier teléfono. */}
+              {p.envio_lat != null && (
+                <p className="pa-envio">
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${p.envio_lat},${p.envio_lng}`}
+                    target="_blank" rel="noopener noreferrer">Ver el punto en el mapa</a>
+                </p>
+              )}
               {p.nota && <p className="pa-nota">Nota: {p.nota}</p>}
 
               {p.estado === "nuevo" ? (

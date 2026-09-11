@@ -15,7 +15,7 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-Wq9ymUCEuqKrKZ0KtESmxENcYNyHLjrnKnTFCQVT6CE=' 'sha256-SqzUQOWLIxFSmtP/GnZsGMmuTPRRBRMnxy9CbVsfZxo='; style-src 'self' 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-Wq9ymUCEuqKrKZ0KtESmxENcYNyHLjrnKnTFCQVT6CE=' 'sha256-SqzUQOWLIxFSmtP/GnZsGMmuTPRRBRMnxy9CbVsfZxo='; style-src 'self' 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https://*.tile.openstreetmap.org; connect-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
 
 # Sobre la Content-Security-Policy de arriba.
 #
@@ -46,7 +46,13 @@
 #                estilos.css.
 #   font-src     solo gstatic, que es de donde salen los .woff2. Es el único
 #                tercero que queda en todo el sitio, y no bloquea el pintado.
-#   img-src      data: por el SVG de fondo del selector en tweaks-panel.
+#   img-src      data: por el SVG de fondo del selector en tweaks-panel, y los
+#                mosaicos del mapa de la zona de envío, que salen de
+#                OpenStreetMap. Es el único origen ajeno del sitio además de las
+#                fuentes, y entra acotado: son imágenes, no scripts, y solo se
+#                piden en el paso de envío del checkout —Leaflet y su hoja se
+#                bajan recién ahí, no en la portada—. Dibujar la zona es lo que
+#                evita la pregunta "¿cuánto me sale el envío?" en cada chat.
 #   connect-src  el fetch propio va todo a /api/* del mismo origen, y acá además
 #                está el origen del <link rel="preconnect"> del <head>. Está
 #                medido: Chrome aplica connect-src también a las preconexiones,

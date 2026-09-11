@@ -39,7 +39,8 @@
     const etiqueta = !datos ? "Se calcula en el checkout" :
     datos.envio === "retiro" ? "Retiro en local · sin cargo" :
     datos.envio === "transporte" ? "Lo abonás al transporte" :
-    env === null ? (z ? "Se cotiza por chat" : "Elegí la zona para calcular") :
+    env === null ? (ENV.mapa ? (datos.lat == null ? "Marcá el mapa para calcular" : "Se cotiza por chat")
+      : z ? "Se cotiza por chat" : "Elegí la zona para calcular") :
     env === 0 ? "Sin cargo" : null;
     const t = sub + (env || 0);
     return (
@@ -176,7 +177,8 @@
     const faltan = [
       !datos.nombre.trim() && "tu nombre",
       digitos(datos.tel) < 8 && "un WhatsApp válido",
-      datos.envio === "domicilio" && !datos.zona && "la zona de envío",
+      datos.envio === "domicilio" && (ENV.mapa ? datos.lat == null : !datos.zona)
+        && (ENV.mapa ? "marcar en el mapa dónde te lo llevamos" : "la zona de envío"),
       datos.envio === "domicilio" && !datos.direccion.trim() && "la dirección",
       datos.envio === "transporte" && !(datos.transporte || "").trim() && "el transporte",
       NEG.minimo > 0 && sub < NEG.minimo && `llegar al mínimo mayorista de ${$$(NEG.minimo)} (faltan ${$$(NEG.minimo - sub)})`,
@@ -201,15 +203,29 @@
           </div>
           {datos.envio === "domicilio" &&
             <div style={{ marginTop: "1.1rem" }}>
-              <span className="lbl">Zona de envío</span>
-              <div role="radiogroup" style={{ display: "grid", gap: ".5rem", margin: ".6rem 0 .7rem" }}>
-                {ENV.zonas.map((z) =>
-                <Opcion key={z.id} activa={datos.zona === z.id} titulo={z.nombre}
-                detalle={z.costo == null ? z.plazo : `${$$(z.costo)} · llega en ${z.plazo}`}
-                onClick={() => setDatos({ ...datos, zona: z.id })} />
-                )}
-              </div>
-              {ENV.provisorio && <p style={{ margin: "0 0 1.1rem", fontSize: ".76rem", color: "var(--ink-faint)" }}>Montos provisorios del prototipo: se reemplazan por la tabla real de envíos.</p>}
+              {/* Con zona cargada manda el mapa; sin ella, la lista de zonas con
+                  nombre de siempre. Nunca las dos: preguntar la zona y además
+                  pedir el pin sería hacer declarar dos veces lo mismo, y las dos
+                  respuestas podrían no coincidir. */}
+              {ENV.mapa ? (
+                <MapaEnvio zona={ENV.mapa.zona} conPrecios={ENV.mapa.conPrecios}
+                  punto={datos.lat == null ? null : { lat: datos.lat, lng: datos.lng }}
+                  sub={sub}
+                  onPunto={(p) => setDatos({ ...datos, lat: p ? p.lat : null, lng: p ? p.lng : null, envioCosto: null })}
+                  onCosto={(c) => setDatos((x) => ({ ...x, envioCosto: c }))} />
+              ) : (
+                <>
+                  <span className="lbl">Zona de envío</span>
+                  <div role="radiogroup" style={{ display: "grid", gap: ".5rem", margin: ".6rem 0 .7rem" }}>
+                    {ENV.zonas.map((z) =>
+                    <Opcion key={z.id} activa={datos.zona === z.id} titulo={z.nombre}
+                    detalle={z.costo == null ? z.plazo : `${$$(z.costo)} · llega en ${z.plazo}`}
+                    onClick={() => setDatos({ ...datos, zona: z.id })} />
+                    )}
+                  </div>
+                  {ENV.provisorio && <p style={{ margin: "0 0 1.1rem", fontSize: ".76rem", color: "var(--ink-faint)" }}>Montos provisorios del prototipo: se reemplazan por la tabla real de envíos.</p>}
+                </>
+              )}
               <Campo label="Dirección"><input value={datos.direccion} onChange={set("direccion")} placeholder="Calle 123, Piso 4 B" autoComplete="street-address" /></Campo>
               <Campo label="Localidad y código postal"><input value={datos.cp} onChange={set("cp")} placeholder="Rosario · 2000" autoComplete="postal-code" /></Campo>
             </div>
@@ -330,6 +346,154 @@
 
   }
 
+  /* ---------- mapa de la zona de envío ----------
+   *
+   * Leaflet y su hoja de estilo se bajan recién cuando esta pantalla los
+   * necesita, no con el resto del sitio: son 158 KB que no tienen por qué
+   * costarle nada a quien entra a mirar productos y nunca llega al checkout.
+   * Se cargan una sola vez por visita, aunque se entre y salga del paso. */
+  let leafletPendiente = null;
+  const cargarLeaflet = () => {
+    if (window.L) return Promise.resolve(window.L);
+    if (leafletPendiente) return leafletPendiente;
+    leafletPendiente = new Promise((listo, falla) => {
+      const hoja = document.createElement("link");
+      hoja.rel = "stylesheet";
+      hoja.href = "/vendor/leaflet-1.9.4.css";
+      document.head.appendChild(hoja);
+      const js = document.createElement("script");
+      js.src = "/vendor/leaflet-1.9.4.min.js";
+      js.onload = () => listo(window.L);
+      /* Se olvida la promesa fallada: si no, un corte de red dejaba el mapa
+         roto para toda la visita, sin forma de reintentar. */
+      js.onerror = () => { leafletPendiente = null; falla(new Error("No se pudo cargar el mapa")); };
+      document.head.appendChild(js);
+    });
+    return leafletPendiente;
+  };
+
+  /* El mapa con la zona sin cargo dibujada y un pin que pone quien compra.
+   *
+   * Por qué un pin y no la dirección escrita: pasar "Pellegrini 1234" a
+   * coordenadas pide un servicio de geocodificación —otro tercero, que cuesta y
+   * que con las calles de acá se equivoca seguido—. Quien compra sabe dónde
+   * vive; la dirección escrita se sigue pidiendo abajo, para el reparto.
+   *
+   * El precio de lo que cae afuera lo contesta /api/envio y no esta pantalla: la
+   * distancia se mide desde la casa de la clienta, y ese punto no sale del
+   * servidor. Lo único que baja acá es el polígono, que es público de todos
+   * modos: es la zona a la que se reparte. */
+  function MapaEnvio({ zona, conPrecios, punto, onPunto, onCosto, sub }) {
+    const caja = React.useRef(null);
+    const mapa = React.useRef(null);
+    const marca = React.useRef(null);
+    const [estado, setEstado] = React.useState("cargando");
+    const [cotizacion, setCotizacion] = React.useState(null);
+    const [cotizando, setCotizando] = React.useState(false);
+
+    /* El armado va una sola vez. Las dependencias quedan vacías a propósito:
+       recrear el mapa en cada render perdería el pin y el zoom que la persona
+       ya eligió. */
+    React.useEffect(() => {
+      let vivo = true;
+      cargarLeaflet().then((L) => {
+        if (!vivo || !caja.current || mapa.current) return;
+        const m = L.map(caja.current, { scrollWheelZoom: false, attributionControl: true });
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 18,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        }).addTo(m);
+        const poligono = L.polygon(zona, {
+          color: "#8C6A5D", weight: 2, fillColor: "#E2C2B9", fillOpacity: 0.3,
+        }).addTo(m);
+        m.fitBounds(poligono.getBounds(), { padding: [18, 18] });
+        m.on("click", (e) => onPunto({ lat: e.latlng.lat, lng: e.latlng.lng }));
+        mapa.current = m;
+        setEstado("listo");
+      }).catch(() => vivo && setEstado("error"));
+      return () => { vivo = false; };
+    }, []);
+
+    /* El pin se dibuja como círculo y no con el marcador por defecto de
+       Leaflet, que es una imagen que no está en /vendor/ y daría un 404. */
+    React.useEffect(() => {
+      const m = mapa.current;
+      if (!m || !window.L) return;
+      if (marca.current) { marca.current.remove(); marca.current = null; }
+      if (!punto) return;
+      marca.current = window.L.circleMarker([punto.lat, punto.lng], {
+        radius: 9, color: "#fff", weight: 3, fillColor: "#1A1A1A", fillOpacity: 1,
+      }).addTo(m);
+    }, [punto && punto.lat, punto && punto.lng, estado]);
+
+    /* Cada punto nuevo se cotiza contra el servidor. El "entrás en la zona" se
+       puede contestar en el acto con el polígono que ya está acá; el precio de
+       afuera no, y por eso hay una vuelta a la red. */
+    React.useEffect(() => {
+      if (!punto) { setCotizacion(null); onCosto(null); return; }
+      let vigente = true;
+      setCotizando(true);
+      window.T.cotizarEnvio(punto.lat, punto.lng, sub)
+        .then((d) => { if (vigente) { setCotizacion(d); onCosto(d.costo); } })
+        /* Si la cotización falla, el costo queda en null —"a cotizar"— y no en
+           cero: un error de red no puede terminar en un envío regalado. */
+        .catch(() => { if (vigente) { setCotizacion({ error: true }); onCosto(null); } })
+        .finally(() => { if (vigente) setCotizando(false); });
+      return () => { vigente = false; };
+    }, [punto && punto.lat, punto && punto.lng, sub]);
+
+    const ubicarme = () => {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(
+        (p) => {
+          const q = { lat: p.coords.latitude, lng: p.coords.longitude };
+          onPunto(q);
+          if (mapa.current) mapa.current.setView([q.lat, q.lng], 15);
+        },
+        () => {},
+        { enableHighAccuracy: true, timeout: 8000 },
+      );
+    };
+
+    /* Adentro se sabe sin preguntar; el resto lo dice el servidor. */
+    const enZona = punto ? window.T.dentroDeZona(punto, zona) : false;
+
+    return (
+      <div style={{ margin: ".6rem 0 1rem" }}>
+        <span className="lbl">Dónde te lo llevamos</span>
+        <p style={{ margin: ".35rem 0 .6rem", fontSize: ".84rem", color: "var(--ink-soft)" }}>
+          Tocá el mapa para marcar tu ubicación. Dentro de la zona marcada el envío no tiene cargo.
+        </p>
+
+        {estado === "error" ? (
+          <p className="mapa-caido">
+            No se pudo cargar el mapa. Elegí igual la dirección abajo y lo cotizamos por WhatsApp.
+          </p>
+        ) : (
+          <>
+            <div ref={caja} className="mapa-envio" role="application"
+              aria-label="Mapa de la zona de envío. Tocá para marcar tu ubicación." />
+            <div className="mapa-acciones">
+              <button type="button" className="pa-cancela" onClick={ubicarme}>Usar mi ubicación</button>
+              {punto && <button type="button" className="pa-cancela" onClick={() => onPunto(null)}>Sacar el pin</button>}
+            </div>
+          </>
+        )}
+
+        {punto && (
+          <p className={"mapa-veredicto" + (enZona || cotizacion?.costo === 0 ? " bien" : "")}>
+            {cotizando ? "Calculando el envío…"
+              : cotizacion?.error ? "No pudimos calcular el envío. Lo vemos por WhatsApp."
+              : enZona ? "Entrás en la zona: el envío no tiene cargo."
+              : cotizacion?.costo === 0 ? "Fuera de la zona, pero tu pedido llega al monto sin cargo."
+              : cotizacion?.costo > 0 ? `Fuera de la zona: el envío sale ${$$(cotizacion.costo)}.`
+              : conPrecios ? "Estás lejos de la zona: lo cotizamos por WhatsApp."
+              : "Fuera de la zona: lo cotizamos por WhatsApp."}
+          </p>
+        )}
+      </div>
+    );
+  }
   /* ===================== AYUDA ===================== */
   /* Los textos hablaban de tonos de esmalte, que es lo que el catálogo vendía
      antes. Hoy vende insumos de belleza y las variantes que quedan son colores

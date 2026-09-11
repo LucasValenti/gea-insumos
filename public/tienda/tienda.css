@@ -697,3 +697,17 @@ button{color:inherit}
 .cargando-p{color:var(--ink-soft);font-size:.9rem;max-width:34ch}
 @keyframes respira{0%,100%{opacity:.4}50%{opacity:1}}
 @media (prefers-reduced-motion:reduce){.cargando-marca{animation:none;opacity:.7}}
+
+/* ---- mapa de la zona de envío ---- */
+/* Alto fijo: Leaflet necesita que el contenedor tenga altura antes de montar,
+   si no dibuja un mapa de cero píxeles y no se ve nada. */
+.mapa-envio{height:260px;border-radius:var(--radio);border:1px solid var(--hairline);overflow:hidden;background:var(--sunk)}
+.mapa-envio .leaflet-container{height:100%;width:100%;font:inherit;background:var(--sunk)}
+/* Leaflet trae su propio azul para los enlaces de la atribución. */
+.mapa-envio .leaflet-control-attribution{background:var(--surface);color:var(--ink-faint);font-size:.62rem}
+.mapa-envio .leaflet-control-attribution a{color:var(--ink-soft)}
+.mapa-acciones{display:flex;gap:.5rem;flex-wrap:wrap;margin:.55rem 0 0}
+.mapa-acciones button{min-height:40px}
+.mapa-veredicto{margin:.7rem 0 1rem;font-size:.84rem;color:var(--nude-600);border-left:2px solid var(--nude-300);padding-left:.7rem}
+.mapa-veredicto.bien{color:var(--ok);border-left-color:var(--ok)}
+.mapa-caido{margin:.4rem 0 1rem;font-size:.84rem;color:var(--ink-soft)}
