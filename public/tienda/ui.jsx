@@ -89,8 +89,25 @@ function Img({ src, alt = "", className, prioridad = false }) {
   );
 }
 
+/* La primera palabra del nombre, con el cuerpo ajustado para que entre en los
+   120 del viewBox sin recortarse. */
+function tipo(p) {
+  const palabras = String(p.nombre || "").trim().split(/\s+/).map((x) => x.replace(/[.,;:]$/, ""));
+  /* "Kit" no distingue un kit de otro: los dos caían en la misma placa. Cuando
+     la primera palabra es el envase y no el producto, manda la que sigue. */
+  const generica = /^(kit|set|pack|combo|caja)$/i;
+  const w = generica.test(palabras[0]) && palabras[1] ? palabras[1] : palabras[0];
+  const texto = String(w || "GEA").toUpperCase().slice(0, 14);
+  const largo = texto.length <= 5 ? "23px" : texto.length <= 8 ? "17px" : texto.length <= 11 ? "13px" : "11px";
+  return { texto, largo };
+}
+
 function Foto({ p, tono, className = "foto" }) {
-  const c = tono ? tono.hex : p.color || (p.tonos && p.tonos[0] && p.tonos[0].hex);
+  /* El color llena el cuadro solo cuando el color ES el producto: un esmalte,
+     un gel, un glitter. En un kit era decoración —el "Kit Esculpidas" se pintaba
+     del nude de la marca— y en un top coat transparente directamente mentía. */
+  const propio = tono ? tono.hex : (p.tonos && p.tonos.length ? (p.color || p.tonos[0].hex) : (p.incluye ? null : p.color));
+  const c = propio;
   if (p.img) return (
     <div className={className}>
       <Img src={p.img} alt={p.nombre} />
@@ -118,11 +135,15 @@ function Foto({ p, tono, className = "foto" }) {
           </linearGradient>
         </defs>
         <rect width="120" height="120" fill="url(#gea-placa)" />
-        <text x="60" y="58" textAnchor="middle" fill="var(--nude-400)" opacity=".55"
-          style={{ fontFamily: "var(--serif)", fontSize: "23px", letterSpacing: "4px" }}>GEA</text>
+        {/* La placa decía "GEA" en todos, así que cuatro productos distintos
+            eran la misma imagen repetida. Ahora dice qué es: la primera palabra
+            del nombre, que es justo lo que distingue una cabina de un removedor
+            mientras las fotos van entrando por el panel. */}
+        <text x="60" y="57" textAnchor="middle" fill="var(--nude-400)" opacity=".6"
+          style={{ fontFamily: "var(--serif)", fontSize: tipo(p).largo, letterSpacing: "1px" }}>{tipo(p).texto}</text>
         <rect x="41" y="66" width="38" height="1" fill="var(--nude-400)" opacity=".5" />
         <text x="60" y="79" textAnchor="middle" fill="var(--nude-400)" opacity=".5"
-          style={{ fontSize: "6.5px", letterSpacing: "4.2px" }}>INSUMOS</text>
+          style={{ fontSize: "6.5px", letterSpacing: "3px" }}>{(p.marca || "GEA").toUpperCase().slice(0, 14)}</text>
       </svg>
     </div>
   );

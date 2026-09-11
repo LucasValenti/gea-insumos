@@ -1,7 +1,7 @@
 (() => {
   /* Pantallas de tienda: inicio (dos direcciones), catálogo, búsqueda y ficha. */
   const { PRODUCTOS: PR, CATEGORIAS: CATS, FAMILIAS, DESTACADOS, HABITUALES, NEGOCIO,
-    precio: $, cat: catDe, prod, nombreSub, stockDe, familiasDe, buscar, habitualesDe,
+    precio: $, cat: catDe, prod, nombreSub, stockDe, familiasDe, buscar, habitualesDe, habitualesPropios,
     urlProducto, clicPropio, catsVisibles, famsVisibles } = window.T;
 
 /* Un enlace a una ficha lleva la dirección real del producto y solo intercepta
@@ -293,9 +293,13 @@
           }
       </section>
 
-      {editorial &&
+      {/* Ocupaba el lugar donde una primera visita necesita entender el negocio,
+          y le ofrecía "lo de siempre" —seis productos, $52.200 en un botón— a
+          alguien que no tiene un siempre. Aparece cuando ya compró, y con lo que
+          compró ella. */}
+      {editorial && habitualesPropios() &&
         <section className="sec">
-          <div className="pad sec-h"><h2 className="rev">Volver a pedir</h2><span className="eyebrow">Un toque y va completo</span></div>
+          <div className="pad sec-h"><h2 className="rev">Volver a pedir</h2><span className="eyebrow">Lo que pediste la última vez</span></div>
           <Repedido ir={ir} agregar={agregar} agregarVarios={agregarVarios} enPedido={enPedido} />
         </section>
         }

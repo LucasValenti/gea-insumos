@@ -110,9 +110,13 @@ el servidor y del navegador solo llegan ids, tonos y cantidades.
 
 - 34 productos de ejemplo en `db/semilla.sql`, marcados como tales. **No son el
   catálogo real.**
-- **No hay fotos de producto.** Es el mayor riesgo del proyecto: en venta al
-  público la foto es el producto. No inventar fotos, no describir productos que
-  no existen, no dar por hecho un catálogo que todavía no está.
+- **No hay fotos de producto todavía.** En venta al público la foto es el
+  producto, así que sigue siendo el mayor riesgo. **Las sube la dueña desde el
+  panel**, de a una (confirmado el 11/09/2026), así que el catálogo va a estar
+  **mezclado** durante un buen rato: algunos productos con foto y otros sin. El
+  diseño tiene que sostener ese estado intermedio, no solo los dos extremos. No
+  inventar fotos, no describir productos que no existen, no dar por hecho un
+  catálogo que todavía no está.
 - Sin testimonios, sin métricas de venta, sin prensa, sin casos. No fabricar
   ninguno.
 - Verificación propia ya escrita: `npm run audita`, `audita:lighthouse`,

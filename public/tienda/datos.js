@@ -147,6 +147,14 @@ const guardarHabituales = (ids) => {
   try { localStorage.setItem(HAB_LS, JSON.stringify([...new Set(ids)].slice(0, 12))); return true; }
   catch (e) { return false; }
 };
+/* La lista de la casa sirve de relleno en el carrito, pero no alcanza para
+   decirle "lo de siempre" a alguien que entra por primera vez. Esto distingue
+   una cosa de la otra. */
+const habitualesPropios = () => {
+  try { const x = JSON.parse(localStorage.getItem(HAB_LS)); return Array.isArray(x) && x.filter((id) => prod(id)).length > 0; }
+  catch (e) { return false; }
+};
+
 const habitualesDe = () => {
   let propios = null;
   try { propios = JSON.parse(localStorage.getItem(HAB_LS)); } catch (e) {}
@@ -198,7 +206,7 @@ const buscar = (q) => {
   });
 };
 return { NEGOCIO, CATEGORIAS, FAMILIAS, PRODUCTOS, DESTACADOS, HABITUALES, ENVIO, cargar, estaCargado,
-  guardarHabituales, habitualesDe,
+  guardarHabituales, habitualesDe, habitualesPropios,
   catsVisibles, famsVisibles, dentroDeZona, cotizarEnvio,
   zonaDe, costoEnvio, precio, cat, prod, nombreSub, stockDe, subtotalDe, familiasDe, porFamilia, buscar,
   urlProducto, clicPropio };
