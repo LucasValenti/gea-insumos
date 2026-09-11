@@ -517,13 +517,10 @@
           }
       </div>
 
-      {relacionados.length > 0 &&
-        <section className="sec">
-          <div className="pad sec-h"><h2>Otros de {catDe(p.cat).nombre.toLowerCase()}</h2></div>
-          <div className="rail-prod">{relacionados.map((x) => <Tarjeta key={x.id} p={x} ir={ir} onAgregar={agregar} />)}</div>
-        </section>
-        }
-
+      {/* Antes iba después del riel de relacionados: con teclado había que pasar
+          por cuatro productos que nadie eligió para llegar a comprar el que se
+          está mirando. Y en escritorio, donde esta barra va en el flujo y no
+          pegada abajo, encima se veía después. */}
       {editorial &&
         <div className="accion">
           <div className="fila">
@@ -538,6 +535,13 @@
                 </Boton>}
           </div>
         </div>
+        }
+
+      {relacionados.length > 0 &&
+        <section className="sec">
+          <div className="pad sec-h"><h2>Otros de {catDe(p.cat).nombre.toLowerCase()}</h2></div>
+          <div className="rail-prod">{relacionados.map((x) => <Tarjeta key={x.id} p={x} ir={ir} onAgregar={agregar} />)}</div>
+        </section>
         }
       <Pie ir={ir} />
     </>);

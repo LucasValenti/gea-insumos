@@ -277,11 +277,33 @@ function Acordeon({ titulo, children, abierto = false }) {
   );
 }
 
+/* Un radiogroup de verdad, no doce botones sueltos. Cada tono era una parada de
+   tabulación: en una ficha de once tonos, llegar al botón de comprar costaba
+   once Tab de más, y encima el grupo decía "presionado" en vez de "elegido".
+   Ahora el grupo entero es una parada y adentro se mueve con las flechas, que es
+   como se opera un grupo de opciones. Los agotados siguen fuera del recorrido. */
 function GrillaTonos({ tonos, valor, onElegir }) {
+  const caja = React.useRef(null);
+  const dispo = tonos.filter((t) => t.stock > 0);
+  /* Si el elegido se quedó sin stock, el foco lo toma el primero disponible: sin
+     esto el grupo entero se queda sin una sola parada y no se puede entrar. */
+  const foco = dispo.some((t) => t.nombre === valor) ? valor : (dispo[0] || {}).nombre;
+  const mover = (e) => {
+    const paso = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (!paso || dispo.length === 0) return;
+    e.preventDefault();
+    const i = dispo.findIndex((t) => t.nombre === foco);
+    const sig = dispo[((i < 0 ? 0 : i) + paso + dispo.length) % dispo.length];
+    onElegir(sig.nombre);
+    const b = caja.current && caja.current.querySelector('[data-tono="' + CSS.escape(sig.nombre) + '"]');
+    if (b) b.focus();
+  };
   return (
-    <div className="tonos-gr">
+    <div className="tonos-gr" role="radiogroup" ref={caja} onKeyDown={mover}>
       {tonos.map((t) => (
-        <button key={t.nombre} className="tono" aria-pressed={valor === t.nombre} data-agotado={t.stock === 0}
+        <button key={t.nombre} type="button" className="tono" role="radio" data-tono={t.nombre}
+          aria-checked={valor === t.nombre} data-agotado={t.stock === 0}
+          tabIndex={t.nombre === foco ? 0 : -1}
           onClick={() => t.stock > 0 && onElegir(t.nombre)} disabled={t.stock === 0}>
           <s style={{ background: t.hex }}></s><span>{t.nombre}</span>
         </button>

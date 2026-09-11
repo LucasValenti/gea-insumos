@@ -1,6 +1,11 @@
 .wrap{max-width:var(--maxw);margin:0 auto;padding-inline:1.25rem}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
+/* Salto al contenido. Fuera de pantalla hasta que el teclado lo alcanza: no usa
+   .sr porque tiene que poder verse — un salto invisible no le sirve a nadie. */
+.saltar{position:fixed;left:.75rem;top:.75rem;z-index:70;transform:translateY(-180%);transition:transform var(--dur) var(--sal,ease);background:var(--surface);color:var(--ink);border:1px solid var(--ink);border-radius:var(--radio-boton);padding:.7rem 1.2rem;font-size:var(--fs-btn);font-weight:500;letter-spacing:var(--track-btn);text-transform:uppercase}
+.saltar:focus{transform:translateY(0)}
+
 /* el filete de la marca, repetido como estructura */
 .titulo-seccion{font-family:var(--serif);font-weight:500;font-size:1.5rem;margin:0;line-height:1.2}
 

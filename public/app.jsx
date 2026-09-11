@@ -521,6 +521,14 @@ function App() {
           <aside className="aviso" aria-label="Condiciones de compra">{cond.join(" · ")}</aside>
         ) : null;
       })()}
+      {/* Con teclado, cada pantalla arrancaba por el header: buscador, tema,
+          pedido y las pestañas, una y otra vez, antes de llegar a lo que se vino
+          a mirar. Va primero en el marcado y solo se ve cuando tiene el foco. */}
+      <a className="saltar" href="#contenido" onClick={(e) => {
+        e.preventDefault();
+        const m = document.getElementById("contenido");
+        if (m) { m.focus(); m.scrollIntoView(); }
+      }}>Saltar al contenido</a>
       <div ref={sent} className="sentinela" aria-hidden="true"></div>
       <header className="barra-top">
         <div className="barra-top-in">
@@ -541,7 +549,9 @@ function App() {
         {!esc && busca && campoBusca}
       </header>
 
-      <main className={"vista " + entra} key={ruta.v} style={{ "--animate-duration": expr ? ".52s" : ".38s" }}>{P}</main>
+      {/* tabIndex -1: sin eso el salto mueve el scroll pero no el foco, y el
+          teclado sigue donde estaba. */}
+      <main id="contenido" tabIndex={-1} className={"vista " + entra} key={ruta.v} style={{ "--animate-duration": expr ? ".52s" : ".38s" }}>{P}</main>
 
       {!esc && (
         <nav className="barra-bot" aria-label="Secciones">

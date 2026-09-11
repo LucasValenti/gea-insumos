@@ -39,7 +39,7 @@
     const etiqueta = !datos ? "Se calcula en el checkout" :
     datos.envio === "retiro" ? "Retiro en local · sin cargo" :
     datos.envio === "transporte" ? "Lo abonás al transporte" :
-    env === null ? (ENV.mapa ? (datos.lat == null ? "Marcá el mapa para calcular" : "Se cotiza por chat")
+    env === null ? (ENV.mapa ? (datos.lat == null && !z ? "Marcá el mapa o elegí tu zona" : "Se cotiza por chat")
       : z ? "Se cotiza por chat" : "Elegí la zona para calcular") :
     env === 0 ? "Sin cargo" : null;
     const t = sub + (env || 0);
@@ -177,8 +177,8 @@
     const faltan = [
       !datos.nombre.trim() && "tu nombre",
       digitos(datos.tel) < 8 && "un WhatsApp válido",
-      datos.envio === "domicilio" && (ENV.mapa ? datos.lat == null : !datos.zona)
-        && (ENV.mapa ? "marcar en el mapa dónde te lo llevamos" : "la zona de envío"),
+      datos.envio === "domicilio" && (ENV.mapa ? (datos.lat == null && !datos.zona) : !datos.zona)
+        && (ENV.mapa ? "marcar el mapa o elegir tu zona" : "la zona de envío"),
       datos.envio === "domicilio" && !datos.direccion.trim() && "la dirección",
       datos.envio === "transporte" && !(datos.transporte || "").trim() && "el transporte",
       NEG.minimo > 0 && sub < NEG.minimo && `llegar al mínimo mayorista de ${$$(NEG.minimo)} (faltan ${$$(NEG.minimo - sub)})`,
@@ -208,11 +208,15 @@
                   pedir el pin sería hacer declarar dos veces lo mismo, y las dos
                   respuestas podrían no coincidir. */}
               {ENV.mapa ? (
-                <MapaEnvio zona={ENV.mapa.zona} conPrecios={ENV.mapa.conPrecios}
-                  punto={datos.lat == null ? null : { lat: datos.lat, lng: datos.lng }}
-                  sub={sub}
-                  onPunto={(p) => setDatos({ ...datos, lat: p ? p.lat : null, lng: p ? p.lng : null, envioCosto: null })}
-                  onCosto={(c) => setDatos((x) => ({ ...x, envioCosto: c }))} />
+                <>
+                  <MapaEnvio zona={ENV.mapa.zona} conPrecios={ENV.mapa.conPrecios}
+                    punto={datos.lat == null ? null : { lat: datos.lat, lng: datos.lng }}
+                    sub={sub}
+                    onPunto={(p) => setDatos({ ...datos, lat: p ? p.lat : null, lng: p ? p.lng : null, zona: p ? "" : datos.zona, envioCosto: null })}
+                    onCosto={(c) => setDatos((x) => ({ ...x, envioCosto: c }))} />
+                  <ZonaAMano zonas={ENV.zonas} valor={datos.zona}
+                    onElegir={(id) => setDatos({ ...datos, zona: id, lat: null, lng: null, envioCosto: null })} />
+                </>
               ) : (
                 <>
                   <span className="lbl">Zona de envío</span>
@@ -253,9 +257,12 @@
               {carrito.map((it) => <li key={it.id + (it.tono || "")}><span>{it.n} × {prodP(it.id).nombre}{it.tono ? ` · ${it.tono}` : ""}</span><span className="num">{$$(prodP(it.id).precio * it.n)}</span></li>)}
             </ul>
             <div className="carro-cta">
-              {falta && <span className="carro-aviso">{aviso}</span>}
+              {/* role="status" y no "alert": esto se recalcula con cada tecla que
+                  se escribe, y un alert interrumpiría al lector en cada letra.
+                  Educado avisa igual, sin atropellar. */}
+              {falta && <span className="carro-aviso" id="falta-lado" role="status">{aviso}</span>}
               {rechazo && <span className="carro-aviso" role="alert">{rechazo}</span>}
-              <Boton variante="primary" tamano="lg" style={{ width: "100%", opacity: falta || enviando ? .45 : 1 }} disabled={falta || enviando} onClick={() => !falta && mandar()}>
+              <Boton variante="primary" tamano="lg" aria-describedby={falta ? "falta-lado" : undefined} style={{ width: "100%", opacity: falta || enviando ? .45 : 1 }} disabled={falta || enviando} onClick={() => !falta && mandar()}>
                 <I n="wa" size="16px" /> {enviando ? "Registrando…" : "Enviar el pedido"}
               </Boton>
             </div>
@@ -263,9 +270,9 @@
         </aside>
       </div>
       <div className="accion accion-checkout">
-        {falta && <span style={{ fontSize: ".76rem", color: "var(--ink-faint)" }}>{aviso}</span>}
+        {falta && <span id="falta-barra" role="status" style={{ fontSize: ".76rem", color: "var(--ink-faint)" }}>{aviso}</span>}
         {!falta && rechazo && <span role="alert" style={{ fontSize: ".76rem", color: "var(--acento)" }}>{rechazo}</span>}
-        <Boton variante="primary" tamano="lg" disabled={falta || enviando} style={{ opacity: falta || enviando ? .45 : 1 }} onClick={() => !falta && mandar()}>
+        <Boton variante="primary" tamano="lg" aria-describedby={falta ? "falta-barra" : undefined} disabled={falta || enviando} style={{ opacity: falta || enviando ? .45 : 1 }} onClick={() => !falta && mandar()}>
           <I n="wa" size="16px" /> Enviar el pedido · {$$(sub + (env || 0))}{env == null && datos.zona ? " + envío" : ""}
         </Boton>
       </div>
@@ -383,6 +390,41 @@
    * distancia se mide desde la casa de la clienta, y ese punto no sale del
    * servidor. Lo único que baja acá es el polígono, que es público de todos
    * modos: es la zona a la que se reparte. */
+  /* La salida para quien no puede poner el pin.
+     El mapa sigue mandando: es más preciso y cobra mejor. Pero era el único
+     camino, y el único camino no alcanza — sin mouse, con el permiso de
+     ubicación denegado o con lector de pantalla, el pin no se podía poner y
+     "Enviar el pedido" quedaba apagado para siempre.
+     Se sostiene la regla que ya estaba escrita acá: nunca se declaran las dos
+     cosas. Elegir zona saca el pin, y poner el pin borra la zona. */
+  function ZonaAMano({ zonas, valor, onElegir }) {
+    const [abierto, setAbierto] = React.useState(!!valor);
+    if (!zonas || zonas.length === 0) return null;
+    return (
+      <div style={{ margin: ".85rem 0 1.1rem" }}>
+        <button type="button" className="btn btn-ghost" style={{ width: "100%" }}
+          aria-expanded={abierto} onClick={() => setAbierto((v) => !v)}>
+          {valor ? "Cambiar la zona" : "No puedo marcar el mapa"}
+        </button>
+        {abierto &&
+          <div style={{ marginTop: ".85rem" }}>
+            <span className="lbl">Elegí tu zona</span>
+            <div role="radiogroup" aria-label="Zona de envío" style={{ display: "grid", gap: ".5rem", margin: ".6rem 0 0" }}>
+              {zonas.map((z) =>
+                <Opcion key={z.id} activa={valor === z.id} titulo={z.nombre}
+                  detalle={z.costo == null ? z.plazo : `${$$(z.costo)} · llega en ${z.plazo}`}
+                  onClick={() => onElegir(z.id)} />
+              )}
+            </div>
+            <p style={{ margin: ".7rem 0 0", fontSize: ".76rem", color: "var(--ink-faint)" }}>
+              Elegir la zona saca el pin del mapa: vale una cosa o la otra, no las dos.
+            </p>
+          </div>
+        }
+      </div>
+    );
+  }
+
   function MapaEnvio({ zona, conPrecios, punto, onPunto, onCosto, sub }) {
     const caja = React.useRef(null);
     const mapa = React.useRef(null);
@@ -487,8 +529,12 @@
             <div ref={caja} className="mapa-envio" role="application"
               aria-label="Mapa de la zona de envío. Tocá para marcar tu ubicación." />
             <div className="mapa-acciones">
-              <button type="button" className="pa-cancela" onClick={ubicarme}>Usar mi ubicación</button>
-              {punto && <button type="button" className="pa-cancela" onClick={() => onPunto(null)}>Sacar el pin</button>}
+              {/* Estos dos vivían con la clase pa-cancela, que solo existe en el
+                  CSS del panel: la tienda no lo carga, así que renderizaban con
+                  el estilo por defecto del navegador —esquinas rectas incluidas—
+                  en el paso más delicado del pedido. */}
+              <button type="button" className="btn btn-ghost" onClick={ubicarme}>Usar mi ubicación</button>
+              {punto && <button type="button" className="btn btn-ghost" onClick={() => onPunto(null)}>Sacar el pin</button>}
             </div>
           </>
         )}

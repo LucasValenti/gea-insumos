@@ -230,7 +230,7 @@ button{color:inherit}
 .tonos-gr{display:grid;grid-template-columns:repeat(auto-fill,minmax(4.4rem,1fr));gap:.55rem}
 .tono{border:1px solid var(--hairline);border-radius:var(--radio);background:var(--surface);padding:.45rem;cursor:pointer;display:grid;gap:.35rem;justify-items:center;text-align:center;transition:border-color var(--dur) var(--ease)}
 .tono:hover{border-color:var(--nude-300)}
-.tono[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.tono[aria-checked="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
 .tono s{width:100%;aspect-ratio:1;border-radius:999px;border:1px solid color-mix(in oklab,var(--ink) 14%,transparent);box-shadow:var(--shadow-tono);text-decoration:none}
 .tono span{font-size:.62rem;line-height:1.25;color:var(--ink-soft)}
 .tono[data-agotado="true"]{opacity:.45}

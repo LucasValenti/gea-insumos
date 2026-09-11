@@ -126,7 +126,11 @@ const costoEnvio = (datos, sub) => {
      /api/envio: viaja en datos solo para mostrarlo. El que vale es el que el
      servidor vuelve a calcular al registrar el pedido, así que tocar este acá
      no abarata nada. */
-  if (ENVIO.mapa) return datos.lat == null ? null : (datos.envioCosto ?? null);
+  /* Con pin puesto manda el pin. Sin pin, cae a la lista de zonas: es el
+     camino de quien no puede marcar el mapa —sin mouse, sin permiso de
+     ubicación, con lector de pantalla— y antes no existía, así que el pedido
+     no se podía cerrar nunca. */
+  if (ENVIO.mapa && datos.lat != null) return datos.envioCosto ?? null;
   const z = zonaDe(datos.zona);
   if (!z || z.costo == null) return null;
   return sub >= ENVIO.gratisDesde ? 0 : z.costo;
