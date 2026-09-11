@@ -375,6 +375,11 @@
         "section": "typography"
       },
       {
+        "name": "La Regla del Escalon",
+        "body": "Ningun tamano de tipografia se escribe a mano. Si el que hace falta no esta en la escala, se discute el escalon; no se inventa un numero al lado. Prueba: buscar font-size: seguido de un numero en public/tienda/ tiene que dar cero resultados.",
+        "section": "typography"
+      },
+      {
         "name": "La Regla del Tracking Inverso",
         "body": "Cuanto mas chica la tipografia, mas suelta: la marca respira a .18em y .42em, las etiquetas gritan bajito a .18em, los botones van a .13em. Un texto de .6rem con tracking normal es un error de sistema.",
         "section": "typography"
@@ -408,7 +413,7 @@
       "Don't usar el nude de marca como color de texto, ni --nude-300 o --nude-400 para tinta. Para rosa legible existe --nude-600, y solo ese.",
       "Don't agregar una sombra nueva. Hay una sola, y aparece por reaccion.",
       "Don't escribir un border-radius a mano. Si no es --radio ni --radio-boton, esta mal.",
-      "Don't inventar un tamano de tipografia micro nuevo. Ya hay catorce escritos a mano en la tienda: esa es la deuda mas grande del sistema, no un precedente.",
+      "Don't escribir un tamano de tipografia a mano. Eran 44 valores distintos en 125 lugares y ahora son catorce escalones con nombre: si el que necesitas no esta, se agrega al sistema, no al componente.",
       "Don't usar el vino en un cuarto lugar.",
       "Don't mostrar cuentas regresivas, precios tachados que no correspondan a un precio anterior real, ni avisos de unidades restantes inventados. La honestidad del precio y del stock es el producto.",
       "Don't dejar una foto ausente como un rectangulo gris: el sistema ya tiene dos respuestas para eso, el campo de color y la placa de marca.",

@@ -53,7 +53,12 @@ function InterruptorTema({ oscuro, onClick }) {
 }
 
 function Marca({ tamano = "medio", colorInsumos }) {
-  const T = { chico: { g: "1rem", i: ".3rem" }, medio: { g: "1.2rem", i: ".34rem" }, grande: { g: "2.2rem", i: ".62rem" } }[tamano];
+  /* "INSUMOS" corría a 4,8px en el logo chico y 5,44 en el del header: aun
+     siendo marca y no texto de interfaz, a esa altura no se lee en un teléfono.
+     Sube ~20% y el bloque conserva su proporción —GEA sigue mandando casi tres
+     a uno—, pero la palabra ahora se distingue. Si el cliente quiere la
+     proporción exacta de antes, se vuelve tocando estos tres números. */
+  const T = { chico: { g: "1rem", i: ".37rem" }, medio: { g: "1.2rem", i: ".42rem" }, grande: { g: "2.2rem", i: ".72rem" } }[tamano];
   return (
     <span style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", lineHeight: 1 }}>
       <span style={{ fontFamily: "var(--serif)", fontWeight: 500, letterSpacing: ".18em", textIndent: ".18em", fontSize: T.g }}>GEA</span>
@@ -64,7 +69,7 @@ function Marca({ tamano = "medio", colorInsumos }) {
 }
 
 function Boton({ variante = "primary", tamano = "md", ancho, children, style, href, ...r }) {
-  const T = { sm: { padding: ".6rem .85rem", fontSize: "var(--fs-btn-sm)" }, md: { padding: ".8rem 1.2rem", fontSize: "var(--fs-btn)" }, lg: { padding: "1rem 1.5rem", fontSize: ".8rem", minHeight: 52 } }[tamano];
+  const T = { sm: { padding: ".6rem .85rem", fontSize: "var(--fs-btn-sm)" }, md: { padding: ".8rem 1.2rem", fontSize: "var(--fs-btn)" }, lg: { padding: "1rem 1.5rem", fontSize: "var(--fs-5)", minHeight: 52 } }[tamano];
   const p = { className: `btn btn-${variante}`, style: { ...T, width: ancho ? "100%" : undefined, ...style }, ...r };
   return href ? <a href={href} {...p}>{children}</a> : <button type="button" {...p}>{children}</button>;
 }
@@ -339,7 +344,7 @@ function SelectorTono({ p, onAgregar, onCerrar, destino }) {
   const t = p.tonos.find((x) => x.nombre === tono);
   return (
     <Hoja titulo={p.nombre} onCerrar={onCerrar} destino={destino}>
-      <p style={{ margin: "0 0 .9rem", fontSize: ".84rem", color: "var(--ink-soft)" }}>{p.tonos.length} tonos · {precio(p.precio)} cada uno</p>
+      <p style={{ margin: "0 0 .9rem", fontSize: "var(--fs-6)", color: "var(--ink-soft)" }}>{p.tonos.length} tonos · {precio(p.precio)} cada uno</p>
       <GrillaTonos tonos={p.tonos} valor={tono} onElegir={setTono} />
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", margin: "1.1rem 0 .9rem" }}>
         <Stock p={p} tono={tono} />
@@ -356,7 +361,7 @@ function Pie({ ir }) {
   const { NEGOCIO } = window.T;
   return (
     <footer className="pie">
-      <div><Marca colorInsumos="var(--nude-600)" /><p style={{ margin: ".9rem 0 0", fontSize: ".84rem", color: "var(--ink-soft)", maxWidth: "22rem" }}>Insumos y artículos de belleza. Armás el pedido acá y lo cerramos por WhatsApp.</p></div>
+      <div><Marca colorInsumos="var(--nude-600)" /><p style={{ margin: ".9rem 0 0", fontSize: "var(--fs-6)", color: "var(--ink-soft)", maxWidth: "22rem" }}>Insumos y artículos de belleza. Armás el pedido acá y lo cerramos por WhatsApp.</p></div>
       <div><h2>Catálogo</h2><div style={{ display: "grid", gap: ".35rem", justifyItems: "start" }}>{window.T.catsVisibles().slice(0, 5).map((c) => <button type="button" key={c.id} onClick={() => ir({ v: "catalogo", cat: c.id })}>{c.nombre}</button>)}</div></div>
       <div><h2>Ayuda</h2><div style={{ display: "grid", gap: ".35rem" }}>
         <button type="button" onClick={() => ir({ v: "ayuda" })}>Cómo comprar</button>

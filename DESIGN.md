@@ -41,7 +41,7 @@ typography:
     lineHeight: 1.3
   price:
     fontFamily: "Playfair Display, Georgia, Times New Roman, serif"
-    fontSize: "1.2rem"
+    fontSize: "1.25rem"
     fontWeight: 500
     lineHeight: 1.15
     letterSpacing: "-0.01em"
@@ -52,7 +52,7 @@ typography:
     lineHeight: 1.6
   label:
     fontFamily: "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif"
-    fontSize: "0.66rem"
+    fontSize: "0.68rem"
     fontWeight: 500
     letterSpacing: "0.18em"
   eyebrow:
@@ -259,6 +259,18 @@ lee corrido, se navega o se etiqueta va en Inter. El logo es esa misma tensión 
 dos palabras: "GEA" en Playfair con `.18em` de tracking, "INSUMOS" en Inter con
 `.42em`, separados por un filete.
 
+### La escala
+
+Catorce escalones, de `.55rem` a `2rem`, con razón ~1.09 abajo y ~1.12 arriba:
+`--fs-1` a `--fs-14` en `public/tokens/typography.css`. Encima viven los nombres
+por rol —`--fs-eyebrow`, `--fs-label`, `--fs-btn`, `--fs-section`…—, que son la
+puerta de entrada y apuntan a un escalón, nunca a un número suelto.
+
+La escala se derivó del código, no al revés: había **44 tamaños distintos
+escritos a mano en 125 lugares**, y los escalones se pusieron sobre los valores
+que más se usaban, así que casi nada se movió más de `.02rem` y nada más de
+`.05rem`.
+
 ### Hierarchy
 
 - **Display** (Playfair 500, `clamp(1.8rem, 7.4vw, 2.35rem)` en celular y
@@ -268,11 +280,11 @@ dos palabras: "GEA" en Playfair con `.18em` de tracking, "INSUMOS" en Inter con
   1.2): encabezados de sección. `.titulo-seccion` es su forma canónica.
 - **Title** (Playfair 500, .9rem en celular y 1rem en escritorio, línea 1.3):
   nombre de producto en la tarjeta, cortado a dos líneas.
-- **Price** (Playfair, 1.22rem en tarjeta y 2rem en ficha, tracking `-.01em`): el
+- **Price** (Playfair, 1.25rem en tarjeta y 2rem en ficha, tracking `-.01em`): el
   precio se compone como un título, no como un dato. Rebajado toma el vino, y el
   precio anterior va al lado en Inter .72rem tachado.
 - **Body** (Inter 400, 1rem, línea 1.6): texto corrido y valores de formulario.
-- **Label** (Inter 500, .66rem, tracking `.18em`, versales): etiquetas de campo,
+- **Label** (Inter 500, .68rem, tracking `.18em`, versales): etiquetas de campo,
   encabezados del pie, la cuenta de resultados.
 - **Eyebrow** (Inter 400, .6rem, tracking `.16em`, versales): la categoría arriba
   del nombre en la tarjeta, "ver más", los avisos de condiciones.
@@ -282,6 +294,11 @@ dos palabras: "GEA" en Playfair con `.18em` de tracking, "INSUMOS" en Inter con
 **La Regla de las Dos Familias.** Playfair en títulos, nombres de producto y
 precios. Inter en todo lo demás. No hay una tercera familia y no hay un caso que
 la justifique.
+
+**La Regla del Escalón.** Ningún tamaño de tipografía se escribe a mano. Si el
+que hace falta no está en la escala, se discute el escalón; no se inventa un
+número al lado. Prueba de auditoría: buscar `font-size:` seguido de un número en
+`public/tienda/` tiene que dar cero resultados.
 
 **La Regla del Tracking Inverso.** Cuanto más chica la tipografía, más suelta: la
 marca respira a `.18em` y `.42em`, las etiquetas gritan bajito a `.18em`, los
@@ -517,8 +534,9 @@ por opacidad. Un componente, dos gramáticas completas.
 - **Don't** agregar una sombra nueva. Hay una sola, y aparece por reacción.
 - **Don't** escribir un `border-radius` a mano. Si no es `--radio` ni
   `--radio-boton`, está mal.
-- **Don't** inventar un tamaño de tipografía micro nuevo. Ya hay catorce escritos
-  a mano en la tienda: esa es la deuda más grande del sistema, no un precedente.
+- **Don't** escribir un tamaño de tipografía a mano. Eran 44 valores distintos en
+  125 lugares y ahora son catorce escalones con nombre: si el que necesitás no
+  está, se agrega al sistema, no al componente.
 - **Don't** usar el vino en un cuarto lugar.
 - **Don't** mostrar cuentas regresivas, precios tachados que no correspondan a un
   precio anterior real, ni avisos de unidades restantes inventados. La honestidad

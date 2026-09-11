@@ -10,21 +10,42 @@
   --leading-body:1.6;
   --leading-title:1.2;
 
-  /* escala en rem, tal como aparece en el código fuente */
-  --fs-eyebrow-xs:.55rem;   /* etiqueta "Foto pendiente" */
-  --fs-eyebrow:.6rem;       /* categoría en tarjeta */
-  --fs-label:.66rem;        /* dt, h2 de pie, cuenta */
-  --fs-btn:.74rem;
-  --fs-btn-sm:.67rem;       /* botón dentro de tarjeta */
-  --fs-nav:.76rem;
-  --fs-meta:.78rem;
-  --fs-count:.82rem;
-  --fs-small:.88rem;
-  --fs-body:1rem;
-  --fs-card-title:1rem;
-  --fs-price-card:1.2rem;
-  --fs-section:1.5rem;
-  --fs-price-ficha:2rem;
+  /* La escala. Catorce escalones, razón ~1.09 abajo y ~1.12 arriba.
+     Antes no había escala: 44 tamaños distintos escritos a mano en 125 lugares,
+     cada componente inventando el suyo. Los escalones caen sobre los valores que
+     el código ya usaba más, así que casi nada se movió más de .02rem y nada más
+     de .05rem. */
+  --fs-1:.55rem;
+  --fs-2:.6rem;
+  --fs-3:.68rem;
+  --fs-4:.74rem;
+  --fs-5:.8rem;
+  --fs-6:.86rem;
+  --fs-7:.92rem;
+  --fs-8:1rem;
+  --fs-9:1.1rem;
+  --fs-10:1.25rem;
+  --fs-11:1.4rem;
+  --fs-12:1.5rem;
+  --fs-13:1.75rem;
+  --fs-14:2rem;
+
+  /* Los nombres por rol que el código ya pedía. Siguen valiendo: son la puerta
+     de entrada, y apuntan a un escalón en vez de a un número suelto. */
+  --fs-eyebrow-xs:var(--fs-1);  /* etiqueta "Foto pendiente" */
+  --fs-eyebrow:var(--fs-2);     /* categoría en tarjeta */
+  --fs-label:var(--fs-3);       /* dt, h2 de pie, cuenta */
+  --fs-btn-sm:var(--fs-3);      /* botón dentro de tarjeta */
+  --fs-btn:var(--fs-4);
+  --fs-nav:var(--fs-4);
+  --fs-meta:var(--fs-5);
+  --fs-count:var(--fs-5);
+  --fs-small:var(--fs-6);
+  --fs-body:var(--fs-8);
+  --fs-card-title:var(--fs-8);
+  --fs-price-card:var(--fs-10);
+  --fs-section:var(--fs-12);
+  --fs-price-ficha:var(--fs-14);
 
   /* letter-spacing: la marca respira, las etiquetas gritan bajito */
   --track-btn:.13em;

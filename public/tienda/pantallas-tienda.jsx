@@ -205,10 +205,10 @@
 
         <section style={{ background: "var(--surface)", borderBottom: "1px solid var(--hairline)", paddingBottom: ".4rem" }}>
           <div className="pad" style={{ paddingBlock: "1.1rem .3rem", display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "1rem" }}>
-            <h1 className="serif" style={{ fontSize: "1.25rem", margin: 0 }}>Reponé lo de siempre</h1>
+            <h1 className="serif" style={{ fontSize: "var(--fs-10)", margin: 0 }}>Reponé lo de siempre</h1>
             <button className="ver-mas" onClick={() => ir({ v: "catalogo" })}>Todo el catálogo</button>
           </div>
-          <p className="pad" style={{ margin: "0 0 .8rem", fontSize: ".82rem", color: "var(--ink-soft)" }}>Lo que más pediste, listo para sumar de un toque.</p>
+          <p className="pad" style={{ margin: "0 0 .8rem", fontSize: "var(--fs-5)", color: "var(--ink-soft)" }}>Lo que más pediste, listo para sumar de un toque.</p>
           <div className="pad"><Reposicion ir={ir} agregar={agregar} enPedido={enPedido} /></div>
           <div className="pad" style={{ paddingTop: ".8rem" }}>
             {/* El "6" estaba escrito a mano y la lista ahora puede ser la que
@@ -358,13 +358,13 @@
         }
 
       <div className="pad" style={{ paddingTop: "1.4rem" }}>
-        <h1 className="serif" style={{ margin: 0, fontSize: "1.6rem", lineHeight: 1.15 }}>{titulo}</h1>
-        {!fam && c !== "todos" && <p style={{ margin: ".35rem 0 0", color: "var(--ink-soft)", fontSize: ".9rem" }}>{catDe(c).desc}</p>}
-        {fam && <p style={{ margin: ".35rem 0 0", color: "var(--ink-soft)", fontSize: ".9rem" }}>Productos disponibles en estos colores. Elegís el color exacto al agregar.</p>}
+        <h1 className="serif" style={{ margin: 0, fontSize: "var(--fs-12)", lineHeight: 1.15 }}>{titulo}</h1>
+        {!fam && c !== "todos" && <p style={{ margin: ".35rem 0 0", color: "var(--ink-soft)", fontSize: "var(--fs-7)" }}>{catDe(c).desc}</p>}
+        {fam && <p style={{ margin: ".35rem 0 0", color: "var(--ink-soft)", fontSize: "var(--fs-7)" }}>Productos disponibles en estos colores. Elegís el color exacto al agregar.</p>}
       </div>
 
       <div className="pad" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", padding: ".9rem 1rem .8rem" }}>
-        <span style={{ fontSize: ".8rem", color: "var(--ink-faint)" }} className="num">{lista.length} {lista.length === 1 ? "producto" : "productos"}</span>
+        <span style={{ fontSize: "var(--fs-5)", color: "var(--ink-faint)" }} className="num">{lista.length} {lista.length === 1 ? "producto" : "productos"}</span>
         <button className="chip" onClick={() => setFiltros(true)} style={{ display: "flex", gap: ".4rem", alignItems: "center" }}><I n="filtro" size="14px" /> Ordenar y filtrar</button>
       </div>
 
@@ -418,13 +418,13 @@
           </> :
           res.length ?
           <>
-            <p className="num" style={{ margin: "0 0 1rem", fontSize: ".82rem", color: "var(--ink-faint)" }}>{res.length} {res.length === 1 ? "resultado" : "resultados"} para “{q}”</p>
+            <p className="num" style={{ margin: "0 0 1rem", fontSize: "var(--fs-5)", color: "var(--ink-faint)" }}>{res.length} {res.length === 1 ? "resultado" : "resultados"} para “{q}”</p>
             <div className="gr">{res.map((p) => <Tarjeta key={p.id} p={p} ir={ir} onAgregar={agregar} />)}</div>
           </> :
 
           <div className="vacio">
             <span>No encontramos nada para “{q}”.</span>
-            <span style={{ fontSize: ".85rem" }}>Probá con el tipo de producto (removedor, gel, lima) o la marca.</span>
+            <span style={{ fontSize: "var(--fs-6)" }}>Probá con el tipo de producto (removedor, gel, lima) o la marca.</span>
             <Boton variante="ghost" onClick={() => {setQ("");ir({ v: "catalogo" });}}>Ver todo el catálogo</Boton>
           </div>
           }
@@ -468,21 +468,21 @@
             <div style={{ paddingTop: "1.1rem" }}>
               <span className="lbl">{p.marca} · {catDe(p.cat).nombre}{p.sub ? ` · ${nombreSub(p.cat, p.sub)}` : ""}</span>
               <h1 className="serif h1-ficha" style={{ margin: ".45rem 0 0" }}>{p.nombre}</h1>
-              <p className={"serif num" + (p.precioAntes ? " precio-oferta" : "")} style={{ fontSize: "1.9rem", margin: "1rem 0 .2rem" }}>{$(p.precio)}{p.precioAntes && <span className="antes" style={{ fontSize: ".9rem" }}>{$(p.precioAntes)}</span>}</p>
-              <p style={{ margin: 0, fontSize: ".78rem", color: "var(--ink-faint)" }}>Precio por unidad</p>
+              <p className={"serif num" + (p.precioAntes ? " precio-oferta" : "")} style={{ fontSize: "var(--fs-14)", margin: "1rem 0 .2rem" }}>{$(p.precio)}{p.precioAntes && <span className="antes" style={{ fontSize: "var(--fs-7)" }}>{$(p.precioAntes)}</span>}</p>
+              <p style={{ margin: 0, fontSize: "var(--fs-5)", color: "var(--ink-faint)" }}>Precio por unidad</p>
               <div style={{ margin: "1rem 0 0" }}><Stock p={p} tono={tono} /></div>
               {p.desc && <p style={{ margin: "1.2rem 0 0", color: "var(--ink-soft)" }}>{p.desc}</p>}
               {p.incluye &&
               <div style={{ marginTop: "1.3rem" }}>
                   <span className="lbl">Qué incluye</span>
                   <ul style={{ margin: ".6rem 0 0", padding: 0, listStyle: "none", display: "grid", gap: ".4rem" }}>
-                    {p.incluye.map((x) => <li key={x} style={{ display: "flex", gap: ".55rem", fontSize: ".9rem", color: "var(--ink-soft)" }}><span style={{ color: "var(--nude-400)" }}><I n="check" size="14px" /></span>{x}</li>)}
+                    {p.incluye.map((x) => <li key={x} style={{ display: "flex", gap: ".55rem", fontSize: "var(--fs-7)", color: "var(--ink-soft)" }}><span style={{ color: "var(--nude-400)" }}><I n="check" size="14px" /></span>{x}</li>)}
                   </ul>
                 </div>
               }
               {p.tonos &&
               <div style={{ marginTop: "1.5rem" }}>
-                  <div className="tono-head"><span className="lbl">Color</span><span style={{ fontSize: ".84rem" }}>{tono}</span></div>
+                  <div className="tono-head"><span className="lbl">Color</span><span style={{ fontSize: "var(--fs-6)" }}>{tono}</span></div>
                   <GrillaTonos tonos={p.tonos} valor={tono} onElegir={setTono} />
                 </div>
               }
@@ -495,14 +495,14 @@
               <Foto p={p} tono={t} className="foto" />
               <div>
                 <span className="eyebrow">{p.marca}</span>
-                <h1 className="serif" style={{ margin: ".2rem 0 0", fontSize: "1.35rem", lineHeight: 1.2 }}>{p.nombre}</h1>
-                <p className={"serif num" + (p.precioAntes ? " precio-oferta" : "")} style={{ fontSize: "1.55rem", margin: ".55rem 0 .3rem" }}>{$(p.precio)}{p.precioAntes && <span className="antes">{$(p.precioAntes)}</span>}</p>
+                <h1 className="serif" style={{ margin: ".2rem 0 0", fontSize: "var(--fs-11)", lineHeight: 1.2 }}>{p.nombre}</h1>
+                <p className={"serif num" + (p.precioAntes ? " precio-oferta" : "")} style={{ fontSize: "var(--fs-12)", margin: ".55rem 0 .3rem" }}>{$(p.precio)}{p.precioAntes && <span className="antes">{$(p.precioAntes)}</span>}</p>
                 <Stock p={p} tono={tono} />
               </div>
             </div>
             {p.tonos &&
             <div style={{ marginTop: "1.2rem" }}>
-                <div className="tono-head"><span className="lbl">Color · {p.tonos.length} disponibles</span><span style={{ fontSize: ".84rem" }}>{tono}</span></div>
+                <div className="tono-head"><span className="lbl">Color · {p.tonos.length} disponibles</span><span style={{ fontSize: "var(--fs-6)" }}>{tono}</span></div>
                 <GrillaTonos tonos={p.tonos} valor={tono} onElegir={setTono} />
               </div>
             }
@@ -513,7 +513,7 @@
               </Boton>
             </div>
             <div style={{ marginTop: "1.4rem" }}>
-              {p.desc && <p style={{ margin: "0 0 1rem", color: "var(--ink-soft)", fontSize: ".92rem" }}>{p.desc}</p>}
+              {p.desc && <p style={{ margin: "0 0 1rem", color: "var(--ink-soft)", fontSize: "var(--fs-7)" }}>{p.desc}</p>}
               {p.incluye && <Acordeon titulo={`Qué incluye (${p.incluye.length})`} abierto><ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: ".4rem" }}>{p.incluye.map((x) => <li key={x} style={{ display: "flex", gap: ".5rem" }}><span style={{ color: "var(--nude-400)" }}><I n="check" size="14px" /></span>{x}</li>)}</ul></Acordeon>}
               <Acordeon titulo="Ficha técnica" abierto><Tabla /></Acordeon>
               <Acordeon titulo="Modo de uso">{p.uso}</Acordeon>

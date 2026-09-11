@@ -14,14 +14,14 @@
         <div className="item-top">
           <div style={{ display: "grid", gap: ".1rem" }}>
             <span className="eyebrow">{p.marca}</span>
-            <span style={{ fontFamily: "var(--serif)", fontSize: ".98rem", lineHeight: 1.25, display: "block" }}>{p.nombre}</span>
-            {it.tono && <span style={{ display: "flex", gap: ".35rem", alignItems: "center", fontSize: ".78rem", color: "var(--ink-soft)", marginTop: ".15rem" }}>
+            <span style={{ fontFamily: "var(--serif)", fontSize: "var(--fs-8)", lineHeight: 1.25, display: "block" }}>{p.nombre}</span>
+            {it.tono && <span style={{ display: "flex", gap: ".35rem", alignItems: "center", fontSize: "var(--fs-5)", color: "var(--ink-soft)", marginTop: ".15rem" }}>
               <i style={{ width: 10, height: 10, flex: "none", borderRadius: "50%", background: t ? t.hex : "var(--nude-200)", border: "1px solid rgba(17,17,17,.14)" }}></i>{it.tono}
             </span>}
           </div>
-          <span className="serif num" style={{ fontSize: "1.05rem", whiteSpace: "nowrap" }}>{$$(p.precio * it.n)}</span>
+          <span className="serif num" style={{ fontSize: "var(--fs-8)", whiteSpace: "nowrap" }}>{$$(p.precio * it.n)}</span>
         </div>
-        {max <= 5 && <span style={{ fontSize: ".72rem", color: "var(--nude-600)" }}>Quedan {max} en depósito</span>}
+        {max <= 5 && <span style={{ fontSize: "var(--fs-4)", color: "var(--nude-600)" }}>Quedan {max} en depósito</span>}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: ".3rem" }}>
           <Paso n={it.n} max={max} onCambiar={(v) => setCant(it, v)} />
           <button className="quitar" onClick={() => quitar(it)}>Quitar</button>
@@ -49,14 +49,14 @@
         <div><dt>{unidades} {unidades === 1 ? "unidad" : "unidades"}</dt><dd className="num">{$$(sub)}</dd></div>
         <div>
           <dt>Envío{z && datos.envio === "domicilio" ? ` · ${z.nombre}` : ""}</dt>
-          <dd className={etiqueta ? "" : "num"} style={etiqueta ? { color: "var(--ink-soft)", fontSize: ".84rem" } : null}>{etiqueta || $$(env)}</dd>
+          <dd className={etiqueta ? "" : "num"} style={etiqueta ? { color: "var(--ink-soft)", fontSize: "var(--fs-6)" } : null}>{etiqueta || $$(env)}</dd>
         </div>
         <div className="total"><dt>Total del pedido</dt><dd key={t} className="num animate__animated animate__pulse">{$$(t)}</dd></div>
       </dl>
       {/* El mínimo es opcional: hoy no hay, y si algún día vuelve se carga desde
           el panel y este aviso reaparece solo. Sin la guarda, con el mínimo en
           cero la cuenta daba "Faltan $ 0" en todos los pedidos. */}
-      {NEG.minimo > 0 && sub < NEG.minimo && <p style={{ margin: ".8rem 0 0", fontSize: ".78rem", color: "var(--nude-600)" }}>Faltan {$$(NEG.minimo - sub)} para el pedido mínimo de {$$(NEG.minimo)}.</p>}
+      {NEG.minimo > 0 && sub < NEG.minimo && <p style={{ margin: ".8rem 0 0", fontSize: "var(--fs-5)", color: "var(--nude-600)" }}>Faltan {$$(NEG.minimo - sub)} para el pedido mínimo de {$$(NEG.minimo)}.</p>}
     </div>);
 
   }
@@ -82,8 +82,8 @@
     if (!carrito.length) return (
       <>
       <div className="vacio">
-        <span className="serif" style={{ fontSize: "1.3rem", color: "var(--ink)" }}>Tu pedido está vacío</span>
-        <span style={{ fontSize: ".9rem" }}>Sumá productos del catálogo y después lo cerramos por WhatsApp.</span>
+        <span className="serif" style={{ fontSize: "var(--fs-10)", color: "var(--ink)" }}>Tu pedido está vacío</span>
+        <span style={{ fontSize: "var(--fs-7)" }}>Sumá productos del catálogo y después lo cerramos por WhatsApp.</span>
         <Boton variante="primary" onClick={() => ir({ v: "catalogo" })}>Ver el catálogo</Boton>
       </div>
       <div className="pad sec">
@@ -189,11 +189,11 @@
       <>
       <div className="pad checkout" style={{ paddingTop: "1.3rem" }}>
         <div>
-          <h1 className="serif" style={{ margin: "0 0 1.1rem", fontSize: "1.5rem" }}>Tus datos</h1>
+          <h1 className="serif" style={{ margin: "0 0 1.1rem", fontSize: "var(--fs-12)" }}>Tus datos</h1>
           <Campo label="Nombre y apellido"><input value={datos.nombre} onChange={set("nombre")} placeholder="Ana Gómez" autoComplete="name" /></Campo>
           <Campo label="WhatsApp" ayuda="Ahí te confirmamos stock y te pasamos los datos de pago."><input value={datos.tel} onChange={set("tel")} placeholder="11 5555 5555" inputMode="tel" autoComplete="tel" /></Campo>
 
-          <h2 className="serif" style={{ margin: "1.8rem 0 .9rem", fontSize: "1.25rem" }}>Entrega</h2>
+          <h2 className="serif" style={{ margin: "1.8rem 0 .9rem", fontSize: "var(--fs-10)" }}>Entrega</h2>
           <div role="radiogroup" style={{ display: "grid", gap: ".55rem" }}>
             <Opcion activa={datos.envio === "domicilio"} titulo="Envío a domicilio" detalle={`Costo según zona${Number.isFinite(ENV.gratisDesde) ? ` · sin cargo desde ${$$(ENV.gratisDesde)}` : ""}`} onClick={() => setDatos({ ...datos, envio: "domicilio" })} />
             <Opcion activa={datos.envio === "retiro"} titulo="Retiro en el local" detalle="Sin costo · dirección y horarios a confirmar" onClick={() => setDatos({ ...datos, envio: "retiro" })} />
@@ -225,7 +225,7 @@
                     onClick={() => setDatos({ ...datos, zona: z.id })} />
                     )}
                   </div>
-                  {ENV.provisorio && <p style={{ margin: "0 0 1.1rem", fontSize: ".76rem", color: "var(--ink-faint)" }}>Montos provisorios del prototipo: se reemplazan por la tabla real de envíos.</p>}
+                  {ENV.provisorio && <p style={{ margin: "0 0 1.1rem", fontSize: "var(--fs-4)", color: "var(--ink-faint)" }}>Montos provisorios del prototipo: se reemplazan por la tabla real de envíos.</p>}
                 </>
               )}
               <Campo label="Dirección"><input value={datos.direccion} onChange={set("direccion")} placeholder="Calle 123, Piso 4 B" autoComplete="street-address" /></Campo>
@@ -236,12 +236,12 @@
             <div style={{ marginTop: "1rem" }}><Campo label="Transporte" ayuda="Nombre de la empresa y sucursal."><input value={datos.transporte || ""} onChange={set("transporte")} placeholder="Vía Cargo · Sucursal Centro" /></Campo></div>
             }
 
-          <h2 className="serif" style={{ margin: "1.8rem 0 .9rem", fontSize: "1.25rem" }}>Pago</h2>
+          <h2 className="serif" style={{ margin: "1.8rem 0 .9rem", fontSize: "var(--fs-10)" }}>Pago</h2>
           <div role="radiogroup" style={{ display: "grid", gap: ".55rem" }}>
             <Opcion activa={datos.pago === "efectivo"} titulo="Efectivo" detalle="Al retirar o contra entrega" onClick={() => setDatos({ ...datos, pago: "efectivo" })} />
             <Opcion activa={datos.pago === "mp"} titulo="Mercado Pago" detalle="Te enviamos el link de pago por WhatsApp" onClick={() => setDatos({ ...datos, pago: "mp" })} />
           </div>
-          <p style={{ margin: ".8rem 0 0", fontSize: ".78rem", color: "var(--ink-faint)" }}>Todavía no hay pago en línea en el sitio: el cobro se hace por el canal que elijas.</p>
+          <p style={{ margin: ".8rem 0 0", fontSize: "var(--fs-5)", color: "var(--ink-faint)" }}>Todavía no hay pago en línea en el sitio: el cobro se hace por el canal que elijas.</p>
 
           <div style={{ marginTop: "1.6rem" }}><Campo label="Nota para el pedido" ayuda="Opcional: cambios de tono, urgencias, aclaraciones."><textarea rows="3" value={datos.nota} onChange={set("nota")} placeholder="Tocá el timbre del 4º B."></textarea></Campo></div>
         </div>
@@ -268,8 +268,8 @@
         </aside>
       </div>
       <div className="accion accion-checkout">
-        {falta && <span id="falta-barra" role="status" style={{ fontSize: ".76rem", color: "var(--ink-faint)" }}>{aviso}</span>}
-        {!falta && rechazo && <span role="alert" style={{ fontSize: ".76rem", color: "var(--acento)" }}>{rechazo}</span>}
+        {falta && <span id="falta-barra" role="status" style={{ fontSize: "var(--fs-4)", color: "var(--ink-faint)" }}>{aviso}</span>}
+        {!falta && rechazo && <span role="alert" style={{ fontSize: "var(--fs-4)", color: "var(--acento)" }}>{rechazo}</span>}
         <Boton variante="primary" tamano="lg" aria-describedby={falta ? "falta-barra" : undefined} disabled={falta || enviando} style={{ opacity: falta || enviando ? .45 : 1 }} onClick={() => !falta && mandar()}>
           <I n="wa" size="16px" /> Enviar el pedido · {$$(sub + (env || 0))}{env == null && datos.zona ? " + envío" : ""}
         </Boton>
@@ -312,9 +312,9 @@
       <>
       <div className="pad" style={{ paddingTop: "2rem", maxWidth: "34rem", marginInline: "auto" }}>
         <span className="animate__animated animate__bounceIn" style={{ width: 46, height: 46, borderRadius: "50%", background: "var(--nude-100)", color: "var(--nude-600)", display: "grid", placeItems: "center" }}><I n="check" size="22px" /></span>
-        <h1 className="serif animate__animated animate__fadeInUp" style={{ margin: "1rem 0 .4rem", fontSize: "1.7rem", lineHeight: 1.15, animationDelay: ".16s" }}>Pedido armado</h1>
+        <h1 className="serif animate__animated animate__fadeInUp" style={{ margin: "1rem 0 .4rem", fontSize: "var(--fs-13)", lineHeight: 1.15, animationDelay: ".16s" }}>Pedido armado</h1>
         <p className="animate__animated animate__fadeInUp" style={{ margin: 0, color: "var(--ink-soft)", animationDelay: ".26s" }}>Falta un paso: enviarlo por WhatsApp. Ya está todo escrito, no tenés que explicar nada.</p>
-        <p className="num" style={{ margin: ".9rem 0 0", fontSize: ".8rem", color: "var(--ink-faint)" }}>Pedido {pedido.nro} · {pedido.items.reduce((a, i) => a + i.n, 0)} unidades · {$$(pedido.total)}</p>
+        <p className="num" style={{ margin: ".9rem 0 0", fontSize: "var(--fs-5)", color: "var(--ink-faint)" }}>Pedido {pedido.nro} · {pedido.items.reduce((a, i) => a + i.n, 0)} unidades · {$$(pedido.total)}</p>
 
         {/* El pedido sale igual cuando no se pudo registrar —perder la venta por
             una falla de conexión sería peor—, pero callarlo no: el número de
@@ -333,7 +333,7 @@
 
         <div style={{ marginTop: "1.4rem" }}>
           <span className="lbl">Mensaje que se envía</span>
-          <pre style={{ margin: ".6rem 0 0", background: "var(--surface)", border: "1px solid var(--hairline)", borderRadius: "var(--radio)", padding: ".9rem", fontFamily: "var(--sans)", fontSize: ".82rem", color: "var(--ink-soft)", whiteSpace: "pre-wrap", lineHeight: 1.55 }}>{texto}</pre>
+          <pre style={{ margin: ".6rem 0 0", background: "var(--surface)", border: "1px solid var(--hairline)", borderRadius: "var(--radio)", padding: ".9rem", fontFamily: "var(--sans)", fontSize: "var(--fs-5)", color: "var(--ink-soft)", whiteSpace: "pre-wrap", lineHeight: 1.55 }}>{texto}</pre>
         </div>
 
         <div className="nota" style={{ marginTop: "1.2rem" }}>
@@ -414,7 +414,7 @@
                   onClick={() => onElegir(z.id)} />
               )}
             </div>
-            <p style={{ margin: ".7rem 0 0", fontSize: ".76rem", color: "var(--ink-faint)" }}>
+            <p style={{ margin: ".7rem 0 0", fontSize: "var(--fs-4)", color: "var(--ink-faint)" }}>
               Elegir la zona saca el pin del mapa: vale una cosa o la otra, no las dos.
             </p>
           </div>
@@ -514,7 +514,7 @@
     return (
       <div style={{ margin: ".6rem 0 1rem" }}>
         <span className="lbl">Dónde te lo llevamos</span>
-        <p style={{ margin: ".35rem 0 .6rem", fontSize: ".84rem", color: "var(--ink-soft)" }}>
+        <p style={{ margin: ".35rem 0 .6rem", fontSize: "var(--fs-6)", color: "var(--ink-soft)" }}>
           Tocá el mapa para marcar tu ubicación. Dentro de la zona marcada el envío no tiene cargo.
         </p>
 
@@ -567,13 +567,13 @@
       <div className="pad ayuda-wrap">
         <div className="ayuda-dos">
           <div className="ayuda-txt">
-            <h1 className="serif" style={{ margin: 0, fontSize: "1.7rem" }}>Cómo comprar</h1>
+            <h1 className="serif" style={{ margin: 0, fontSize: "var(--fs-13)" }}>Cómo comprar</h1>
             <p style={{ color: "var(--ink-soft)", margin: ".5rem 0 0" }}>El carrito arma el pedido; la compra se cierra por WhatsApp. Así podés preguntar antes de pagar.</p>
             <ol style={{ listStyle: "none", margin: "1.8rem 0 0", padding: 0, display: "grid", gap: "1.1rem" }}>
               {PASOS.map(([t, d], i) =>
                 <li key={t} style={{ display: "grid", gridTemplateColumns: "2rem 1fr", gap: "1rem", borderTop: "1px solid var(--hairline)", paddingTop: "1.1rem" }}>
-                  <span className="serif" style={{ fontSize: "1.4rem", color: "var(--nude-300)", lineHeight: 1.1 }}>{i + 1}</span>
-                  <div><b style={{ display: "block", fontWeight: 500, marginBottom: ".2rem" }}>{t}</b><span style={{ color: "var(--ink-soft)", fontSize: ".92rem" }}>{d}</span></div>
+                  <span className="serif" style={{ fontSize: "var(--fs-11)", color: "var(--nude-300)", lineHeight: 1.1 }}>{i + 1}</span>
+                  <div><b style={{ display: "block", fontWeight: 500, marginBottom: ".2rem" }}>{t}</b><span style={{ color: "var(--ink-soft)", fontSize: "var(--fs-7)" }}>{d}</span></div>
                 </li>
                 )}
             </ol>
@@ -583,7 +583,7 @@
           </figure>
         </div>
 
-        <h2 className="serif" style={{ margin: "2.4rem 0 .6rem", fontSize: "1.3rem" }}>Preguntas frecuentes</h2>
+        <h2 className="serif" style={{ margin: "2.4rem 0 .6rem", fontSize: "var(--fs-10)" }}>Preguntas frecuentes</h2>
         {/* Quedan las dos que hoy tienen una respuesta cierta. Se sacaron el
             pedido mínimo (ya no hay), el precio por cantidad (no se maneja por
             ahora), qué pasa con un tono agotado (el catálogo dejó de vender
@@ -609,18 +609,18 @@
     return (
       <>
       <div className="pad" style={{ paddingTop: "1.5rem", maxWidth: "36rem", marginInline: "auto" }}>
-        <h1 className="serif" style={{ margin: 0, fontSize: "1.7rem" }}>Contacto</h1>
+        <h1 className="serif" style={{ margin: 0, fontSize: "var(--fs-13)" }}>Contacto</h1>
         <p style={{ color: "var(--ink-soft)", margin: ".5rem 0 0" }}>Lo más rápido es WhatsApp: consultas de productos, precio por cantidad y envíos.</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(11rem,1fr))", gap: ".7rem", marginTop: "1.6rem" }}>
           <a href={`https://wa.me/${NEG.whatsapp}`} target="_blank" rel="noopener" style={canal}>
             <span style={{ color: "var(--nude-600)", marginBottom: ".4rem" }}><I n="wa" size="22px" /></span>
-            <span className="serif" style={{ fontSize: "1.1rem" }}>WhatsApp</span>
-            <span style={{ fontSize: ".85rem", color: "var(--ink-soft)" }}>Pedidos y consultas</span>
+            <span className="serif" style={{ fontSize: "var(--fs-9)" }}>WhatsApp</span>
+            <span style={{ fontSize: "var(--fs-6)", color: "var(--ink-soft)" }}>Pedidos y consultas</span>
           </a>
           <a href={NEG.instagram} target="_blank" rel="noopener" style={canal}>
             <span style={{ color: "var(--nude-600)", marginBottom: ".4rem" }}><I n="ig" size="22px" /></span>
-            <span className="serif" style={{ fontSize: "1.1rem" }}>Instagram</span>
-            <span style={{ fontSize: ".85rem", color: "var(--ink-soft)" }}>{NEG.instagramUsuario}</span>
+            <span className="serif" style={{ fontSize: "var(--fs-9)" }}>Instagram</span>
+            <span style={{ fontSize: "var(--fs-6)", color: "var(--ink-soft)" }}>{NEG.instagramUsuario}</span>
           </a>
         </div>
         <dl className="ficha-tabla" style={{ marginTop: "1.6rem" }}>
