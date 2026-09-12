@@ -15,7 +15,13 @@ import { leerMapaEnvio, costoPorMapa } from "./envio.js";
    que lleguen bien: una coordenada fuera de rango haría que el punto caiga
    siempre afuera de la zona y se cobre un envío que no corresponde. */
 const puntoDe = (d) => {
-  const lat = Number(d && d.lat), lng = Number(d && d.lng);
+  /* Number(null) y Number("") dan 0, y 0 es finito: sin esta guarda, un pedido
+     con lat:null —que es lo que manda la tienda cuando no hay pin— llegaba como
+     un pin válido en (0,0), la isla Null. El punto caía fuera de la zona y de
+     todos los tramos, así que el envío se registraba "a cotizar" aunque la
+     compradora hubiera elegido una zona con tarifa. */
+  const num = (v) => (v === null || v === undefined || v === "" ? NaN : Number(v));
+  const lat = num(d && d.lat), lng = num(d && d.lng);
   return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180
     ? { lat, lng } : null;
 };
