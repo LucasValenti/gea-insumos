@@ -154,10 +154,14 @@ export async function crearPedido(request, env) {
   const mapa = leerMapaEnvio(conf);
   const pin = puntoDe(d);
 
-  if (d.envio === "domicilio" && mapa && !pin)
-    return json({ error: "Marcá en el mapa dónde te lo llevamos" }, { status: 400 });
-  if (d.envio === "domicilio" && !mapa && !zonasR.results.some((z) => z.id === d.zona))
-    return json({ error: "Elegí una zona de envío de la lista" }, { status: 400 });
+  /* Con mapa cargado manda el pin, pero no puede ser el único camino: sin mouse,
+     con lector de pantalla o con el permiso de ubicación denegado no hay forma de
+     poner el pin, y el pedido quedaba imposible de cerrar. La tienda ofrece la
+     lista de zonas como salida; acá se acepta la misma. Se sostiene la regla de
+     siempre: una cosa o la otra, nunca las dos, y si vienen las dos manda el pin. */
+  const zonaValida = zonasR.results.some((z) => z.id === d.zona);
+  if (d.envio === "domicilio" && !pin && !zonaValida)
+    return json({ error: mapa ? "Marcá el mapa o elegí tu zona de envío" : "Elegí una zona de envío de la lista" }, { status: 400 });
 
   const gratisDesde = conf.envioGratisDesde == null ? Infinity : conf.envioGratisDesde;
   /* El precio lo pone el servidor, igual que el de cada producto: del navegador

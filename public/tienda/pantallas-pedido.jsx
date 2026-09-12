@@ -207,13 +207,18 @@
                   respuestas podrían no coincidir. */}
               {ENV.mapa ? (
                 <>
+                  {/* onPunto va con la forma de función y no con {...datos}:
+                      el handler del clic de Leaflet se registra una sola vez, así
+                      que con la forma de objeto escribía una copia del estado
+                      capturada al montar el mapa, y marcar el pin borraba el
+                      nombre y el WhatsApp ya tipeados. */}
                   <MapaEnvio zona={ENV.mapa.zona} conPrecios={ENV.mapa.conPrecios}
                     punto={datos.lat == null ? null : { lat: datos.lat, lng: datos.lng }}
                     sub={sub}
-                    onPunto={(p) => setDatos({ ...datos, lat: p ? p.lat : null, lng: p ? p.lng : null, zona: p ? "" : datos.zona, envioCosto: null })}
+                    onPunto={(p) => setDatos((d) => ({ ...d, lat: p ? p.lat : null, lng: p ? p.lng : null, zona: p ? "" : d.zona, envioCosto: null }))}
                     onCosto={(c) => setDatos((x) => ({ ...x, envioCosto: c }))} />
                   <ZonaAMano zonas={ENV.zonas} valor={datos.zona}
-                    onElegir={(id) => setDatos({ ...datos, zona: id, lat: null, lng: null, envioCosto: null })} />
+                    onElegir={(id) => setDatos((d) => ({ ...d, zona: id, lat: null, lng: null, envioCosto: null }))} />
                 </>
               ) : (
                 <>
