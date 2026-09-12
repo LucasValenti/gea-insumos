@@ -187,9 +187,13 @@
           </div>
           <div className="pad hero-txt">
             <span className="filete" style={{ maxWidth: "3.5rem" }}></span>
-            <h1 className="serif h1-hero">
+            {/* Cada palabra va en su span para entrar animada, y entre span y
+                span no hay espacio: el lector de pantalla leía
+                "Elprecioestápuesto". El aria-label lleva la frase; los pedazos
+                quedan de adorno. */}
+            <h1 className="serif h1-hero" aria-label="El precio está puesto. El stock también.">
               {"El precio está puesto. El stock también.".split(" ").map((w, i) =>
-              <span className="w" key={i}><i style={{ animationDelay: 0.34 + i * 0.075 + "s" }}>{w}</i></span>
+              <span className="w" key={i} aria-hidden="true"><i style={{ animationDelay: 0.34 + i * 0.075 + "s" }}>{w}</i></span>
               )}
             </h1>
             <p className="hero-p">
@@ -466,7 +470,9 @@
           <>
             <Foto p={p} tono={t} className="foto" />
             <div style={{ paddingTop: "1.1rem" }}>
-              <span className="lbl">{p.marca} · {catDe(p.cat).nombre}{p.sub ? ` · ${nombreSub(p.cat, p.sub)}` : ""}</span>
+              {/* Cuando la subcategoría existía pero no tenía nombre, quedaba
+                  "PINK MASK · HERRAMIENTAS Y EQUIPOS ·" con el separador al aire. */}
+              <span className="lbl">{[p.marca, catDe(p.cat).nombre, p.sub && nombreSub(p.cat, p.sub)].filter(Boolean).join(" · ")}</span>
               <h1 className="serif h1-ficha" style={{ margin: ".45rem 0 0" }}>{p.nombre}</h1>
               <p className={"serif num" + (p.precioAntes ? " precio-oferta" : "")} style={{ fontSize: "var(--fs-14)", margin: "1rem 0 .2rem" }}>{$(p.precio)}{p.precioAntes && <span className="antes" style={{ fontSize: "var(--fs-7)" }}>{$(p.precioAntes)}</span>}</p>
               <p style={{ margin: 0, fontSize: "var(--fs-5)", color: "var(--ink-faint)" }}>Precio por unidad</p>

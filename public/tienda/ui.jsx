@@ -281,8 +281,24 @@ function Paso({ n, max, onCambiar }) {
   );
 }
 
+/* La ayuda vivía adentro del <label>, así que el nombre accesible del campo
+   salía "WhatsApp Ahí te confirmamos stock y te pasamos los datos de pago". El
+   nombre es el nombre; la ayuda se describe aparte. */
+let nCampo = 0;
 function Campo({ label, ayuda, children }) {
-  return <label className="campo"><span>{label}</span>{children}{ayuda && <em>{ayuda}</em>}</label>;
+  const id = React.useRef(null);
+  if (ayuda && !id.current) id.current = "ayuda-" + (++nCampo);
+  const hijo = ayuda && React.isValidElement(children)
+    ? React.cloneElement(children, { "aria-describedby": id.current })
+    : children;
+  /* La ayuda va afuera del <label>: adentro se concatenaba al nombre accesible
+     del campo, y aria-describedby no alcanza para limpiarlo. */
+  return (
+    <div className="campo">
+      <label><span>{label}</span>{hijo}</label>
+      {ayuda && <em id={id.current}>{ayuda}</em>}
+    </div>
+  );
 }
 
 function Opcion({ activa, titulo, detalle, onClick }) {
@@ -330,8 +346,12 @@ function GrillaTonos({ tonos, valor, onElegir }) {
         <button key={t.nombre} type="button" className="tono" role="radio" data-tono={t.nombre}
           aria-checked={valor === t.nombre} data-agotado={t.stock === 0}
           tabIndex={t.nombre === foco ? 0 : -1}
-          onClick={() => t.stock > 0 && onElegir(t.nombre)} disabled={t.stock === 0}>
+          onClick={() => t.stock > 0 && onElegir(t.nombre)} disabled={t.stock === 0}
+          aria-label={t.stock === 0 ? t.nombre + ", agotado" : t.stock <= 5 ? t.nombre + ", quedan " + t.stock : t.nombre}>
           <s style={{ background: t.hex }}></s><span>{t.nombre}</span>
+          {/* El stock que decide es el del tono, y había que tocar los doce para
+              descubrirlo. Va donde ya se está mirando, y solo cuando aprieta. */}
+          {t.stock > 0 && t.stock <= 5 && <u className="tono-quedan">Quedan {t.stock}</u>}
         </button>
       ))}
     </div>
